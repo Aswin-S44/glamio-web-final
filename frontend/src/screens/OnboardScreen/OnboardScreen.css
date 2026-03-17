@@ -1,0 +1,156 @@
+.onboard-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--secondary);
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.onboard-card {
+  background: var(--light);
+  max-width: 450px;
+  width: 100%;
+  padding: 40px;
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  text-align: center;
+  transition: var(--transition);
+}
+
+.animate-in {
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.status-icon {
+  width: 70px;
+  height: 70px;
+  background: var(--secondary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.status-icon svg {
+  width: 35px;
+  height: 35px;
+}
+
+.onboard-card h1 {
+  color: var(--dark);
+  font-size: 1.6rem;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.onboard-card p {
+  color: #6c757d;
+  line-height: 1.6;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
+}
+
+.contact-list {
+  text-align: left;
+  margin-bottom: 30px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px;
+  background: var(--secondary);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.mini-icon {
+  width: 40px;
+  height: 40px;
+  background: var(--light);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mini-icon svg {
+  width: 20px;
+}
+
+.contact-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-text span {
+  font-size: 0.75rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contact-text strong {
+  color: var(--dark);
+  font-size: 0.95rem;
+}
+
+.onboard-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.badge {
+  background: #fff9e6;
+  color: var(--primary);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid var(--primary);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.contact-btn, .back-btn {
+  background: var(--primary);
+  color: var(--light);
+  border: none;
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+}
+
+.back-btn {
+  background: transparent;
+  color: var(--dark);
+  border: 2px solid var(--secondary);
+}
+
+.contact-btn:hover {
+  background: var(--dark);
+  transform: translateY(-2px);
+}
+
+.back-btn:hover {
+  background: var(--secondary);
+}
+
+@media (max-width: 480px) {
+  .onboard-card {
+    padding: 30px 20px;
+  }
+}
