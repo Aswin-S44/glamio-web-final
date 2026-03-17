@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import "./ServicesScreen.css";
 import NotFound from "../../components/NotFound/NotFound";
+import { BASE_URL } from "../../constants/urls";
 
 const CATEGORY_OPTIONS = [
   { value: "Hair", label: "Hair Cut" },
@@ -100,12 +101,9 @@ function ServicesScreen() {
         search: searchTerm,
         category: activeTab,
       });
-      const res = await fetch(
-        `http://localhost:5000/api/v1/services?${params}`,
-        {
-          headers: { Authorization: `${token}` },
-        }
-      );
+      const res = await fetch(`${BASE_URL}/services?${params}`, {
+        headers: { Authorization: `${token}` },
+      });
       const data = await res.json();
       if (data.services) {
         setServices(data.services);
@@ -140,8 +138,8 @@ function ServicesScreen() {
     };
     try {
       const url = editingService
-        ? `http://localhost:5000/api/v1/services/${editingService.id}`
-        : "http://localhost:5000/api/v1/services";
+        ? `${BASE_URL}/services/${editingService.id}`
+        : `${BASE_URL}/services`;
       setSubmitting(true);
       const res = await fetch(url, {
         method: editingService ? "PATCH" : "POST",
@@ -174,7 +172,7 @@ function ServicesScreen() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:5000/api/v1/services/${id}`, {
+          await fetch(`${BASE_URL}/services/${id}`, {
             method: "DELETE",
             headers: { Authorization: `${token}` },
           });

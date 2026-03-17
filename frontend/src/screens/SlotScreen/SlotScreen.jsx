@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import {
-  Calendar as CalendarIcon,
+  Calendar,
   Plus,
   Trash2,
   Edit2,
@@ -34,6 +34,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./SlotScreen.css";
+import { BASE_URL } from "../../constants/urls";
 
 function SlotScreen() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -61,7 +62,7 @@ function SlotScreen() {
   const fetchSlots = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/v1/slots", {
+      const res = await fetch(`${BASE_URL}/slots`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -131,8 +132,8 @@ function SlotScreen() {
 
     try {
       const url = editingSlot
-        ? `http://localhost:5000/api/v1/slots/${editingSlot.id}`
-        : "http://localhost:5000/api/v1/slots";
+        ? `${BASE_URL}/slots/${editingSlot.id}`
+        : `${BASE_URL}/slots`;
 
       const res = await fetch(url, {
         method: editingSlot ? "PATCH" : "POST",
@@ -169,7 +170,7 @@ function SlotScreen() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:5000/api/v1/slots/${id}`, {
+          const res = await fetch(`${BASE_URL}/slots/${id}`, {
             method: "DELETE",
             headers: { Authorization: `${token}` },
           });
@@ -207,7 +208,7 @@ function SlotScreen() {
       while (!isAfter(tempDate, endDate)) {
         const targetDateStr = format(tempDate, "yyyy-MM-dd");
         for (const slot of currentDaySlots) {
-          await fetch("http://localhost:5000/api/v1/slots", {
+          await fetch(`${BASE_URL}/slots`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

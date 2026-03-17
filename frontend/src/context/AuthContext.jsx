@@ -5,6 +5,7 @@ import {
   useState,
   useCallback,
 } from "react";
+import { BASE_URL } from "../constants/urls";
 
 const AuthContext = createContext(null);
 
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/api/v1/auth/profile", {
+      const res = await fetch(`${BASE_URL}/auth/profile`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

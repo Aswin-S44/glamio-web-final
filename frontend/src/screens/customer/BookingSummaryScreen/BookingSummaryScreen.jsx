@@ -4,6 +4,7 @@ import Header from "../../../components/Header/Header";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../../../context/AuthContext";
 import Swal from "sweetalert2";
+import { BASE_URL } from "../../../constants/urls";
 
 function BookingSummaryScreen() {
   const [searchParams] = useSearchParams();
@@ -27,7 +28,7 @@ function BookingSummaryScreen() {
       try {
         setLoading(true);
         const res = await fetch(
-          `http://localhost:5000/api/v1/customer/order/summary/${shopId}/${slotId}/${expertId}?serviceId=${rawServiceId}`,
+          `${BASE_URL}/customer/order/summary/${shopId}/${slotId}/${expertId}?serviceId=${rawServiceId}`,
           { method: "GET" }
         );
         if (!res.ok) throw new Error("Failed to fetch booking summary");
@@ -67,7 +68,7 @@ function BookingSummaryScreen() {
 
   const submitAppointment = async (e) => {
     e.preventDefault();
-    const res = await fetch("http://localhost:5000/api/v1/customer/booking", {
+    const res = await fetch(`${BASE_URL}/customer/booking`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

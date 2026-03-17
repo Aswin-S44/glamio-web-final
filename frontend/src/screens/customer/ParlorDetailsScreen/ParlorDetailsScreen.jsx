@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../../components/Header/Header";
 import Footer from "../../../components/Footer/Footer";
 import {
+  BASE_URL,
   DEFAULT_AVATAR_IMAGE,
   DEFAULT_NO_IMAGE,
 } from "../../../constants/urls";
@@ -26,9 +27,7 @@ const ParlorDetailsScreen = () => {
   const fetchParlourDetails = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `http://localhost:5000/api/v1/customer/shop/${id}`
-      );
+      const res = await fetch(`${BASE_URL}/customer/shop/${id}`);
       if (!res.ok) throw new Error("Shop fetch failed");
       const data = await res.json();
       setParlour(data);
@@ -47,9 +46,7 @@ const ParlorDetailsScreen = () => {
       setIsLoadingReviews(true);
       try {
         const res = await fetch(
-          `http://localhost:5000/api/v1/customer/reviews/${placeId}?page=${
-            isInitial ? 1 : page
-          }`
+          `${BASE_URL}/customer/reviews/${placeId}?page=${isInitial ? 1 : page}`
         );
         if (!res.ok) throw new Error("Reviews fetch failed");
         const data = await res.json();

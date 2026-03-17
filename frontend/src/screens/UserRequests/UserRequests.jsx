@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import "./UserRequests.css";
 import NotFound from "../../components/NotFound/NotFound";
+import { BASE_URL } from "../../constants/urls";
 
 const STATUS = {
   1: { label: "Pending", class: "status-pending" },
@@ -45,7 +46,7 @@ function UserRequests() {
   const fetchUserRequests = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/appointments`, {
+      const res = await fetch(`${BASE_URL}/appointments`, {
         headers: { Authorization: `${token}` },
       });
       const data = await res.json();
@@ -107,16 +108,13 @@ function UserRequests() {
       if (result.isConfirmed) {
         try {
           Swal.showLoading();
-          const res = await fetch(
-            `http://localhost:5000/api/v1/appointments/${id}/approve`,
-            {
-              method: "PATCH",
-              headers: {
-                Authorization: `${token}`,
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          const res = await fetch(`${BASE_URL}/appointments/${id}/approve`, {
+            method: "PATCH",
+            headers: {
+              Authorization: `${token}`,
+              "Content-Type": "application/json",
+            },
+          });
 
           if (res.ok) {
             updateStatusOnServer(id, 3);

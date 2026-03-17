@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./Parlors.css";
-import { DEFAULT_NO_IMAGE } from "../../constants/urls";
+import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 
 const parlorsData = [
   {
@@ -49,7 +49,7 @@ function Parlors() {
   useEffect(() => {
     const fetchShops = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/v1/customer/shops");
+        const res = await fetch(`${BASE_URL}/customer/shops`);
         const data = await res.json();
         if (data && data.shops) {
           setShops(data.shops);

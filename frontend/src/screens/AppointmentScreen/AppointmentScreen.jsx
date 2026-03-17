@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import "../UserRequests/UserRequests.css";
 import NotFound from "../../components/NotFound/NotFound";
+import { BASE_URL } from "../../constants/urls";
 
 const STATUS = {
   3: { label: "Accepted", class: "status-approved" },
@@ -33,7 +34,7 @@ function AppointmentScreen() {
   const fetchConfirmedAppointments = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/appointments`, {
+      const res = await fetch(`${BASE_URL}/appointments`, {
         headers: { Authorization: `${token}` },
       });
       const data = await res.json();

@@ -14,6 +14,7 @@ import {
 import { convertToBase64 } from "../../../utils/utils";
 import { useAuth } from "../../../context/AuthContext";
 import "./AddService.css";
+import { BASE_URL } from "../../../constants/urls";
 
 const CATEGORY_OPTIONS = [
   { value: "hair_cut", label: "Hair Cut" },
@@ -77,7 +78,7 @@ function AddService() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/api/v1/services", {
+      const res = await fetch(`${BASE_URL}/services`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

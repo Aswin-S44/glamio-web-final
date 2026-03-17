@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import "./OfferScreen.css";
 import NotFound from "../../components/NotFound/NotFound";
+import { BASE_URL } from "../../constants/urls";
 
 const CATEGORY_OPTIONS = [
   { value: "Hair", label: "Hair Cut", id: 1 },
@@ -63,12 +64,9 @@ function OfferScreen() {
 
   const fetchAllServices = async () => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/v1/services?limit=100`,
-        {
-          headers: { Authorization: `${token}` },
-        }
-      );
+      const res = await fetch(`${BASE_URL}/services?limit=100`, {
+        headers: { Authorization: `${token}` },
+      });
       const data = await res.json();
       if (data.services) setAllServices(data.services);
     } catch (error) {
@@ -84,7 +82,7 @@ function OfferScreen() {
         limit: pagination.limit.toString(),
         search: searchTerm,
       });
-      const res = await fetch(`http://localhost:5000/api/v1/offers?${params}`, {
+      const res = await fetch(`${BASE_URL}/offers?${params}`, {
         headers: { Authorization: `${token}` },
       });
       const data = await res.json();
@@ -122,8 +120,8 @@ function OfferScreen() {
     setSubmitting(true);
     try {
       const url = editingOffer
-        ? `http://localhost:5000/api/v1/offers/${editingOffer.id}`
-        : "http://localhost:5000/api/v1/offers";
+        ? `${BASE_URL}/offers/${editingOffer.id}`
+        : `${BASE_URL}/offers`;
 
       const res = await fetch(url, {
         method: editingOffer ? "PATCH" : "POST",
@@ -171,7 +169,7 @@ function OfferScreen() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:5000/api/v1/offers/${id}`, {
+          await fetch(`${BASE_URL}/offers/${id}`, {
             method: "DELETE",
             headers: { Authorization: `${token}` },
           });

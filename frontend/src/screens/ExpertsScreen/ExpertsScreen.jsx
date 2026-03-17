@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import "./ExpertsScreen.css";
 import NotFound from "../../components/NotFound/NotFound";
+import { BASE_URL } from "../../constants/urls";
 
 const SPECIALISATION_OPTIONS = [
   { value: "Hair", label: "Hair Cut" },
@@ -98,7 +99,7 @@ function ExpertsScreen() {
         search: searchTerm,
         specialist: activeTab === "All" ? "" : activeTab,
       });
-      const res = await fetch(`http://localhost:5000/api/v1/expert?${params}`, {
+      const res = await fetch(`${BASE_URL}/expert?${params}`, {
         headers: { Authorization: `${token}` },
       });
       const data = await res.json();
@@ -136,8 +137,8 @@ function ExpertsScreen() {
     };
     try {
       const url = editingExpert
-        ? `http://localhost:5000/api/v1/expert/${editingExpert.id}`
-        : "http://localhost:5000/api/v1/expert";
+        ? `${BASE_URL}/expert/${editingExpert.id}`
+        : `${BASE_URL}/expert`;
       setSubmitting(true);
       const res = await fetch(url, {
         method: editingExpert ? "PATCH" : "POST",
@@ -170,7 +171,7 @@ function ExpertsScreen() {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await fetch(`http://localhost:5000/api/v1/expert/${id}`, {
+          await fetch(`${BASE_URL}/expert/${id}`, {
             method: "DELETE",
             headers: { Authorization: `${token}` },
           });

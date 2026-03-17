@@ -39,6 +39,7 @@ import UserRequests from "../../UserRequests/UserRequests";
 import AppointmentScreen from "../../AppointmentScreen/AppointmentScreen";
 import OfferScreen from "../../OfferScreen/OfferScreen";
 import NotificationScreen from "../../Notifications/NotificationScreen";
+import { BASE_URL } from "../../../constants/urls";
 
 function Dashboard() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -55,16 +56,13 @@ function Dashboard() {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const response = await fetch(
-          "http://localhost:5000/api/v1/shops/stats",
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `${token}`,
-            },
-          }
-        );
+        const response = await fetch(`${BASE_URL}/shops/stats`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `${token}`,
+          },
+        });
         const data = await response.json();
         setStats(data);
       } catch (error) {

@@ -1,30 +1,29 @@
 import React, { useEffect, useState } from "react";
 import "./Services.css";
-import { DEFAULT_NO_IMAGE } from "../../constants/urls";
+import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 
 function Services() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(
-          `http://localhost:5000/api/v1/customer/services`
-        );
-        const data = await res.json();
-        if (data && data.length > 0) {
-          setServices(data);
-        }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
+  const fetchServices = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${BASE_URL}/customer/services`);
+      const data = await res.json();
+      if (data && data.length > 0) {
+        setServices(data);
       }
-    };
-    fetchServices();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
 
   if (services.length == 0) {
     return null;

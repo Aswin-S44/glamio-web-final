@@ -10,6 +10,7 @@ import { auth } from "../../../config/firebase";
 import { googleSignInApi } from "../../../services/auth.service";
 import Header from "../../../components/Header/Header";
 import Footer from "../../../components/Footer/Footer";
+import { BASE_URL } from "../../../constants/urls";
 
 function SignIn() {
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ function SignIn() {
         userType,
       };
 
-      const res = await fetch("http://localhost:5000/api/v1/user", {
+      const res = await fetch(`${BASE_URL}/user`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

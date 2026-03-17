@@ -13,6 +13,7 @@ import "react-calendar/dist/Calendar.css";
 import "./SelectSlotScreen.css";
 import { useParams, useNavigate } from "react-router-dom";
 import Header from "../../../components/Header/Header";
+import { BASE_URL } from "../../../constants/urls";
 
 function SelectSlotScreen() {
   const [selectedExpert, setSelectedExpert] = useState(null);
@@ -29,9 +30,7 @@ function SelectSlotScreen() {
   const fetchExperts = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(
-        `http://localhost:5000/api/v1/customer/experts/${id}`
-      );
+      const res = await fetch(`${BASE_URL}/customer/experts/${id}`);
       const data = await res.json();
       if (data.experts) setExperts(data.experts);
     } catch (error) {
@@ -43,9 +42,7 @@ function SelectSlotScreen() {
 
   const fetchSlots = useCallback(async () => {
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/v1/customer/slots/${id}`
-      );
+      const res = await fetch(`${BASE_URL}/customer/slots/${id}`);
       const data = await res.json();
       if (data.slots) {
         const grouped = data.slots.reduce((acc, slot) => {

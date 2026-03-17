@@ -15,6 +15,7 @@ import "./EditProfileScreen.css";
 import { convertToBase642 } from "../../utils/utils";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../../constants/urls";
 
 function EditProfileScreen() {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ function EditProfileScreen() {
       setLoading(true);
       try {
         const profileData = { shop: { ...formData, isProfileCompleted: true } };
-        const res = await fetch("http://localhost:5000/api/v1/shops", {
+        const res = await fetch(`${BASE_URL}/shops`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
