@@ -21,7 +21,7 @@ var corsOptions = {
   origin:
     process.env.NODE_ENV === "development"
       ? process.env.FRONTEND_URL_LOCAL
-      : FRONTEND_URL_PROD,
+      : process.env.FRONTEND_URL_PROD,
   optionsSuccessStatus: 200,
 };
 
