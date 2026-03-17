@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import "./Services.css";
 import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 
