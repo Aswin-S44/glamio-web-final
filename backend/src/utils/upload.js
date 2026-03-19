@@ -8,7 +8,8 @@ export const uploadImage = async (image) => {
     });
 
     return response?.secure_url ?? null;
-  } catch {
+  } catch (error) {
+    console.log("IMAGE UPLADO------------", error);
     return null;
   }
 };

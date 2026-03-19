@@ -54,6 +54,7 @@ function SlotScreen() {
 
   const dateKey = format(selectedDate, "yyyy-MM-dd");
   const isPastDate = isBefore(startOfDay(selectedDate), startOfDay(new Date()));
+  const todayDateStr = format(new Date(), "yyyy-MM-dd");
 
   useEffect(() => {
     fetchSlots();
@@ -102,13 +103,30 @@ function SlotScreen() {
   };
 
   const handleSaveSlot = async () => {
-    // 1. Validation: Check if same slot already exists for this date
+    const now = new Date();
+    const currentTimeStr = format(now, "HH:mm");
+
+    if (slotDate < todayDateStr) {
+      toast.error("Cannot create slots for past dates");
+      return;
+    }
+
+    if (slotDate === todayDateStr && startTime <= currentTimeStr) {
+      toast.error("Cannot create slots for past time today");
+      return;
+    }
+
+    if (startTime >= endTime) {
+      toast.error("End time must be after start time");
+      return;
+    }
+
     const existingSlots = slots[dateKey] || [];
     const isDuplicate = existingSlots.some(
       (s) =>
         s.startTime === startTime &&
         s.endTime === endTime &&
-        s.id !== editingSlot?.id // Don't conflict with itself while editing
+        s.id !== editingSlot?.id
     );
 
     if (isDuplicate) {
@@ -250,8 +268,8 @@ function SlotScreen() {
     } else {
       setEditingSlot(null);
       setSlotDate(dateKey);
-      setStartTime("09:00");
-      setEndTime("10:00");
+      setStartTime(format(new Date(), "HH:mm"));
+      setEndTime(format(addDays(new Date(), 0), "HH:mm"));
       setIsBooked(false);
     }
     setModalOpen(true);
@@ -478,6 +496,7 @@ function SlotScreen() {
               <input
                 type="date"
                 disabled={!!editingSlot}
+                min={todayDateStr}
                 value={slotDate}
                 onChange={(e) => setSlotDate(e.target.value)}
               />
@@ -546,7 +565,7 @@ function SlotScreen() {
               <label>Repeat Until Date</label>
               <input
                 type="date"
-                min={format(addDays(selectedDate, 1), "yyyy-MM-dd")}
+                min={format(addDays(new Date(), 1), "yyyy-MM-dd")}
                 value={repeatUntilDate}
                 onChange={(e) => setRepeatUntilDate(e.target.value)}
               />

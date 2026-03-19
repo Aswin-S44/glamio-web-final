@@ -1,15 +1,18 @@
 import axios from "axios";
-
+import dotenv from "dotenv";
 import { eq } from "drizzle-orm";
 import {
   createBookingDB,
   findBookingDB,
   getAllExpertsByShopIdDB,
   getAllShopsDB,
+  getShopByIdDB,
 } from "./customer.repository.js";
 import { services } from "../../db/schemas/services.js";
 import { category } from "../../db/schemas/category.js";
 import { db } from "../../db/index.js";
+import { getServicesByIds } from "../services/service.repository.js";
+dotenv.config();
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
@@ -71,7 +74,8 @@ export const getSHopReviewsAndImageServices = async (placeId) => {
       reviews: result.reviews || [],
       images,
     };
-  } catch {
+  } catch (error) {
+    console.log("Error------------", error);
     return { rating: 0, reviews: [], images: [] };
   }
 };

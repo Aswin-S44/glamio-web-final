@@ -1,5 +1,6 @@
+import { getShopIdByUserId } from "../slots/slot.service.js";
 import { findShopByUserId } from "./shop.repository.js";
-import { updateShopProfile } from "./shop.service.js";
+import { getShopDashboardStats, updateShopProfile } from "./shop.service.js";
 
 export const getProfileById = async (req, res) => {
   try {
@@ -28,7 +29,7 @@ export const updateProfile = async (req, res) => {
     }
 
     const userId = req.user?.id;
-    
+
     await updateShopProfile(Number(userId), req.body);
     res.json({ message: "Expert updated successfully" });
   } catch (e) {
@@ -53,6 +54,7 @@ export const getStats = async (req, res) => {
     const stats = await getShopDashboardStats(shopId);
     res.status(200).json(stats);
   } catch (error) {
+    console.log("Error : ", error);
     res.status(500).json({ message: "Error fetching statistics" });
   }
 };

@@ -15,9 +15,11 @@ export const findCategoryByName = async (name) => {
 };
 
 export const createCategory = async (name) => {
-  const [result] = await db.insert(category).values({ name }).$returningId();
-
-  return Number(result.id);
+  const result = await db
+    .insert(category)
+    .values({ name })
+    .returning({ id: category.id });
+  return Number(result[0].id);
 };
 
 export const createServiceDB = async (data) => {

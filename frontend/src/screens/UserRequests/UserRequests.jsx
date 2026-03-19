@@ -442,7 +442,7 @@ function UserRequests() {
               <strong>#ORD-{selected.appointment.id}</strong>
             </p>
             <textarea
-              placeholder="Provide a specific reason (e.g. Stylist unavailable, shop closed for maintenance)..."
+              placeholder="Please give a reason...."
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
             />

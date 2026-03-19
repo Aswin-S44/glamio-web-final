@@ -40,6 +40,7 @@ const ParlorDetailsScreen = () => {
 
   const fetchReviewsAndImages = useCallback(
     async (placeId, isInitial = false) => {
+      console.log("PLACE ID--------------", placeId);
       if (!placeId || isLoadingReviews || (!hasMoreReviews && !isInitial))
         return;
 
@@ -50,6 +51,7 @@ const ParlorDetailsScreen = () => {
         );
         if (!res.ok) throw new Error("Reviews fetch failed");
         const data = await res.json();
+        console.log("data-------------", data);
 
         if (isInitial) {
           setImages(data?.images?.length > 0 ? data.images : []);

@@ -126,7 +126,7 @@ function BookingSummaryScreen() {
                     <div className="service-dot"></div>
                     <span className="service-name">{service.name}</span>
                     <span className="service-price">
-                      ${service.rate || service.price}
+                      {service.rate || service.price}
                     </span>
                   </div>
                 ))}
@@ -176,11 +176,11 @@ function BookingSummaryScreen() {
                 <div className="price-breakdown">
                   <div className="price-row">
                     <span>Subtotal</span>
-                    <span>${summaryData?.totalRate.toFixed(2)}</span>
+                    <span>{summaryData?.totalRate.toFixed(2)}</span>
                   </div>
                   <div className="price-row total-highlight">
                     <span>Total</span>
-                    <span>${summaryData?.totalRate.toFixed(2)}</span>
+                    <span>{summaryData?.totalRate.toFixed(2)}</span>
                   </div>
                 </div>
 

@@ -96,7 +96,7 @@ export const getShopStatsRepo = async (shopId) => {
 
   const chartData = await db
     .select({
-      date: sql < string > `DATE(${appointments.createdAt})`,
+      date: sql`DATE(${appointments.createdAt})`,
       revenue: sum(appointments.rate),
     })
     .from(appointments)

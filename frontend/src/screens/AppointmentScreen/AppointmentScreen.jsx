@@ -143,9 +143,14 @@ function AppointmentScreen() {
                 <div className="customer-brief">
                   <div className="avatar-wrapper">
                     <img
-                      src={item.customer.profileImage}
-                      alt=""
+                      src={
+                        item?.customer?.profileImage ||
+                        "https://ui-avatars.com/api/?name=" +
+                          item?.customer?.username
+                      }
+                      alt={item?.customer?.username}
                       className="customer-avatar"
+                      referrerPolicy="no-referrer"
                     />
                     <div
                       className="status-indicator"
@@ -215,9 +220,14 @@ function AppointmentScreen() {
             <div className="drawer-body">
               <div className="drawer-section user-card-main">
                 <img
-                  src={selected.customer.profileImage}
-                  alt=""
+                  src={
+                    selected.customer.profileImage ||
+                    "https://ui-avatars.com/api/?name=" +
+                      selected.customer.username
+                  }
+                  alt={selected.customer.username}
                   className="large-avatar"
+                  referrerPolicy="no-referrer"
                 />
                 <div className="user-info-text">
                   <h3>{selected.customer.username}</h3>

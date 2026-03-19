@@ -14,6 +14,7 @@ import { experts } from "../../db/schemas/experts.js";
 import { slots } from "../../db/schemas/slots.js";
 import { shopOwners } from "../../db/schemas/shop-owners.js";
 import { db } from "../../db/index.js";
+import { appointmentStatuses } from "../../constants/constants.js";
 
 export const getAllShops = async (req, res) => {
   const shops = await getAllShopsService();

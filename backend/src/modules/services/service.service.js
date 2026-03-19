@@ -11,7 +11,8 @@ import {
 import { uploadImage } from "../../utils/upload.js";
 import { services } from "../../db/schemas/services.js";
 import { category } from "../../db/schemas/category.js";
-
+import { db } from "../../db/index.js";
+ 
 export const createServiceService = async (shopId, payload) => {
   const { name, imageUrl, rate, category, description, duration } = payload;
 
