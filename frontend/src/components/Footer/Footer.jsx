@@ -6,27 +6,29 @@ function Footer() {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-row">
+          {/* Brand Column */}
           <div className="footer-col footer-about">
             <div className="footer-logo">
-              GLAM<span>OUR</span>
+              GLAM<span>IO</span>
             </div>
             <p>
               Elevating beauty through precision and care. Experience
               world-class treatments tailored to your unique style.
             </p>
             <div className="social-links">
-              <a href="#">
+              <a href="#" aria-label="Facebook">
                 <i className="fab fa-facebook-f"></i>
               </a>
-              <a href="#">
+              <a href="#" aria-label="Instagram">
                 <i className="fab fa-instagram"></i>
               </a>
-              <a href="#">
+              <a href="#" aria-label="Twitter">
                 <i className="fab fa-twitter"></i>
               </a>
             </div>
           </div>
 
+          {/* Quick Links */}
           <div className="footer-col">
             <h4>Quick Links</h4>
             <ul>
@@ -45,6 +47,7 @@ function Footer() {
             </ul>
           </div>
 
+          {/* Contact Info */}
           <div className="footer-col">
             <h4>Contact Us</h4>
             <div className="contact-info">
@@ -54,6 +57,7 @@ function Footer() {
             </div>
           </div>
 
+          {/* App Download */}
           <div className="footer-col footer-app">
             <h4>Experience the App</h4>
             <p>Book on the go and get exclusive beauty rewards.</p>
@@ -92,7 +96,7 @@ function Footer() {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; 2024 Glamio Beauty Parlor. All rights reserved.</p>
+          <p>&copy; 2025 Glamio Beauty Parlor. All rights reserved.</p>
         </div>
       </div>
     </footer>

@@ -12,7 +12,7 @@ import { uploadImage } from "../../utils/upload.js";
 import { services } from "../../db/schemas/services.js";
 import { category } from "../../db/schemas/category.js";
 import { db } from "../../db/index.js";
- 
+
 export const createServiceService = async (shopId, payload) => {
   const { name, imageUrl, rate, category, description, duration } = payload;
 
@@ -97,7 +97,7 @@ export const getServicesCountService = (shopId, search, categoryName) => {
     .where(and(...conditions));
 };
 
-export const getServiceByIdService = async (id, shopId) => {
+export const getServiceByIdService = async (id) => {
   const result = await getServiceByIdDB(id, shopId);
   if (!result.length) throw new Error("Service not found");
   return result[0];

@@ -7,8 +7,8 @@ function WhyChooseUs() {
       <div className="why-bg-accent"></div>
       <div className="why-container">
         <div className="header-stack">
-          <span className="sub-title">Our Excellence</span>
-          <h2 className="title">Why Choose Us</h2>
+          <span className="sub-title">Why Choose Us</span>
+          <h2 className="title">Experience Excellence</h2>
         </div>
 
         <div className="why-grid">
@@ -51,7 +51,7 @@ function WhyChooseUs() {
           <div className="why-card">
             <div className="card-inner">
               <div className="why-icon care"></div>
-              <h3>Personal Care</h3>
+              <h3>Personalized Care</h3>
               <p>
                 Every treatment is customized for your unique skin and hair type
                 requirements.

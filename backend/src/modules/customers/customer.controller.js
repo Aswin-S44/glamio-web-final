@@ -5,6 +5,7 @@ import {
   getAllExpertsByShopIdService,
   getAllServices,
   getAllShopsService,
+  getServiceDetailsByIdService,
   getShopByIdService,
   getSHopReviewsAndImageServices,
 } from "./customer.service.js";
@@ -206,5 +207,14 @@ export const getOrderSummary = async (req, res) => {
     res.status(400).json({
       message: error instanceof Error ? error.message : "Unknown error",
     });
+  }
+};
+
+export const getServiceDetailsById = async (req, res) => {
+  try {
+    const services = await getServiceDetailsByIdService(Number(req.params.id));
+    res.json(services);
+  } catch (e) {
+    res.status(404).json({ message: e.message });
   }
 };

@@ -55,6 +55,10 @@ export const getServiceByIdDB = (id, shopId) => {
     .limit(1);
 };
 
+// export const getServiceByIdDB = (id) => {
+//   return db.select().from(services).where(eq(services.id, id)).limit(1);
+// };
+
 export const getServicesByIds = async (serviceIds) => {
   return db
     .select({

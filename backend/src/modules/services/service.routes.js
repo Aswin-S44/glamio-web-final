@@ -9,7 +9,7 @@ import {
 } from "./service.controller.js";
 
 const router = Router();
-
+ 
 router.post("/", authMiddleware, createService);
 router.get("/", authMiddleware, getServices);
 router.get("/:id", authMiddleware, getServiceById);

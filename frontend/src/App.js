@@ -18,6 +18,7 @@ import OnboardScreen from "./screens/OnboardScreen/OnboardScreen";
 
 import EditProfileScreen from "./screens/EditProfileScreen/EditProfileScreen";
 import { useAuth } from "./context/AuthContext";
+import ServicesListingScreen from "./screens/ServicesListingScreen/ServicesListingScreen";
 function App() {
   const { user, shop } = useAuth();
 
@@ -40,6 +41,14 @@ function App() {
             <Route path="/shop/profile" element={<MyProfileScreen />} />
             <Route path="/shop/edit-profile" element={<EditProfileScreen />} />
             <Route path="/shop/onboard" element={<OnboardScreen />} />
+            <Route
+              path="/parlor/:id/services"
+              element={<ServicesListingScreen />}
+            />
+            <Route
+              path="/parlor/:id/slot-selection"
+              element={<SelectSlotScreen />}
+            />
           </Routes>
         </BrowserRouter>
       </Provider>

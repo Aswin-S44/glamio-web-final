@@ -6,6 +6,7 @@ import {
   getAllShopsServices,
   getExpertsByShopId,
   getOrderSummary,
+  getServiceDetailsById,
   getShopById,
   getShopReviewsAndImages,
   getSlotsByShopId,
@@ -21,6 +22,6 @@ router.post("/booking", authMiddleware, createBooking);
 router.get("/reviews/:placeId", getShopReviewsAndImages);
 router.get("/services", getAllShopsServices);
 router.get("/order/summary/:shopId/:slotId/:expertId", getOrderSummary);
+router.get("/service/:id", getServiceDetailsById);
 
 export default router;
- 

@@ -49,6 +49,7 @@ function Services() {
           </div>
         ) : (
           <div className="services-grid">
+            {console.log("services---------------", services)}
             {services.map((service) => (
               <div key={service.id} className="service-card">
                 <div className="service-media">
@@ -64,7 +65,9 @@ function Services() {
                   <p className="service-description">{service?.description}</p>
                   <button
                     className="book-button"
-                    onClick={() => (window.location.href = `/parlour/`)}
+                    onClick={() =>
+                      (window.location.href = `/parlor/${service?.shopId}/service/${service?.id}`)
+                    }
                   >
                     Book Appointment
                     <svg

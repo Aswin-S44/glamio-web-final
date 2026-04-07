@@ -76,3 +76,7 @@ export const findBookingDB = (data) => {
     )
     .limit(1);
 };
+
+export const getServiceDetailsByIdDB = (id) => {
+  return db.select().from(services).where(eq(services.id, id)).limit(1);
+};

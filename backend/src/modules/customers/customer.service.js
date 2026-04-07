@@ -6,6 +6,7 @@ import {
   findBookingDB,
   getAllExpertsByShopIdDB,
   getAllShopsDB,
+  getServiceDetailsByIdDB,
   getShopByIdDB,
 } from "./customer.repository.js";
 import { services } from "../../db/schemas/services.js";
@@ -53,11 +54,11 @@ export const findExistingBookingService = async (data) => {
 
 export const getSHopReviewsAndImageServices = async (placeId) => {
   const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,reviews,photos&key=${GOOGLE_MAPS_API_KEY}`;
-
+  console.log("URL----------", url);
   try {
     const res = await axios.get(url);
     const result = res?.data?.result;
-
+    console.log("result====================", result);
     if (!result) {
       return { rating: 0, reviews: [], images: [] };
     }
@@ -99,4 +100,10 @@ export const getAllServices = (limit, offset) => {
     .leftJoin(category, eq(services.categoryId, category.id));
   // .limit(limit)
   // .offset(offset);
+};
+
+export const getServiceDetailsByIdService = async (id) => {
+  const result = await getServiceDetailsByIdDB(id);
+  if (!result.length) throw new Error("Service not found");
+  return result;
 };

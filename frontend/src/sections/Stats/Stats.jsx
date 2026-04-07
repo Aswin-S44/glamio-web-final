@@ -3,52 +3,61 @@ import "./Stats.css";
 
 function Stats() {
   const stats = [
-    { id: "01", value: "12+", label: "Years Experience", suffix: "Expertise" },
-    { id: "02", value: "25k", label: "Happy Clients", suffix: "Community" },
     {
-      id: "03",
-      value: "50+",
-      label: "Expert Stylists",
-      suffix: "Professionals",
+      index: "01",
+      value: "12",
+      symbol: "+",
+      title: "Years",
+      description: "Of beauty excellence",
     },
-    { id: "04", value: "4.9", label: "Average Rating", suffix: "Reviews" },
+    {
+      index: "02",
+      value: "25k",
+      symbol: "",
+      title: "Happy Clients",
+      description: "Across the city",
+    },
+    {
+      index: "03",
+      value: "50",
+      symbol: "+",
+      title: "Expert Stylists",
+      description: "Certified professionals",
+    },
+    {
+      index: "04",
+      value: "4.9",
+      symbol: "",
+      title: "Average Rating",
+      description: "From 10k+ reviews",
+    },
   ];
 
   return (
-    <section className="stats-experience">
-      <div className="stats-bg-container">
-        <img
-          src={require("../../components/Media/Images/beauty-salon-with-cosmetology-equipment-anime-style.jpg")}
-          alt="background"
-          className="parallax-img"
-        />
-        <div className="stats-vignette"></div>
-      </div>
-
-      <div className="stats-content-wrapper">
-        <div className="stats-intro">
-          <div className="stats-line"></div>
-          <span className="stats-subtitle">The Excellence</span>
-          <h2 className="stats-title">
-            Defining Beauty <br />
-            <span>Through Numbers</span>
+    <section className="stats-wrapper">
+      <div className="stats-inner">
+        <div className="stats-headline">
+          <span className="stats-eyebrow">By The Numbers</span>
+          <h2>
+            Beauty <span>Stats</span>
           </h2>
         </div>
 
-        <div className="stats-modern-grid">
-          {stats.map((item) => (
-            <div key={item.id} className="stat-premium-card">
-              <div className="card-number-bg">{item.id}</div>
-              <div className="card-visual">
-                <div className="card-dot"></div>
-                <div className="card-line"></div>
+        <div className="stats-grid">
+          {stats.map((stat) => (
+            <div key={stat.index} className="stat-block">
+              <div className="stat-index">{stat.index}</div>
+              <div className="stat-value-wrapper">
+                <span className="stat-main-value">{stat.value}</span>
+                {stat.symbol && (
+                  <span className="stat-symbol">{stat.symbol}</span>
+                )}
               </div>
-              <div className="card-info">
-                <h3 className="card-value">{item.value}</h3>
-                <p className="card-label">{item.label}</p>
-                <span className="card-suffix">{item.suffix}</span>
+              <div className="stat-info">
+                <h3>{stat.title}</h3>
+                <p>{stat.description}</p>
               </div>
-              <div className="card-glow"></div>
+              <div className="stat-decoration"></div>
             </div>
           ))}
         </div>
