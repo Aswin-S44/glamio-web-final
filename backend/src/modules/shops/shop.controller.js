@@ -40,21 +40,21 @@ export const updateProfile = async (req, res) => {
 export const getStats = async (req, res) => {
   try {
     const userId = req.user?.id;
+    const { timeframe } = req.query; // Capture weekly/monthly
 
     if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     const shopId = await getShopIdByUserId(userId);
 
     if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
+      return res.status(404).json({ message: "Shop not found" });
     }
 
-    const stats = await getShopDashboardStats(shopId);
+    const stats = await getShopDashboardStats(shopId, timeframe);
     res.status(200).json(stats);
   } catch (error) {
-    console.log("Error : ", error);
     res.status(500).json({ message: "Error fetching statistics" });
   }
 };

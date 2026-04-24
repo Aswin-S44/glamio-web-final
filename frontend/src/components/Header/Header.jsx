@@ -331,7 +331,7 @@ function Header() {
                 <div className="auth-buttons">
                   <button
                     className="btn-login"
-                    onClick={() => navigate("/login")}
+                    onClick={() => navigate("/signin")}
                   >
                     Sign In
                   </button>
@@ -459,7 +459,7 @@ function Header() {
                 className="side-btn login"
                 onClick={() => {
                   setIsSidebarOpen(false);
-                  navigate("/login");
+                  navigate("/signin");
                 }}
               >
                 Sign In

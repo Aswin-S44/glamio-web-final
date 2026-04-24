@@ -359,7 +359,7 @@ function Banner() {
 
         <div className="main-content">
           <div className="content-left">
-            <div className="quick-filters">
+            {/* <div className="quick-filters">
               <h3>Quick Filters</h3>
               <div className="filter-tabs">
                 <button
@@ -390,7 +390,7 @@ function Banner() {
                   Top Rated
                 </button>
               </div>
-            </div>
+            </div> */}
 
             <div className="trending-section">
               <div className="section-header">

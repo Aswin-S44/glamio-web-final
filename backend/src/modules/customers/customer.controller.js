@@ -20,7 +20,7 @@ import { appointmentStatuses } from "../../constants/constants.js";
 export const getAllShops = async (req, res) => {
   const shops = await getAllShopsService();
   res.json({ shops });
-};
+}; 
 
 export const getShopById = async (req, res) => {
   try {

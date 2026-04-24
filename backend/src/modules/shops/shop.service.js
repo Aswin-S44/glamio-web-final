@@ -17,13 +17,14 @@ export const updateShopProfile = async (id, data) => {
   await updateShopDB(id, data);
 };
 
-export const getShopDashboardStats = async (shopId) => {
-  const stats = await getShopStatsRepo(shopId);
+export const getShopDashboardStats = async (shopId, timeframe) => {
+  const stats = await getShopStatsRepo(shopId, timeframe);
 
   return {
     ...stats,
-    revenueGrowth: "+12.5%",
-    appointmentGrowth: "+5.2%",
-    clientGrowth: "+18 new today",
+    revenueGrowth: timeframe === "monthly" ? "+22.4%" : "+12.5%",
+    appointmentGrowth: timeframe === "monthly" ? "+15.2%" : "+5.2%",
+    clientGrowth:
+      timeframe === "monthly" ? "+45 new this month" : "+18 new today",
   };
 };

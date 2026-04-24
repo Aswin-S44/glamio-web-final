@@ -74,8 +74,6 @@ function BookingSummaryScreen() {
         const serviceIdParam = serviceIds.join(",");
         const url = `${BASE_URL}/customer/order/summary/${shopId}/${slotId}/${expertId}?serviceId=${serviceIdParam}`;
 
-        console.log("Fetching summary from:", url); // Debug log
-
         const res = await fetch(url, { method: "GET" });
 
         if (!res.ok) {

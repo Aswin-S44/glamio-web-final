@@ -81,9 +81,10 @@ export const updateShopDB = async (userId, payload) => {
   });
 };
 
-export const getShopStatsRepo = async (shopId) => {
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+export const getShopStatsRepo = async (shopId, timeframe = "weekly") => {
+  const daysToShow = timeframe === "monthly" ? 30 : 7;
+  const startDate = new Date();
+  startDate.setDate(startDate.getDate() - daysToShow);
 
   const [totals] = await db
     .select({
@@ -94,7 +95,7 @@ export const getShopStatsRepo = async (shopId) => {
     .from(appointments)
     .where(eq(appointments.shopId, shopId));
 
-  const chartData = await db
+  const rawChartData = await db
     .select({
       date: sql`DATE(${appointments.createdAt})`,
       revenue: sum(appointments.rate),
@@ -103,21 +104,37 @@ export const getShopStatsRepo = async (shopId) => {
     .where(
       and(
         eq(appointments.shopId, shopId),
-        gte(appointments.createdAt, sevenDaysAgo)
+        gte(appointments.createdAt, startDate)
       )
     )
     .groupBy(sql`DATE(${appointments.createdAt})`)
     .orderBy(sql`DATE(${appointments.createdAt})`);
 
+  const fullChartData = [];
+  for (let i = daysToShow - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateString = d.toISOString().split("T")[0];
+
+    const dayLabel =
+      timeframe === "monthly"
+        ? d.getDate().toString() // Show date number for monthly
+        : new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(d);
+
+    const existingDay = rawChartData.find(
+      (row) => new Date(row.date).toISOString().split("T")[0] === dateString
+    );
+
+    fullChartData.push({
+      day: dayLabel,
+      revenue: Number(existingDay?.revenue || 0),
+    });
+  }
+
   return {
     totalRevenue: Number(totals?.totalRevenue || 0),
-    appointments: totals?.totalAppointments || 0,
-    activeClients: totals?.activeClients || 0,
-    chartData: chartData.map((d) => ({
-      day: new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(
-        new Date(d.date)
-      ),
-      revenue: Number(d.revenue || 0),
-    })),
+    appointments: Number(totals?.totalAppointments || 0),
+    activeClients: Number(totals?.activeClients || 0),
+    chartData: fullChartData,
   };
 };

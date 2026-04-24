@@ -19,6 +19,7 @@ import OnboardScreen from "./screens/OnboardScreen/OnboardScreen";
 import EditProfileScreen from "./screens/EditProfileScreen/EditProfileScreen";
 import { useAuth } from "./context/AuthContext";
 import ServicesListingScreen from "./screens/ServicesListingScreen/ServicesListingScreen";
+import NearByShops from "./screens/NearByShopsList/NearByShops";
 function App() {
   const { user, shop } = useAuth();
 
@@ -49,6 +50,7 @@ function App() {
               path="/parlor/:id/slot-selection"
               element={<SelectSlotScreen />}
             />
+            <Route path="/nearby" element={<NearByShops />} />
           </Routes>
         </BrowserRouter>
       </Provider>

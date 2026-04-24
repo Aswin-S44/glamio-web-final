@@ -44,35 +44,53 @@ import { BASE_URL } from "../../../constants/urls";
 function Dashboard() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("home");
+  const [timeframe, setTimeframe] = useState("weekly");
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [stats, setStats] = useState(null);
+  const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const response = await fetch(`${BASE_URL}/shops/stats`, {
+
+        // Fetch Statistics
+        const statsRes = await fetch(
+          `${BASE_URL}/shops/stats?timeframe=${timeframe}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `${token}`,
+            },
+          }
+        );
+        const statsData = await statsRes.json();
+        setStats(statsData);
+
+        // Fetch Appointments
+        const appointmentsRes = await fetch(`${BASE_URL}/appointments`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `${token}`,
           },
         });
-        const data = await response.json();
-        setStats(data);
+        const appointData = await appointmentsRes.json();
+        setAppointments(appointData.appointments || []);
       } catch (error) {
         console.error(error);
       } finally {
         setLoading(false);
       }
     };
-    if (activeTab === "home") fetchStats();
-  }, [activeTab]);
+    if (activeTab === "home") fetchData();
+  }, [activeTab, timeframe]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -127,12 +145,13 @@ function Dashboard() {
         <div className="glam-stats-row">
           <div className="glam-stat-card primary-accent">
             <div className="glam-stat-content">
-              <span className="glam-label">Gross Revenue</span>
+              <span className="glam-label">Total Revenue</span>
               <h2 className="glam-value">
-                ₹{stats?.totalRevenue?.toLocaleString() || "24,850"}
+                ₹{stats?.totalRevenue?.toLocaleString() || "0"}
               </h2>
               <div className="glam-trend-pill positive">
-                <TrendingUp size={14} /> <span>12% growth</span>
+                <TrendingUp size={14} />{" "}
+                <span>{stats?.revenueGrowth || "0%"} growth</span>
               </div>
             </div>
             <div className="glam-stat-icon-blob">
@@ -143,9 +162,9 @@ function Dashboard() {
           <div className="glam-stat-card dark-accent">
             <div className="glam-stat-content">
               <span className="glam-label">Total Bookings</span>
-              <h2 className="glam-value">{stats?.appointments || "156"}</h2>
+              <h2 className="glam-value">{stats?.appointments || "0"}</h2>
               <div className="glam-trend-pill">
-                <span>+8 new today</span>
+                <span>{stats?.appointmentGrowth || "0"}</span>
               </div>
             </div>
             <div className="glam-stat-icon-blob">
@@ -155,10 +174,10 @@ function Dashboard() {
 
           <div className="glam-stat-card beige-accent">
             <div className="glam-stat-content">
-              <span className="glam-label">Client Retention</span>
-              <h2 className="glam-value">{stats?.activeClients || "89%"}</h2>
+              <span className="glam-label">Total Clients</span>
+              <h2 className="glam-value">{stats?.activeClients || 0}</h2>
               <div className="glam-trend-pill positive">
-                <span>Excellent</span>
+                <span>{stats?.clientGrowth || "Steady"}</span>
               </div>
             </div>
             <div className="glam-stat-icon-blob">
@@ -172,27 +191,36 @@ function Dashboard() {
             <div className="glam-card-header">
               <div>
                 <h3>Revenue Analytics</h3>
-                <p>Performance tracking for current period</p>
+                <p>
+                  Performance tracking for{" "}
+                  {timeframe === "weekly" ? "last 7 days" : "last 30 days"}
+                </p>
               </div>
               <div className="glam-header-actions">
-                <button className="glam-btn-mini active">Weekly</button>
-                <button className="glam-btn-mini">Monthly</button>
+                <button
+                  className={`glam-btn-mini ${
+                    timeframe === "weekly" ? "active" : ""
+                  }`}
+                  onClick={() => setTimeframe("weekly")}
+                >
+                  Weekly
+                </button>
+                <button
+                  className={`glam-btn-mini ${
+                    timeframe === "monthly" ? "active" : ""
+                  }`}
+                  onClick={() => setTimeframe("monthly")}
+                >
+                  Monthly
+                </button>
               </div>
             </div>
+
             <div className="glam-chart-area">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
-                  data={
-                    stats?.chartData || [
-                      { day: "Mon", r: 400 },
-                      { day: "Tue", r: 900 },
-                      { day: "Wed", r: 600 },
-                      { day: "Thu", r: 1200 },
-                      { day: "Fri", r: 800 },
-                      { day: "Sat", r: 1600 },
-                      { day: "Sun", r: 1400 },
-                    ]
-                  }
+                  data={stats?.chartData || []}
+                  margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
                 >
                   <defs>
                     <linearGradient
@@ -215,8 +243,9 @@ function Dashboard() {
                     dataKey="day"
                     axisLine={false}
                     tickLine={false}
-                    tick={{ fill: "#b0b0b0", fontSize: 12 }}
+                    tick={{ fill: "#b0b0b0", fontSize: 10 }}
                     dy={15}
+                    interval={timeframe === "monthly" ? 4 : 0}
                   />
                   <YAxis
                     axisLine={false}
@@ -232,10 +261,12 @@ function Dashboard() {
                   />
                   <Area
                     type="monotone"
-                    dataKey="r"
+                    dataKey="revenue"
                     stroke="#D41172"
                     strokeWidth={4}
                     fill="url(#glamGradient)"
+                    connectNulls={true}
+                    animationDuration={1500}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -245,23 +276,49 @@ function Dashboard() {
           <div className="glam-card-flat list-box-wrap">
             <div className="glam-card-header">
               <h3>Upcoming Bookings</h3>
-              <button className="glam-link-btn">View All</button>
+              <button
+                className="glam-btn-mini active"
+                onClick={() => setActiveTab("appointments")}
+              >
+                View All
+              </button>
             </div>
             <div className="glam-list-container">
-              {[1, 2, 3].map((_, i) => (
-                <div className="glam-list-item" key={i}>
-                  <div className="glam-user-info">
-                    <div className="glam-avatar-ring">
-                      <img src={`https://i.pravatar.cc/150?u=${i}`} alt="" />
+              {appointments.length > 0 ? (
+                appointments.slice(0, 5).map((item, i) => (
+                  <div
+                    className="glam-list-item"
+                    key={item.appointment.id || i}
+                  >
+                    <div className="glam-user-info">
+                      <div className="glam-avatar-ring">
+                        <img
+                          src={
+                            item.customer.profileImage ||
+                            `https://i.pravatar.cc/150?u=${i}`
+                          }
+                          alt={item.customer.username}
+                        />
+                      </div>
+                      <div>
+                        <h4 className="glam-name">{item.customer.username}</h4>
+                        <p className="glam-subtext">
+                          {item.expert.name} • {item.slot.time}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="glam-name">Sarah Jenkins</h4>
-                      <p className="glam-subtext">Hair Coloring • 2:00 PM</p>
+                    <div
+                      className={`glam-status-dot ${
+                        item.appointment.status?.toLowerCase() || "confirmed"
+                      }`}
+                    >
+                      {item.appointment.status || "Confirmed"}
                     </div>
                   </div>
-                  <div className="glam-status-dot confirmed">Confirmed</div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="glam-empty-text">No upcoming bookings found.</p>
+              )}
             </div>
           </div>
         </div>
@@ -316,7 +373,7 @@ function Dashboard() {
       <main className="glam-main">
         <header className="glam-header">
           <div className="glam-header-left">
-            <button
+            {/* <button
               className="glam-menu-toggle"
               onClick={() => setIsMobileOpen(true)}
             >
@@ -328,7 +385,7 @@ function Dashboard() {
                 type="text"
                 placeholder="Search appointments or services..."
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="glam-header-right">
@@ -361,9 +418,9 @@ function Dashboard() {
                   >
                     <User size={16} /> My Profile
                   </button>
-                  <button className="glam-drop-item">
+                  {/* <button className="glam-drop-item">
                     <Settings size={16} /> Preferences
-                  </button>
+                  </button> */}
                   <hr />
                   <button
                     className="glam-drop-item danger"

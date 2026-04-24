@@ -13,3 +13,4 @@ router.get("/:id", authMiddleware, getAppointmentDetailsById);
 router.patch("/:id/approve", authMiddleware, approveAppointment);
 
 export default router;
+ 

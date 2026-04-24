@@ -12,7 +12,7 @@ import { db } from "../../db/index.js";
 export const getAllShopsDB = async () => {
   const result = await db
     .select({
-      user: users,
+      user: users, 
       shop: shopOwners,
     })
     .from(users)

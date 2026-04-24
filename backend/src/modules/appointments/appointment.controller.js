@@ -15,7 +15,7 @@ export const getAppointmetns = async (req, res) => {
   const appointments = await getAppointmentService(shopId);
   res.json({ appointments });
 };
-
+ 
 export const getAppointmentDetailsById = async (req, res) => {
   const { id } = req.params;
 

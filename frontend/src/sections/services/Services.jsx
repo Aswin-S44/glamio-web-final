@@ -49,7 +49,6 @@ function Services() {
           </div>
         ) : (
           <div className="services-grid">
-            {console.log("services---------------", services)}
             {services.map((service) => (
               <div key={service.id} className="service-card">
                 <div className="service-media">

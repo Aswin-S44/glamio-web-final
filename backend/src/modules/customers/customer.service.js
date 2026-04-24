@@ -19,7 +19,7 @@ const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
 export const getAllShopsService = () => {
   return getAllShopsDB();
-};
+}; 
 
 export const getShopByIdService = async (id) => {
   const shop = await getShopByIdDB(id);
@@ -54,11 +54,11 @@ export const findExistingBookingService = async (data) => {
 
 export const getSHopReviewsAndImageServices = async (placeId) => {
   const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,reviews,photos&key=${GOOGLE_MAPS_API_KEY}`;
-  console.log("URL----------", url);
+
   try {
     const res = await axios.get(url);
     const result = res?.data?.result;
-    console.log("result====================", result);
+
     if (!result) {
       return { rating: 0, reviews: [], images: [] };
     }
@@ -76,7 +76,6 @@ export const getSHopReviewsAndImageServices = async (placeId) => {
       images,
     };
   } catch (error) {
-    console.log("Error------------", error);
     return { rating: 0, reviews: [], images: [] };
   }
 };

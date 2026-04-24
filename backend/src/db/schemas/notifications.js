@@ -6,9 +6,9 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-import { shopOwners } from "./shop-owners";
-import { users } from "./users";
-import { notificationTypes } from "./notification-types";
+import { shopOwners } from "./shop-owners.js";
+import { users } from "./users.js";
+import { notificationTypes } from "./notification-types.js";
 
 export const notifications = pgTable("notifications", {
   id: bigint("id", { mode: "number" }).generatedAlwaysAsIdentity().primaryKey(),

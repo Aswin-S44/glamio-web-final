@@ -13,7 +13,7 @@ import {
 } from "./customer.controller.js";
 
 const router = Router();
-
+ 
 router.get("/shops", getAllShops);
 router.get("/shop/:id", getShopById);
 router.get("/experts/:shopId", getExpertsByShopId);

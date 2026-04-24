@@ -9,7 +9,7 @@ import {
 
 export const getAppointmentService = async (shopId) => {
   return await getAppointmentsBySHopId(shopId);
-};
+}; 
 
 export const getAppointmentById = async (id) => {
   const result = await getAppointmentByAppointmentId(id);

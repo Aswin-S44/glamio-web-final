@@ -66,7 +66,7 @@ function SelectSlotScreen() {
     try {
       const res = await fetch(`${BASE_URL}/customer/service/${serviceId}`);
       const data = await res.json();
-      console.log("DATA----------------", data);
+
       if (data && data.length > 0) {
         setSelectedServices(data);
       }
@@ -321,7 +321,6 @@ function SelectSlotScreen() {
           <div className="selected-services-preview">
             {selectedServices.slice(0, 3).map((service) => (
               <div key={service.id} className="preview-service-chip">
-                {console.log("service-------------", service)}
                 <span>{service?.name}</span>
                 <span className="preview-price">₹{service.rate}</span>
                 <button

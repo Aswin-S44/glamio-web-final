@@ -82,12 +82,12 @@ function ParlorListings({ featuredParlors, loading, onFilterClick }) {
               <div className="parlor-location">
                 <MapPin size={14} />
                 <span>{parlor.location}</span>
-                {parlor.waitTime && (
+                {/* {parlor.waitTime && (
                   <span className="wait-time">
                     <Clock size={14} />
                     {parlor.waitTime} wait
                   </span>
-                )}
+                )} */}
               </div>
 
               {/* <div className="parlor-tags">
@@ -100,7 +100,15 @@ function ParlorListings({ featuredParlors, loading, onFilterClick }) {
               </div> */}
 
               <div className="parlor-actions">
-                <button className="book-btn">Book Now</button>
+                {console.log("parlor----------------", parlor)}
+                <button
+                  className="book-btn"
+                  onClick={() => {
+                    window.location.href = `/parlour/${parlor?.id}`;
+                  }}
+                >
+                  Book Now
+                </button>
                 <button className="view-btn">View</button>
               </div>
             </div>

@@ -11,3 +11,4 @@ router.patch("/", authMiddleware, updateProfile);
 router.get("/stats", authMiddleware, getStats);
 
 export default router;
+  
