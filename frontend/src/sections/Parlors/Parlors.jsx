@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import "./Parlors.css";
 import { BASE_URL } from "../../constants/urls";
 import { MapPin, Star, Clock, ArrowRight, Sparkles, CheckCircle } from "lucide-react";
+import img from '../../components/Media/Images/modern-beauty-salon-interior.webp'
 
 const DUMMY_SALONS = [
   {
@@ -25,8 +26,7 @@ const DUMMY_SALONS = [
       totalRating: 4.8,
       about:
         "Where luxury meets style. World-class hair, makeup and skin treatments in a serene, elegant setting. Your transformation begins the moment you walk in.",
-      shopImage:
-        "https://images.unsplash.com/photo-1522338242992-e1a54906a5da?w=800&auto=format&fit=crop&q=85",
+      shopImage: img,
     },
     user: { profileImage: null },
   },

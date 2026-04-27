@@ -3,7 +3,7 @@
 ================================================================ */
 
 .st-section {
-  padding: 120px 20px;
+  padding: 72px 20px;
   background: linear-gradient(160deg, #160B26 0%, #1A0D30 45%, #0D0D1A 100%);
   position: relative;
   overflow: hidden;
@@ -83,10 +83,10 @@
 /* Headline */
 .st-headline {
   text-align: center;
-  font-size: clamp(36px, 5.5vw, 62px);
+  font-size: clamp(30px, 4vw, 48px);
   font-weight: 600; color: white;
-  letter-spacing: -1px; margin-bottom: 72px;
-  line-height: 1.1;
+  letter-spacing: -0.5px; margin-bottom: 44px;
+  line-height: 1.15;
 }
 .st-headline em {
   font-style: italic; font-weight: 400;
@@ -109,8 +109,8 @@
   background: rgba(255,255,255,0.03);
   backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,0.07);
-  border-radius: 28px;
-  padding: 44px 28px 36px;
+  border-radius: 24px;
+  padding: 32px 24px 28px;
   overflow: hidden;
   cursor: default;
   transform-style: preserve-3d;
@@ -199,11 +199,11 @@
   margin-bottom: 18px; position: relative; z-index: 2;
 }
 .st-num {
-  font-size: 68px; font-weight: 900;
+  font-size: 54px; font-weight: 900;
   color: white; line-height: 1;
   display: block;
   font-family: 'DM Sans', sans-serif;
-  text-shadow: 0 0 40px rgba(212,17,114,0.3);
+  text-shadow: 0 0 30px rgba(212,17,114,0.3);
   letter-spacing: -2px;
 }
 

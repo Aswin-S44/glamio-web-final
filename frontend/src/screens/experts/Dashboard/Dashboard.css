@@ -105,7 +105,7 @@
 .glam-main { flex: 1; margin-left: 280px; transition: var(--transition); }
 
 .glam-header {
-  height: 100px;
+  height: 80px;
   padding: 0 50px;
   display: flex;
   align-items: center;

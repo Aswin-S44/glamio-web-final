@@ -1,0 +1,326 @@
+/* ================================================================
+   GLAMIO — "WHY CHOOSE US" MIDDLE SECTION
+   Dark background, 3D stacked image cards, compact height
+   Same pink palette — different shades only
+================================================================ */
+
+/* ─── Section ─────────────────────────────────── */
+.gcta {
+  position: relative;
+  padding: 96px 6%;
+  background: linear-gradient(150deg, #160B26 0%, #1C1035 55%, #0E0E1A 100%);
+  overflow: hidden;
+}
+
+/* ─── Ambient radial glows ───────────────────── */
+.gcta__glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  pointer-events: none;
+}
+.gcta__glow-1 {
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(212,17,114,0.12), transparent 65%);
+  top: -120px; right: -80px;
+  animation: gctaGlow 20s ease-in-out infinite;
+}
+.gcta__glow-2 {
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(168,14,90,0.08), transparent 65%);
+  bottom: -100px; left: -60px;
+  animation: gctaGlow 28s ease-in-out infinite reverse;
+}
+@keyframes gctaGlow {
+  0%,100% { transform: translate(0,0); }
+  50%      { transform: translate(30px,-20px); }
+}
+
+/* Fine grid overlay */
+.gcta__lines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(212,17,114,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212,17,114,0.03) 1px, transparent 1px);
+  background-size: 72px 72px;
+  pointer-events: none;
+}
+
+/* Floating sparkles */
+.gcta__deco {
+  position: absolute; pointer-events: none;
+  user-select: none; font-style: normal;
+}
+.gcta__deco-1 {
+  font-size: 28px; color: rgba(212,17,114,0.3);
+  top: 14%; left: 3%;
+  animation: gctaDeco 5s ease-in-out infinite;
+}
+.gcta__deco-2 {
+  font-size: 20px; color: rgba(212,17,114,0.25);
+  bottom: 18%; right: 4%;
+  animation: gctaDeco 7s ease-in-out infinite 1.5s;
+}
+@keyframes gctaDeco {
+  0%,100% { transform: scale(1) rotate(0deg); opacity: 0.3; }
+  50%      { transform: scale(1.4) rotate(20deg); opacity: 0.7; }
+}
+
+/* ─── Scroll-anim system (shared) ────────────── */
+[data-anim] {
+  opacity: 0;
+  transition:
+    opacity 0.75s cubic-bezier(0.22,1,0.36,1) var(--d,0s),
+    transform 0.75s cubic-bezier(0.22,1,0.36,1) var(--d,0s);
+}
+[data-anim="fade-left"]  { transform: translateX(-44px); }
+[data-anim="fade-right"] { transform: translateX(44px); }
+[data-anim="scale-in"]   { transform: scale(0.82); }
+[data-anim].anim-in { opacity: 1; transform: none; }
+
+/* ─── Two-column layout ──────────────────────── */
+.gcta__inner {
+  max-width: 1240px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 72px;
+  align-items: center;
+  position: relative; z-index: 2;
+}
+
+/* ════ LEFT ════ */
+.gcta__left {
+  display: flex; flex-direction: column; gap: 24px;
+}
+
+.gcta__eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 7px 18px;
+  background: rgba(212,17,114,0.12);
+  border: 1px solid rgba(212,17,114,0.28);
+  border-radius: 100px;
+  color: var(--primary-lighter);
+  font-size: 12.5px; font-weight: 500;
+  width: fit-content;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.gcta__title {
+  font-size: clamp(36px, 4.5vw, 56px);
+  font-weight: 600; color: white;
+  line-height: 1.12; letter-spacing: -0.5px;
+}
+.gcta__title em {
+  font-style: italic; font-weight: 400;
+  background: linear-gradient(135deg, var(--primary-light), var(--primary-lighter));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gcta__desc {
+  font-size: 15px; color: rgba(255,255,255,0.55);
+  line-height: 1.8; max-width: 420px;
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Feature list */
+.gcta__features {
+  list-style: none; padding: 0;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px 20px;
+}
+.gcta__feature {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: 13.5px; color: rgba(255,255,255,0.6);
+  line-height: 1.5;
+  font-family: 'DM Sans', sans-serif;
+}
+.gcta__feature svg { color: var(--primary-light); flex-shrink: 0; margin-top: 1px; }
+
+/* Rating row */
+.gcta__rating {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: wrap;
+}
+.gcta__rating span {
+  font-size: 13.5px; color: rgba(255,255,255,0.5);
+  font-family: 'DM Sans', sans-serif;
+}
+.gcta__rating strong { color: white; }
+
+/* CTA button */
+.gcta__btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 15px 30px;
+  background: var(--primary); color: white;
+  border-radius: 50px; text-decoration: none;
+  font-size: 15px; font-weight: 600;
+  font-family: 'DM Sans', sans-serif;
+  transition: all 0.3s ease;
+  width: fit-content;
+  box-shadow: 0 8px 24px rgba(212,17,114,0.3);
+}
+.gcta__btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px rgba(212,17,114,0.4);
+}
+
+/* ════ RIGHT — 3D card stack ════ */
+.gcta__right {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* 3D tilt wrapper */
+.gcta__card-3d {
+  position: relative;
+  transform: perspective(800px) rotateY(8deg) rotateX(-4deg);
+  transition: transform 0.55s cubic-bezier(0.22,1,0.36,1);
+  transform-style: preserve-3d;
+  will-change: transform;
+  width: 100%; max-width: 400px;
+}
+
+/* Depth shadow planes (give 3D depth illusion) */
+.gcta__plane {
+  position: absolute;
+  border-radius: 24px;
+  pointer-events: none;
+}
+.gcta__plane-1 {
+  inset: 10px -10px -10px 10px;
+  background: rgba(212,17,114,0.1);
+  transform: translateZ(-14px);
+}
+.gcta__plane-2 {
+  inset: 20px -20px -20px 20px;
+  background: rgba(212,17,114,0.05);
+  transform: translateZ(-28px);
+}
+
+/* Primary image card */
+.gcta__img-card {
+  position: relative;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255,255,255,0.07);
+}
+.gcta__img-card--main {
+  height: 340px;
+  box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+}
+
+/* Secondary card — offset bottom-right */
+.gcta__img-card--sm {
+  position: absolute;
+  width: 48%; height: 160px;
+  bottom: -32px; right: -32px;
+  border: 2px solid rgba(255,255,255,0.1);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  z-index: 3;
+}
+
+.gcta__img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.7s ease;
+}
+.gcta__img-card:hover .gcta__img { transform: scale(1.05); }
+
+.gcta__img-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 45%, rgba(10,5,20,0.65) 100%);
+}
+
+/* Floating chips on primary card */
+.gcta__chip {
+  position: absolute;
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 12px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 50px;
+  font-size: 11.5px; font-weight: 700;
+  color: #1A1A1A;
+  font-family: 'DM Sans', sans-serif;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+.gcta__chip--tl { top: 14px; left: 14px; }
+.gcta__chip--br { bottom: 52px; right: 14px; }
+
+.gcta__live-dot {
+  width: 7px; height: 7px;
+  background: #10b981; border-radius: 50%;
+  animation: livePulse 2s ease infinite;
+}
+@keyframes livePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.5); }
+  50%      { box-shadow: 0 0 0 5px rgba(16,185,129,0); }
+}
+
+/* Card bottom label */
+.gcta__card-info {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 14px 16px;
+  z-index: 2;
+}
+.gcta__card-info strong {
+  display: block;
+  font-size: 15px; font-weight: 700; color: white;
+  font-family: 'DM Sans', sans-serif; line-height: 1.2;
+}
+.gcta__card-info span {
+  font-size: 12px; color: rgba(255,255,255,0.65);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* Award badge */
+.gcta__award {
+  position: absolute;
+  top: -20px; left: -28px;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.25);
+  z-index: 4;
+  animation: awardFloat 4s ease-in-out infinite;
+}
+.gcta__award svg { color: var(--primary); flex-shrink: 0; }
+.gcta__award strong {
+  display: block;
+  font-size: 14px; font-weight: 800; color: #1A1A1A;
+  line-height: 1.1; font-family: 'DM Sans', sans-serif;
+}
+.gcta__award span {
+  font-size: 11px; color: #6B7280;
+  font-family: 'DM Sans', sans-serif;
+}
+@keyframes awardFloat {
+  0%,100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* ─── Responsive ──────────────────────────────── */
+@media (max-width: 1024px) {
+  .gcta__inner { gap: 48px; }
+  .gcta__features { grid-template-columns: 1fr; }
+}
+@media (max-width: 820px) {
+  .gcta { padding: 72px 5%; }
+  .gcta__inner { grid-template-columns: 1fr; gap: 56px; }
+  .gcta__right { order: -1; }
+  .gcta__card-3d { max-width: 340px; margin: 0 auto; }
+  .gcta__img-card--main { height: 280px; }
+  .gcta__img-card--sm { width: 44%; height: 130px; bottom: -24px; right: -16px; }
+  .gcta__award { top: -14px; left: -10px; }
+  .gcta__features { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .gcta__card-3d { max-width: 290px; }
+  .gcta__img-card--main { height: 240px; }
+  .gcta__img-card--sm { display: none; }
+  .gcta__award { position: static; margin-top: 16px; width: fit-content; animation: none; }
+  .gcta__right { flex-direction: column; align-items: flex-start; }
+}

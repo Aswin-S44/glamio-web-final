@@ -451,3 +451,13 @@
   .gcta__stat-block { padding: 16px 18px; }
   .gcta__stat-block strong { font-size: 26px; }
 }
+
+
+@media (max-width: 768px) {
+  .gcta__heading em {
+padding: 5px;
+  }
+  .gcta__heading br {
+    display: none;
+  }
+}

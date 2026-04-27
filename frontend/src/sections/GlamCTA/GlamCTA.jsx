@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import "./GlamCTA.css";
 import { ArrowRight, Sparkles, MapPin, Phone } from "lucide-react";
+import img from '../../components/Media/Images/model-with-smokey-eyes-golden-circle-earrings (1).webp'
 
 const SQUARES = [
   { cls: "sq sq-1" }, { cls: "sq sq-2" }, { cls: "sq sq-3" },
@@ -49,7 +50,7 @@ function GlamCTA() {
           </div>
 
           <h2 className="gcta__heading">
-            Book<br />
+            Book
             <em>Your</em><br />
             Glow.
           </h2>
@@ -85,7 +86,7 @@ function GlamCTA() {
         <div className="gcta__center">
           <div className="gcta__img-frame">
             <img
-              src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop&q=85"
+              src={img}
               alt="Glamio Salon Experience"
               className="gcta__img"
             />
@@ -116,13 +117,13 @@ function GlamCTA() {
           {/* Floating product circle (like reference) */}
           <div className="gcta__product-circle">
             <img
-              src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200&h=200&auto=format&fit=crop&q=80"
+              src={img}
               alt="treatment preview"
             />
             <div className="gcta__product-ring" />
             <span className="gcta__product-label">
               <Sparkles size={10} />
-              Learn More
+              
             </span>
           </div>
         </div>

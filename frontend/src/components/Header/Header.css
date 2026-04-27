@@ -28,7 +28,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  position: relative;
+  gap: 12px;
 }
 
 .header-left {
@@ -81,13 +81,12 @@
 }
 
 .header-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 480px;
+  flex: 1;
+  max-width: 420px;
+  min-width: 0;
   display: flex;
   justify-content: center;
+  margin: 0 16px;
 }
 
 .search-pill {
@@ -929,45 +928,44 @@
   .desktop-nav {
     display: none;
   }
-  
+
   .action-area .auth-buttons,
   .action-area .profile-pill {
     display: none;
   }
-  
+
   .mobile-toggle {
     display: flex;
   }
-  
+
   .header-center {
-    position: relative;
-    left: 0;
-    transform: none;
-    max-width: 280px;
+    max-width: 260px;
+    margin: 0 8px;
   }
 }
 
 @media (max-width: 640px) {
   .glam-header {
-    height: 70px;
+    height: 64px;
   }
-  
+
   .glam-header.scrolled {
-    height: 60px;
+    height: 56px;
   }
-  
+
   .logo-text {
     display: none;
   }
-  
+
   .header-center {
-    max-width: 200px;
+    max-width: 180px;
+    margin: 0 6px;
   }
-  
+
   .search-pill {
-    padding: 8px 12px;
+    padding: 7px 10px;
   }
-  
+
   .search-pill input {
     font-size: 13px;
   }
