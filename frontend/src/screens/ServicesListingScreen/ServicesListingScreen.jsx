@@ -1,26 +1,44 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Clock,
-  Tag,
-  CheckCircle2,
-  ShoppingBag,
-  Sparkles,
-  Scissors,
-  Heart,
-  Star,
-  ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Filter,
-  Search,
-  X,
+  Clock, Tag, CheckCircle2, ShoppingBag, Sparkles, Scissors,
+  Star, ArrowRight, Filter, Search, X, SlidersHorizontal,
 } from "lucide-react";
-
 import "./ServicesListingScreen.css";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
+
+const DUMMY_DATA = {
+  shop: {
+    id: "s1",
+    parlourName: "Glamour Studio",
+    address: "12, MG Road, Bangalore",
+    totalRating: 4.8,
+    profileImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400",
+  },
+  services: [
+    { id: 1, shopId: "s1", name: "Hair Smoothing", duration: 90, rate: 1200, category: "Hair", description: "Professional keratin treatment for silky, frizz-free hair lasting up to 6 months.", imageUrl: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400" },
+    { id: 2, shopId: "s1", name: "Bridal Makeup", duration: 120, rate: 3500, category: "Makeup", description: "Stunning bridal look with premium products including airbrush foundation and false lashes.", imageUrl: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400" },
+    { id: 3, shopId: "s1", name: "Full Body Waxing", duration: 60, rate: 800, category: "Waxing", description: "Smooth, long-lasting hair removal using premium hot wax suitable for all skin types.", imageUrl: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400" },
+    { id: 4, shopId: "s1", name: "Facial (Gold)", duration: 75, rate: 1500, category: "Skin", description: "Rejuvenating gold facial with deep cleansing, massage and glow-boosting mask.", imageUrl: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400" },
+    { id: 5, shopId: "s1", name: "Nail Art & Extension", duration: 45, rate: 600, category: "Nails", description: "Custom nail art, gel polish and acrylic extensions by our skilled nail artists.", imageUrl: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400" },
+    { id: 6, shopId: "s1", name: "Eyelash Extension", duration: 60, rate: 900, category: "Lashes", description: "Volume and classic lash extensions applied with precision for a natural-to-dramatic look.", imageUrl: "https://images.unsplash.com/photo-1583241800706-a895a67f2428?w=400" },
+    { id: 7, shopId: "s1", name: "Hair Colouring", duration: 90, rate: 1800, category: "Hair", description: "Global colour, highlights, ombre and balayage techniques using professional salon-grade colour.", imageUrl: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400" },
+    { id: 8, shopId: "s1", name: "Eyebrow Threading", duration: 15, rate: 80, category: "Brows", description: "Precise eyebrow shaping and threading for perfectly defined brows every time.", imageUrl: "https://images.unsplash.com/photo-1583241800706-a895a67f2428?w=400" },
+  ],
+  offers: [
+    { serviceId: 1, offerPrice: 999 },
+    { serviceId: 4, offerPrice: 1199 },
+  ],
+};
+
+const SORT_OPTIONS = [
+  { value: "popular", label: "Popular" },
+  { value: "price_low", label: "Price: Low → High" },
+  { value: "price_high", label: "Price: High → Low" },
+  { value: "duration", label: "Duration: Short First" },
+];
 
 const ServicesListingScreen = () => {
   const { id } = useParams();
@@ -28,211 +46,138 @@ const ServicesListingScreen = () => {
 
   const [services, setServices] = useState([]);
   const [parlour, setParlour] = useState(null);
+  const [offers, setOffers] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
   const [sortBy, setSortBy] = useState("popular");
+  const [usingDummy, setUsingDummy] = useState(false);
 
   useEffect(() => {
+    const fetchParlourAndServices = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`${BASE_URL}/customer/shop/${id}`);
+        if (!res.ok) throw new Error("Failed");
+        const data = await res.json();
+
+        const svcList = data.services || [];
+        if (svcList.length > 0) {
+          setParlour(data.shop);
+          setServices(svcList);
+          setOffers(data.offers || []);
+          const prices = svcList.map((s) => s.rate);
+          setPriceRange({ min: Math.min(...prices), max: Math.max(...prices) });
+        } else {
+          setParlour(DUMMY_DATA.shop);
+          setServices(DUMMY_DATA.services);
+          setOffers(DUMMY_DATA.offers);
+          setUsingDummy(true);
+        }
+      } catch {
+        setParlour(DUMMY_DATA.shop);
+        setServices(DUMMY_DATA.services);
+        setOffers(DUMMY_DATA.offers);
+        setUsingDummy(true);
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchParlourAndServices();
   }, [id]);
-
-  const fetchParlourAndServices = async () => {
-    try {
-      setLoading(true);
-      const res = await fetch(`${BASE_URL}/customer/shop/${id}`);
-      if (!res.ok) throw new Error("Failed to fetch shop details");
-      const data = await res.json();
-      setParlour(data.shop);
-      setServices(data.services || []);
-
-      // Set initial price range
-      if (data.services?.length) {
-        const prices = data.services.map((s) => s.rate);
-        setPriceRange({
-          min: Math.min(...prices),
-          max: Math.max(...prices),
-        });
-      }
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleServiceToggle = (service) => {
     setSelectedServices((prev) => {
       const exists = prev.find((s) => s.id === service.id);
-      if (exists) {
-        return prev.filter((s) => s.id !== service.id);
-      } else {
-        return [...prev, service];
-      }
+      return exists ? prev.filter((s) => s.id !== service.id) : [...prev, service];
     });
   };
 
-  const getCategories = () => {
-    const categories = services.map((s) => s.category).filter(Boolean);
-    return ["all", ...new Set(categories)];
-  };
+  const categories = ["all", ...new Set(services.map((s) => s.category).filter(Boolean))];
 
   const getFilteredServices = () => {
-    let filtered = [...services];
-
-    // Filter by category
-    if (activeCategory !== "all") {
-      filtered = filtered.filter((s) => s.category === activeCategory);
-    }
-
-    // Filter by search term
+    let list = [...services];
+    if (activeCategory !== "all") list = list.filter((s) => s.category === activeCategory);
     if (searchTerm) {
-      filtered = filtered.filter(
-        (s) =>
-          s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          s.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      const q = searchTerm.toLowerCase();
+      list = list.filter((s) => s.name.toLowerCase().includes(q) || s.description?.toLowerCase().includes(q));
     }
-
-    // Filter by price range
-    filtered = filtered.filter(
-      (s) => s.rate >= priceRange.min && s.rate <= priceRange.max
-    );
-
-    // Sort
-    switch (sortBy) {
-      case "price_low":
-        filtered.sort((a, b) => a.rate - b.rate);
-        break;
-      case "price_high":
-        filtered.sort((a, b) => b.rate - a.rate);
-        break;
-      case "duration":
-        filtered.sort((a, b) => a.duration - b.duration);
-        break;
-      default:
-        // Keep original order
-        break;
-    }
-
-    return filtered;
+    list = list.filter((s) => s.rate >= priceRange.min && s.rate <= priceRange.max);
+    if (sortBy === "price_low") list.sort((a, b) => a.rate - b.rate);
+    else if (sortBy === "price_high") list.sort((a, b) => b.rate - a.rate);
+    else if (sortBy === "duration") list.sort((a, b) => a.duration - b.duration);
+    return list;
   };
 
-  const calculateTotal = () => {
-    return selectedServices.reduce((sum, service) => sum + service.rate, 0);
-  };
+  const getServiceOffer = (serviceId) => offers.find((o) => o.serviceId === serviceId);
 
-  const calculateTotalDuration = () => {
-    return selectedServices.reduce((sum, service) => sum + service.duration, 0);
-  };
+  const calculateTotal = () => selectedServices.reduce((s, sv) => s + sv.rate, 0);
+  const calculateTotalDuration = () => selectedServices.reduce((s, sv) => s + sv.duration, 0);
 
   const handleProceedToBooking = () => {
     if (selectedServices.length === 0) return;
-
-    // Store selected services in session storage
-    sessionStorage.setItem(
-      "selectedServices",
-      JSON.stringify(selectedServices)
-    );
+    sessionStorage.setItem("selectedServices", JSON.stringify(selectedServices));
     sessionStorage.setItem("shopId", id);
-
-    // Navigate to slot selection with multiple services
     navigate(`/parlor/${id}/slot-selection`, {
-      state: {
-        selectedServices: selectedServices,
-        shopId: id,
-        isMultipleServices: true,
-      },
+      state: { selectedServices, shopId: id, isMultipleServices: true },
     });
   };
 
-  const getServicePrice = (service) => {
-    const offer = parlour?.offers?.find((o) => o.serviceId === service.id);
-    return offer ? (
-      <div className="price-wrapper">
-        <span className="offer-price">₹{offer.offerPrice}</span>
-        <span className="original-price">₹{service.rate}</span>
-      </div>
-    ) : (
-      <span className="regular-price">₹{service.rate}</span>
-    );
-  };
+  const filteredServices = getFilteredServices();
 
   if (loading) {
     return (
       <>
         <Header />
-        <div className="services-loader">
-          <div className="loader-spinner">
-            <Sparkles size={48} className="spinning" />
-          </div>
-          <p>Loading our services...</p>
+        <div className="sl-loader">
+          <div className="sl-loader-icon"><Sparkles size={36} className="sl-spin" /></div>
+          <p>Loading services...</p>
         </div>
         <Footer />
       </>
     );
   }
-
-  if (error) {
-    return (
-      <>
-        <Header />
-        <div className="error-container">
-          <p>{error}</p>
-          <button onClick={() => navigate(-1)}>Go Back</button>
-        </div>
-        <Footer />
-      </>
-    );
-  }
-
-  const categories = getCategories();
-  const filteredServices = getFilteredServices();
 
   return (
     <>
       <Header />
 
-      <div className="services-listing-container">
-        <div className="services-hero">
-          <div className="hero-content">
-            <h1>Our Services</h1>
-            <p>Choose the perfect services for your beauty needs</p>
+      <div className="sl-page">
+        {/* Hero */}
+        <div className="sl-hero">
+          <div className="sl-hero-inner">
+            <div className="sl-hero-tag">
+              <Sparkles size={13} /> Services
+            </div>
+            <h1>Choose Your Services</h1>
+            <p>Select one or more services and book in one go</p>
             {parlour && (
-              <div className="shop-badge">
-                <Star size={16} fill="#FFD700" />
+              <div className="sl-shop-pill">
+                <Star size={14} fill="#FFD700" color="#FFD700" />
                 <span>{parlour.parlourName}</span>
+                <span className="sl-rating">{parlour.totalRating || "4.8"}</span>
               </div>
             )}
           </div>
         </div>
 
-        <div className="listing-main">
-          <div className="listing-header">
-            <div className="header-left">
-              <h2>
-                {filteredServices.length} Services Available
+        <div className="sl-main">
+          {/* Toolbar */}
+          <div className="sl-toolbar">
+            <div className="sl-toolbar-left">
+              <h2 className="sl-count">
+                {filteredServices.length} service{filteredServices.length !== 1 ? "s" : ""}
                 {selectedServices.length > 0 && (
-                  <span className="selected-count">
-                    {selectedServices.length} selected
-                  </span>
+                  <span className="sl-selected-badge">{selectedServices.length} selected</span>
                 )}
               </h2>
             </div>
-            <div className="header-right">
-              <button
-                className="filter-toggle"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter size={20} />
-                Filters
-              </button>
-              <div className="search-box">
-                <Search size={18} />
+            <div className="sl-toolbar-right">
+              <div className="sl-search">
+                <Search size={16} />
                 <input
                   type="text"
                   placeholder="Search services..."
@@ -240,202 +185,192 @@ const ServicesListingScreen = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
                 {searchTerm && (
-                  <button onClick={() => setSearchTerm("")}>
-                    <X size={16} />
-                  </button>
+                  <button onClick={() => setSearchTerm("")}><X size={14} /></button>
                 )}
               </div>
+              <button
+                className={`sl-filter-btn ${showFilters ? "active" : ""}`}
+                onClick={() => setShowFilters(!showFilters)}
+              >
+                <SlidersHorizontal size={15} /> Filters
+              </button>
             </div>
           </div>
 
-          <div className={`filters-panel ${showFilters ? "open" : ""}`}>
-            <div className="filters-content">
-              <div className="filter-group">
-                <h4>Categories</h4>
-                <div className="category-chips">
-                  {categories.map((cat) => (
+          {/* Category chips */}
+          <div className="sl-categories">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                className={`sl-cat-chip ${activeCategory === cat ? "active" : ""}`}
+                onClick={() => setActiveCategory(cat)}
+              >
+                {cat === "all" ? "All" : cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Filter panel */}
+          {showFilters && (
+            <div className="sl-filter-panel">
+              <div className="sl-filter-group">
+                <label>Price Range</label>
+                <div className="sl-price-inputs">
+                  <div className="sl-price-field">
+                    <span>₹</span>
+                    <input
+                      type="number"
+                      placeholder="Min"
+                      value={priceRange.min}
+                      onChange={(e) => setPriceRange({ ...priceRange, min: +e.target.value })}
+                    />
+                  </div>
+                  <span className="sl-price-sep">—</span>
+                  <div className="sl-price-field">
+                    <span>₹</span>
+                    <input
+                      type="number"
+                      placeholder="Max"
+                      value={priceRange.max}
+                      onChange={(e) => setPriceRange({ ...priceRange, max: +e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="sl-filter-group">
+                <label>Sort By</label>
+                <div className="sl-sort-chips">
+                  {SORT_OPTIONS.map((opt) => (
                     <button
-                      key={cat}
-                      className={`chip ${
-                        activeCategory === cat ? "active" : ""
-                      }`}
-                      onClick={() => setActiveCategory(cat)}
+                      key={opt.value}
+                      className={`sl-sort-chip ${sortBy === opt.value ? "active" : ""}`}
+                      onClick={() => setSortBy(opt.value)}
                     >
-                      {cat === "all" ? "All Services" : cat}
+                      {opt.label}
                     </button>
                   ))}
                 </div>
               </div>
-
-              <div className="filter-group">
-                <h4>Price Range</h4>
-                <div className="price-range-inputs">
-                  <input
-                    type="number"
-                    placeholder="Min"
-                    value={priceRange.min}
-                    onChange={(e) =>
-                      setPriceRange({
-                        ...priceRange,
-                        min: Number(e.target.value),
-                      })
-                    }
-                  />
-                  <span>-</span>
-                  <input
-                    type="number"
-                    placeholder="Max"
-                    value={priceRange.max}
-                    onChange={(e) =>
-                      setPriceRange({
-                        ...priceRange,
-                        max: Number(e.target.value),
-                      })
-                    }
-                  />
-                </div>
-              </div>
-
-              <div className="filter-group">
-                <h4>Sort By</h4>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                >
-                  <option value="popular">Most Popular</option>
-                  <option value="price_low">Price: Low to High</option>
-                  <option value="price_high">Price: High to Low</option>
-                  <option value="duration">Duration: Short to Long</option>
-                </select>
-              </div>
             </div>
-          </div>
+          )}
 
-          <div className="services-grid-listing">
-            {filteredServices.length > 0 ? (
-              filteredServices.map((service) => (
-                <div
-                  key={service.id}
-                  className={`service-card-listing ${
-                    selectedServices.find((s) => s.id === service.id)
-                      ? "selected"
-                      : ""
-                  }`}
-                  onClick={() => handleServiceToggle(service)}
-                >
-                  <div className="service-image">
-                    <img
-                      src={service.imageUrl || DEFAULT_NO_IMAGE}
-                      alt={service.name}
-                    />
-                    {selectedServices.find((s) => s.id === service.id) && (
-                      <div className="selected-overlay">
-                        <CheckCircle2 size={32} />
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="service-details">
-                    <div className="service-header">
-                      <h3>{service.name}</h3>
-                      <div className="service-duration">
-                        <Clock size={14} />
-                        <span>{service.duration} min</span>
-                      </div>
+          {/* Services Grid */}
+          {filteredServices.length > 0 ? (
+            <div className="sl-grid">
+              {filteredServices.map((service) => {
+                const isSelected = !!selectedServices.find((s) => s.id === service.id);
+                const offer = getServiceOffer(service.id);
+                return (
+                  <div
+                    key={service.id}
+                    className={`sl-card ${isSelected ? "selected" : ""}`}
+                    onClick={() => handleServiceToggle(service)}
+                  >
+                    <div className="sl-card-img-wrap">
+                      <img
+                        src={service.imageUrl || DEFAULT_NO_IMAGE}
+                        alt={service.name}
+                        onError={(e) => { e.target.src = DEFAULT_NO_IMAGE; }}
+                      />
+                      {isSelected && (
+                        <div className="sl-selected-overlay">
+                          <CheckCircle2 size={36} />
+                          <span>Selected</span>
+                        </div>
+                      )}
+                      {offer && !isSelected && (
+                        <span className="sl-offer-badge">
+                          Save ₹{service.rate - offer.offerPrice}
+                        </span>
+                      )}
+                      {service.category && (
+                        <span className="sl-cat-badge">{service.category}</span>
+                      )}
                     </div>
 
-                    {service.description && (
-                      <p className="service-description">
-                        {service.description.substring(0, 100)}
-                        {service.description.length > 100 ? "..." : ""}
-                      </p>
-                    )}
+                    <div className="sl-card-body">
+                      <div className="sl-card-header">
+                        <h3>{service.name}</h3>
+                        <div className="sl-duration-chip">
+                          <Clock size={12} />
+                          <span>{service.duration} min</span>
+                        </div>
+                      </div>
 
-                    <div className="service-footer">
-                      {getServicePrice(service)}
-                      <button
-                        className={`select-btn ${
-                          selectedServices.find((s) => s.id === service.id)
-                            ? "selected"
-                            : ""
-                        }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleServiceToggle(service);
-                        }}
-                      >
-                        {selectedServices.find((s) => s.id === service.id) ? (
-                          <>
-                            <CheckCircle2 size={16} />
-                            Selected
-                          </>
-                        ) : (
-                          <>
-                            <ShoppingBag size={16} />
-                            Select
-                          </>
-                        )}
-                      </button>
+                      {service.description && (
+                        <p className="sl-card-desc">
+                          {service.description.substring(0, 85)}
+                          {service.description.length > 85 ? "..." : ""}
+                        </p>
+                      )}
+
+                      <div className="sl-card-foot">
+                        <div className="sl-price-display">
+                          {offer ? (
+                            <>
+                              <span className="sl-offer-price">₹{offer.offerPrice}</span>
+                              <span className="sl-original-price">₹{service.rate}</span>
+                            </>
+                          ) : (
+                            <span className="sl-regular-price">₹{service.rate}</span>
+                          )}
+                        </div>
+
+                        <button
+                          className={`sl-select-btn ${isSelected ? "selected" : ""}`}
+                          onClick={(e) => { e.stopPropagation(); handleServiceToggle(service); }}
+                        >
+                          {isSelected ? (
+                            <><CheckCircle2 size={14} /> Selected</>
+                          ) : (
+                            <><ShoppingBag size={14} /> Select</>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))
-            ) : (
-              <div className="no-services-found">
-                <Scissors size={64} />
-                <h3>No services found</h3>
-                <p>Try adjusting your filters or search term</p>
-                <button
-                  onClick={() => {
-                    setActiveCategory("all");
-                    setSearchTerm("");
-                    setPriceRange({ min: 0, max: 10000 });
-                  }}
-                >
-                  Clear all filters
-                </button>
-              </div>
-            )}
-          </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="sl-empty">
+              <Scissors size={56} />
+              <h3>No services found</h3>
+              <p>Try adjusting your filters or search term</p>
+              <button
+                className="btn"
+                onClick={() => { setActiveCategory("all"); setSearchTerm(""); }}
+              >
+                Clear Filters
+              </button>
+            </div>
+          )}
         </div>
 
+        {/* Sticky Bottom Bar */}
         {selectedServices.length > 0 && (
-          <div className="selection-summary-fixed">
-            <div className="summary-content">
-              <div className="selected-info">
-                <div className="selected-header">
-                  <ShoppingBag size={20} />
-                  <h3>
-                    {selectedServices.length} Service
-                    {selectedServices.length > 1 ? "s" : ""} Selected
-                  </h3>
+          <div className="sl-sticky-bar">
+            <div className="sl-sticky-inner">
+              <div className="sl-sticky-info">
+                <div className="sl-sticky-title">
+                  <ShoppingBag size={18} />
+                  <span>{selectedServices.length} Service{selectedServices.length > 1 ? "s" : ""} Selected</span>
                 </div>
-                <div className="selected-items-preview">
+                <div className="sl-sticky-chips">
                   {selectedServices.slice(0, 3).map((s) => (
-                    <span key={s.id} className="preview-tag">
-                      {s.name}
-                    </span>
+                    <span key={s.id} className="sl-sticky-chip">{s.name}</span>
                   ))}
                   {selectedServices.length > 3 && (
-                    <span className="preview-more">
-                      +{selectedServices.length - 3} more
-                    </span>
+                    <span className="sl-sticky-chip more">+{selectedServices.length - 3} more</span>
                   )}
                 </div>
-                <div className="summary-totals">
-                  <div className="total-duration">
-                    <Clock size={16} />
-                    <span>Total: {calculateTotalDuration()} mins</span>
-                  </div>
-                  <div className="total-price">
-                    <Tag size={16} />
-                    <span>Total: ₹{calculateTotal()}</span>
-                  </div>
+                <div className="sl-sticky-totals">
+                  <span><Clock size={14} /> {calculateTotalDuration()} mins</span>
+                  <span><Tag size={14} /> ₹{calculateTotal()}</span>
                 </div>
               </div>
-              <button className="proceed-btn" onClick={handleProceedToBooking}>
-                Proceed to Booking
-                <ArrowRight size={20} />
+              <button className="sl-proceed-btn" onClick={handleProceedToBooking}>
+                Proceed to Booking <ArrowRight size={18} />
               </button>
             </div>
           </div>

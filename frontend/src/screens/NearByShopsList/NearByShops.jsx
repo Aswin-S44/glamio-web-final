@@ -21,6 +21,20 @@ import {
 import "./NearByShops.css";
 import Header from "../../components/Header/Header";
 
+const DUMMY_NEARBY_SHOPS = [
+  {
+    shop: { id: 1, parlourName: "Glamour Studio", address: "12, MG Road, Bangalore", latitude: "12.9716", longitude: "77.5946", totalRating: 4.8 },
+    user: { profileImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=150" },
+    distance: 0.8,
+  },
+  {
+    shop: { id: 2, parlourName: "Velvet Beauty Lounge", address: "45, Indiranagar, Bangalore", latitude: "12.9784", longitude: "77.6408", totalRating: 4.6 },
+    user: { profileImage: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=150" },
+    distance: 1.4,
+  },
+ 
+];
+
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
   const toRad = (val) => (val * Math.PI) / 180;
   const R = 6371;
@@ -66,9 +80,11 @@ const NearByShops = () => {
           "http://localhost:5000/api/v1/customer/shops"
         );
         const data = await response.json();
-        setShops(data.shops || []);
+        const list = data.shops || [];
+        setShops(list.length > 0 ? list : DUMMY_NEARBY_SHOPS);
       } catch (err) {
         console.error("Error fetching shops", err);
+        setShops(DUMMY_NEARBY_SHOPS);
       } finally {
         setLoading(false);
       }

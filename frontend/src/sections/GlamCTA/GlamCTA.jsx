@@ -55,7 +55,7 @@ function GlamCTA() {
             Glow.
           </h2>
 
-          <p className="gcta__desc">
+          <p className="gcta__desc" style={{color:"black"}}>
             Step into a world where every detail is crafted for you.
             Expert stylists, premium products, and a space that feels
             like luxury — all waiting for your booking.

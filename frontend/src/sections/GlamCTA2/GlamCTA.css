@@ -324,3 +324,11 @@
   .gcta__award { position: static; margin-top: 16px; width: fit-content; animation: none; }
   .gcta__right { flex-direction: column; align-items: flex-start; }
 }
+
+@media (max-width: 480px) {
+    .gcta__right {
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: center;
+    }
+}

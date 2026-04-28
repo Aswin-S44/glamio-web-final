@@ -1,19 +1,10 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Calendar from "react-calendar";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addDays } from "date-fns";
 import {
-  User,
-  Clock,
-  CheckCircle2,
-  ChevronRight,
-  Loader2,
-  AlertCircle,
-  Calendar as CalendarIcon,
-  Star,
-  Award,
-  ThumbsUp,
-  ShoppingBag,
-  X,
+  CheckCircle2, ChevronRight, Loader2, AlertCircle,
+  Calendar as CalendarIcon, Star, Clock, ShoppingBag,
+  X, Award, User, ArrowLeft, Sparkles,
 } from "lucide-react";
 import "react-calendar/dist/Calendar.css";
 import "./SelectSlotScreen.css";
@@ -21,613 +12,431 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../../components/Header/Header";
 import { BASE_URL } from "../../../constants/urls";
 
-function SelectSlotScreen() {
-  const [selectedExpert, setSelectedExpert] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [slotsByDate, setSlotsByDate] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [experts, setExperts] = useState([]);
-  const [error, setError] = useState("");
-  const [bookingProgress, setBookingProgress] = useState(33);
-  const [selectedServices, setSelectedServices] = useState([]);
-  const [showServicesModal, setShowServicesModal] = useState(false);
+/* ── Dummy data ── */
+const DUMMY_EXPERTS = [
+  { id: 1, name: "Priya Sharma",  specialist: "Hair & Makeup", image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200", rating: 4.9, reviews: 148 },
+  { id: 2, name: "Anjali Rao",    specialist: "Bridal & Skin",  image: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200", rating: 4.8, reviews: 92  },
+  { id: 3, name: "Sunita Verma",  specialist: "Nails & Lashes", image: "https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?w=200", rating: 4.7, reviews: 76  },
+];
 
+const DUMMY_SERVICES = [
+  { id: 1, name: "Hair Smoothing", duration: 90, rate: 1200 },
+];
+
+const generateDummySlots = () => {
+  const slots = {};
+  const times = ["09:00:00","10:00:00","11:00:00","12:00:00","14:00:00","15:00:00","16:00:00","17:00:00"];
+  for (let i = 0; i < 14; i++) {
+    const date = format(addDays(new Date(), i), "yyyy-MM-dd");
+    if (i % 7 !== 6) {
+      slots[date] = times.map((t, idx) => ({
+        id: i * 10 + idx + 1,
+        shopId: "s1",
+        slotDate: date,
+        startTime: t,
+        isAvailable: idx !== 2 && idx !== 5,
+      }));
+    }
+  }
+  return slots;
+};
+
+/* ── Helpers ── */
+const fmtTime = (t) => {
+  if (!t) return "";
+  const [h, m] = t.split(":");
+  const d = new Date(); d.setHours(+h, +m);
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+};
+
+export default function SelectSlotScreen() {
   const { id, serviceId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Load selected services from session storage or location state
-  useEffect(() => {
-    const loadSelectedServices = () => {
-      // Check if coming from multiple services selection
-      const savedServices = sessionStorage.getItem("selectedServices");
-      if (savedServices) {
-        const services = JSON.parse(savedServices);
-        setSelectedServices(services);
-        // Clear after loading to prevent stale data
-        sessionStorage.removeItem("selectedServices");
-      }
-      // Check if coming from location state
-      else if (location.state?.selectedServices) {
-        setSelectedServices(location.state.selectedServices);
-      }
-      // Single service from URL param
-      else if (serviceId) {
-        // Fetch service details if only ID is available
-        fetchServiceDetails(serviceId);
-      }
-    };
+  const [experts, setExperts]               = useState([]);
+  const [slotsByDate, setSlotsByDate]       = useState({});
+  const [selectedServices, setSelectedServices] = useState([]);
+  const [selectedExpert, setSelectedExpert] = useState(null);
+  const [selectedDate, setSelectedDate]     = useState(new Date());
+  const [selectedSlot, setSelectedSlot]     = useState(null);
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState("");
+  const [showModal, setShowModal]           = useState(false);
 
-    loadSelectedServices();
+  /* ── Load services ── */
+  useEffect(() => {
+    const saved = sessionStorage.getItem("selectedServices");
+    if (saved) {
+      setSelectedServices(JSON.parse(saved));
+      sessionStorage.removeItem("selectedServices");
+    } else if (location.state?.selectedServices) {
+      setSelectedServices(location.state.selectedServices);
+    } else if (serviceId) {
+      fetch(`${BASE_URL}/customer/service/${serviceId}`)
+        .then(r => r.json())
+        .then(d => { if (d?.length > 0) setSelectedServices(d); else setSelectedServices(DUMMY_SERVICES); })
+        .catch(() => setSelectedServices(DUMMY_SERVICES));
+    } else {
+      setSelectedServices(DUMMY_SERVICES);
+    }
   }, [serviceId, location.state]);
 
-  const fetchServiceDetails = async (serviceId) => {
-    try {
-      const res = await fetch(`${BASE_URL}/customer/service/${serviceId}`);
-      const data = await res.json();
-
-      if (data && data.length > 0) {
-        setSelectedServices(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch service details", error);
-    }
-  };
-
+  /* ── Load experts ── */
   const fetchExperts = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${BASE_URL}/customer/experts/${id}`);
+      const res  = await fetch(`${BASE_URL}/customer/experts/${id}`);
       const data = await res.json();
-      if (data.experts) setExperts(data.experts);
-    } catch (error) {
-      console.error("Failed to fetch experts", error);
-    } finally {
-      setLoading(false);
-    }
+      setExperts(data.experts?.length > 0 ? data.experts : DUMMY_EXPERTS);
+    } catch { setExperts(DUMMY_EXPERTS); }
+    finally  { setLoading(false); }
   }, [id]);
 
+  /* ── Load slots ── */
   const fetchSlots = useCallback(async () => {
     try {
-      const res = await fetch(`${BASE_URL}/customer/slots/${id}`);
+      const res  = await fetch(`${BASE_URL}/customer/slots/${id}`);
       const data = await res.json();
-      if (data.slots) {
+      if (data.slots?.length > 0) {
         const grouped = data.slots.reduce((acc, slot) => {
-          const dateKey = format(parseISO(slot.slotDate), "yyyy-MM-dd");
-          if (!acc[dateKey]) acc[dateKey] = [];
-          acc[dateKey].push(slot);
+          const key = format(parseISO(slot.slotDate), "yyyy-MM-dd");
+          (acc[key] = acc[key] || []).push(slot);
           return acc;
         }, {});
         setSlotsByDate(grouped);
-      }
-    } catch (error) {
-      console.error("Failed to fetch slots", error);
-    }
+      } else { setSlotsByDate(generateDummySlots()); }
+    } catch { setSlotsByDate(generateDummySlots()); }
   }, [id]);
 
-  useEffect(() => {
-    fetchExperts();
-    fetchSlots();
-  }, [fetchExperts, fetchSlots]);
+  useEffect(() => { fetchExperts(); fetchSlots(); }, [fetchExperts, fetchSlots]);
 
-  useEffect(() => {
-    if (selectedExpert && selectedSlot) {
-      setBookingProgress(66);
-    } else if (selectedExpert || selectedSlot) {
-      setBookingProgress(50);
-    } else {
-      setBookingProgress(33);
-    }
-  }, [selectedExpert, selectedSlot]);
+  /* ── Derived ── */
+  const dateKey        = format(selectedDate, "yyyy-MM-dd");
+  const daySlots       = slotsByDate[dateKey] || [];
+  const expertData     = experts.find(e => e.id === selectedExpert);
+  const totalAmount    = selectedServices.reduce((s, sv) => s + sv.rate, 0);
+  const totalDuration  = selectedServices.reduce((s, sv) => s + sv.duration, 0);
+  const step           = selectedExpert && selectedSlot ? 3 : selectedExpert ? 2 : 1;
+  const canProceed     = selectedExpert && selectedSlot && selectedServices.length > 0;
 
-  const calculateTotalAmount = () => {
-    return selectedServices.reduce((sum, service) => sum + service.rate, 0);
-  };
-
-  const calculateTotalDuration = () => {
-    return selectedServices.reduce((sum, service) => sum + service.duration, 0);
-  };
-
-  const dateKey = format(selectedDate, "yyyy-MM-dd");
-  const currentDaySlots = slotsByDate[dateKey] || [];
-
+  /* ── Calendar helpers ── */
   const tileClassName = ({ date, view }) => {
-    if (view === "month") {
-      const dKey = format(date, "yyyy-MM-dd");
-      if (slotsByDate[dKey] && slotsByDate[dKey].some((s) => s.isAvailable)) {
-        return "has-slots-indicator";
-      }
-    }
-    return null;
+    if (view !== "month") return null;
+    const k = format(date, "yyyy-MM-dd");
+    return slotsByDate[k]?.some(s => s.isAvailable) ? "has-slots-indicator" : null;
   };
-
   const tileDisabled = ({ date, view }) => {
-    if (view === "month") {
-      const dKey = format(date, "yyyy-MM-dd");
-      return (
-        !slotsByDate[dKey] || !slotsByDate[dKey].some((s) => s.isAvailable)
-      );
-    }
-    return false;
+    if (view !== "month") return false;
+    const k = format(date, "yyyy-MM-dd");
+    return !slotsByDate[k]?.some(s => s.isAvailable);
   };
 
-  const handleExpertSelect = (expertId) => {
-    setSelectedExpert(expertId);
-    setError("");
-  };
-
-  const handleSlotSelect = (slot) => {
-    setSelectedSlot(slot);
-    setError("");
+  /* ── Actions ── */
+  const removeService = (sid) => {
+    const next = selectedServices.filter(s => s.id !== sid);
+    if (next.length === 0) { navigate(-1); return; }
+    setSelectedServices(next);
   };
 
   const handleConfirm = () => {
-    if (!selectedExpert) {
-      setError("Please select a specialist to continue");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-    if (!selectedSlot) {
-      setError("Please select a time slot to continue");
-      return;
-    }
-
-    // Prepare service IDs as an array
-    const serviceIdsArray = selectedServices.map((service) => service.id);
-
-    // Navigate to summary with services parameter
+    if (!selectedExpert) { setError("Please select a specialist to continue"); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    if (!selectedSlot)   { setError("Please select a time slot to continue"); return; }
     const params = new URLSearchParams();
-    params.append("slotId", selectedSlot.id);
-    params.append("expertId", selectedExpert);
-    params.append("shopId", selectedSlot.shopId);
-
-    // Pass service IDs as comma-separated string
-    params.append("services", serviceIdsArray.join(","));
-
+    params.append("slotId",    selectedSlot.id);
+    params.append("expertId",  selectedExpert);
+    params.append("shopId",    selectedSlot.shopId);
+    params.append("services",  selectedServices.map(s => s.id).join(","));
     navigate(`/summary?${params.toString()}`);
   };
 
-  // const handleConfirm = () => {
-  //   if (!selectedExpert) {
-  //     setError("Please select a specialist to continue");
-  //     window.scrollTo({ top: 0, behavior: "smooth" });
-  //     return;
-  //   }
-  //   if (!selectedSlot) {
-  //     setError("Please select a time slot to continue");
-  //     return;
-  //   }
-
-  //   // Prepare booking data
-  //   const bookingData = {
-  //     slotId: selectedSlot.id,
-  //     expertId: selectedExpert,
-  //     shopId: selectedSlot.shopId,
-  //     services: selectedServices.map((service) => ({
-  //       id: service.id,
-  //       name: service.name,
-  //       rate: service.rate,
-  //       duration: service.duration,
-  //     })),
-  //     totalAmount: calculateTotalAmount(),
-  //     totalDuration: calculateTotalDuration(),
-  //     date: format(selectedDate, "yyyy-MM-dd"),
-  //     time: selectedSlot.startTime.substring(0, 5),
-  //   };
-
-  //   // Store in session storage for summary page
-  //   sessionStorage.setItem("bookingData", JSON.stringify(bookingData));
-
-  //   // Navigate to summary with encoded data
-  //   const params = new URLSearchParams();
-  //   params.append("slotId", selectedSlot.id);
-  //   params.append("expertId", selectedExpert);
-  //   params.append("shopId", selectedSlot.shopId);
-  //   params.append(
-  //     "services",
-  //     JSON.stringify(selectedServices.map((s) => s.id))
-  //   );
-  //   params.append("totalAmount", calculateTotalAmount());
-
-  //   navigate(`/summary?${params.toString()}`);
-  // };
-
-  const removeService = (serviceId) => {
-    setSelectedServices((prev) => prev.filter((s) => s.id !== serviceId));
-    if (selectedServices.length === 1) {
-      // If only one service left and it's removed, go back
-      navigate(-1);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="loader-wrapper">
-        <div className="loader-content">
-          <div className="loader-spinner">
-            <Loader2 size={48} />
-          </div>
-          <p className="loader-text">Finding available slots for you...</p>
-          <p className="loader-subtext">This will just take a moment</p>
-        </div>
+  /* ── Loading ── */
+  if (loading) return (
+    <div className="ss-loader-page">
+      <Header />
+      <div className="ss-loader-body">
+        <div className="ss-loader-ring"><Loader2 size={32} className="ss-spin" /></div>
+        <p>Finding available slots for you…</p>
       </div>
-    );
-  }
-
-  const selectedExpertData = experts.find((e) => e.id === selectedExpert);
+    </div>
+  );
 
   return (
-    <div className="slot-screen">
+    <div className="ss-page">
       <Header />
 
-      <div className="progress-tracker">
-        <div className="progress-container">
-          <div className="progress-steps">
-            <div className={`step ${bookingProgress >= 33 ? "completed" : ""}`}>
-              <div className="step-indicator">1</div>
-              <span className="step-label">Select Specialist</span>
-            </div>
-            <div className={`step ${bookingProgress >= 66 ? "completed" : ""}`}>
-              <div className="step-indicator">2</div>
-              <span className="step-label">Choose Time</span>
-            </div>
-            <div
-              className={`step ${bookingProgress >= 100 ? "completed" : ""}`}
-            >
-              <div className="step-indicator">3</div>
-              <span className="step-label">Confirm</span>
-            </div>
-          </div>
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${bookingProgress}%` }}
-            />
-          </div>
+      {/* ── Progress bar ── */}
+      <div className="ss-progress-bar">
+        <div className="ss-progress-inner">
+          {["Select Specialist","Choose Date & Time","Confirm"].map((label, i) => (
+            <React.Fragment key={i}>
+              <div className={`ss-step ${step > i ? "done" : step === i + 1 ? "active" : ""}`}>
+                <div className="ss-step-circle">
+                  {step > i + 1 ? <CheckCircle2 size={16} /> : <span>{i + 1}</span>}
+                </div>
+                <span className="ss-step-label">{label}</span>
+              </div>
+              {i < 2 && <div className={`ss-step-line ${step > i + 1 ? "filled" : ""}`} />}
+            </React.Fragment>
+          ))}
         </div>
       </div>
 
-      <div className="slot-screen-container">
-        <header className="slot-header">
-          <h1>Complete Your Booking</h1>
-          <p>Choose your preferred specialist and time slot</p>
-        </header>
+      <div className="ss-body">
+        {/* ── Left column ── */}
+        <div className="ss-main">
 
-        {error && (
-          <div className="error-banner">
-            <AlertCircle size={20} />
-            <span>{error}</span>
-          </div>
-        )}
-
-        {/* Selected Services Section */}
-        <section className="selected-services-section">
-          <div className="section-header">
-            <div className="section-title-area">
-              <div className="title-icon">
-                <ShoppingBag size={22} />
+          {/* Services strip */}
+          <div className="ss-services-strip">
+            <div className="ss-strip-left">
+              <ShoppingBag size={16} />
+              <span className="ss-strip-label">{selectedServices.length} service{selectedServices.length !== 1 ? "s" : ""} selected</span>
+              <div className="ss-strip-chips">
+                {selectedServices.slice(0, 3).map(sv => (
+                  <div key={sv.id} className="ss-chip">
+                    <span>{sv.name}</span>
+                    <span className="ss-chip-price">₹{sv.rate}</span>
+                    <button className="ss-chip-remove" onClick={() => removeService(sv.id)}><X size={12} /></button>
+                  </div>
+                ))}
+                {selectedServices.length > 3 && <span className="ss-chip-more">+{selectedServices.length - 3} more</span>}
               </div>
-              <h2>Selected Services ({selectedServices.length})</h2>
             </div>
-            <button
-              className="view-services-btn"
-              onClick={() => setShowServicesModal(true)}
-            >
-              View Details
-            </button>
+            <button className="ss-strip-detail" onClick={() => setShowModal(true)}>View details</button>
           </div>
 
-          <div className="selected-services-preview">
-            {selectedServices.slice(0, 3).map((service) => (
-              <div key={service.id} className="preview-service-chip">
-                <span>{service?.name}</span>
-                <span className="preview-price">₹{service.rate}</span>
-                <button
-                  className="remove-service-btn"
-                  onClick={() => removeService(service.id)}
-                >
-                  <X size={14} />
-                </button>
+          {error && (
+            <div className="ss-error">
+              <AlertCircle size={16} />
+              <span>{error}</span>
+            </div>
+          )}
+
+          {/* ── Step 1: Experts ── */}
+          <section className="ss-section">
+            <div className="ss-section-head">
+              <div className="ss-section-icon"><User size={18} /></div>
+              <div>
+                <h2>Choose your specialist</h2>
+                <p>Our certified professionals are ready to serve you</p>
               </div>
-            ))}
-            {selectedServices.length > 3 && (
-              <div className="preview-service-chip more">
-                +{selectedServices.length - 3} more
-              </div>
-            )}
-          </div>
-
-          <div className="services-summary-info">
-            <div className="info-item">
-              <Clock size={16} />
-              <span>Total Duration: {calculateTotalDuration()} mins</span>
             </div>
-            <div className="info-item total-price">
-              <span>Total Amount: ₹{calculateTotalAmount()}</span>
-            </div>
-          </div>
-        </section>
 
-        <section className="expert-section">
-          <div className="section-header">
-            <div className="section-title-area">
-              <div className="title-icon">
-                <User size={22} />
-              </div>
-              <h2>Select Your Specialist</h2>
-            </div>
-            <p className="section-description">
-              Our experienced professionals are here to serve you
-            </p>
-          </div>
-
-          <div className="experts-grid">
-            {experts.map((expert) => (
-              <div
-                key={expert.id}
-                className={`expert-card ${
-                  selectedExpert === expert.id ? "active" : ""
-                }`}
-                onClick={() => handleExpertSelect(expert.id)}
-              >
-                <div className="expert-card-inner">
-                  <div className="expert-img-wrapper">
-                    <img src={expert.image} alt={expert.name} />
-                    {selectedExpert === expert.id && (
-                      <div className="check-badge">
-                        <CheckCircle2 size={24} />
+            <div className="ss-experts-grid">
+              {experts.map(expert => {
+                const active = selectedExpert === expert.id;
+                return (
+                  <button
+                    key={expert.id}
+                    className={`ss-expert-card ${active ? "active" : ""}`}
+                    onClick={() => { setSelectedExpert(expert.id); setError(""); }}
+                  >
+                    <div className="ss-expert-img-wrap">
+                      <img src={expert.image} alt={expert.name} onError={e => { e.target.src = "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200"; }} />
+                      {active && <div className="ss-expert-check"><CheckCircle2 size={20} /></div>}
+                    </div>
+                    <div className="ss-expert-info">
+                      <h3>{expert.name}</h3>
+                      <span className="ss-expert-spec">{expert.specialist}</span>
+                      <div className="ss-expert-meta">
+                        <span><Star size={11} fill="#FFD700" color="#FFD700" /> {expert.rating || "4.9"}</span>
+                        <span className="ss-dot">·</span>
+                        <span>{expert.reviews || "128"} reviews</span>
+                        <span className="ss-dot">·</span>
+                        <span><Award size={11} /> 5+ yrs</span>
                       </div>
-                    )}
-                    <div className="expert-rating-badge">
-                      <Star size={12} fill="#FFD700" color="#FFD700" />
-                      <span>4.9</span>
                     </div>
-                  </div>
-                  <div className="expert-info">
-                    <h3>{expert.name}</h3>
-                    <p className="expert-specialty">{expert.specialist}</p>
-                    <div className="expert-meta">
-                      <span className="expert-experience">
-                        <Award size={12} />
-                        5+ years
-                      </span>
-                      <span className="expert-reviews">
-                        <ThumbsUp size={12} />
-                        128 reviews
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {selectedExpert && (
-          <div className="selected-expert-banner">
-            <img src={selectedExpertData?.image} alt="" />
-            <div className="banner-content">
-              <span className="banner-label">Selected Specialist</span>
-              <h4>{selectedExpertData?.name}</h4>
-              <p>{selectedExpertData?.specialist}</p>
-            </div>
-          </div>
-        )}
-
-        <div className="booking-main-grid">
-          <section className="calendar-card">
-            <div className="section-header">
-              <div className="section-title-area">
-                <div className="title-icon">
-                  <CalendarIcon size={22} />
-                </div>
-                <h2>Select Date</h2>
-              </div>
-            </div>
-            <div className="calendar-wrapper">
-              <Calendar
-                onChange={setSelectedDate}
-                value={selectedDate}
-                minDate={new Date()}
-                tileClassName={tileClassName}
-                tileDisabled={tileDisabled}
-                prev2Label={null}
-                next2Label={null}
-                formatShortWeekday={(locale, date) => format(date, "EEEEE")}
-              />
-              <div className="calendar-legend">
-                <div className="legend-item">
-                  <span className="legend-dot available"></span>
-                  <span>Available</span>
-                </div>
-                <div className="legend-item">
-                  <span className="legend-dot selected"></span>
-                  <span>Selected</span>
-                </div>
-                <div className="legend-item">
-                  <span className="legend-dot today"></span>
-                  <span>Today</span>
-                </div>
-              </div>
+                  </button>
+                );
+              })}
             </div>
           </section>
 
-          <section className="slots-card">
-            <div className="section-header">
-              <div className="section-title-area">
-                <div className="title-icon">
-                  <Clock size={22} />
-                </div>
-                <h2>Available Slots</h2>
+          {/* ── Step 2: Date + Time ── */}
+          <section className="ss-section">
+            <div className="ss-section-head">
+              <div className="ss-section-icon"><CalendarIcon size={18} /></div>
+              <div>
+                <h2>Pick a date & time</h2>
+                <p>Dates with available slots are highlighted</p>
               </div>
-              <p className="slot-date-display">
-                {format(selectedDate, "EEEE, MMMM d, yyyy")}
-              </p>
             </div>
 
-            {currentDaySlots.length > 0 ? (
-              <>
-                <div className="slots-grid">
-                  {currentDaySlots.map((slot) => (
-                    <button
-                      key={slot.id}
-                      disabled={!slot.isAvailable}
-                      className={`slot-button ${
-                        selectedSlot?.id === slot.id ? "selected" : ""
-                      } ${!slot.isAvailable ? "unavailable" : ""}`}
-                      onClick={() => handleSlotSelect(slot)}
-                    >
-                      <span className="slot-time">
-                        {slot.startTime.substring(0, 5)}
-                      </span>
-                      {slot.isAvailable && (
-                        <span className="slot-status">Available</span>
-                      )}
-                    </button>
-                  ))}
+            <div className="ss-datetime-grid">
+              {/* Calendar */}
+              <div className="ss-calendar-card">
+                <Calendar
+                  onChange={date => { setSelectedDate(date); setSelectedSlot(null); }}
+                  value={selectedDate}
+                  minDate={new Date()}
+                  tileClassName={tileClassName}
+                  tileDisabled={tileDisabled}
+                  prev2Label={null}
+                  next2Label={null}
+                  formatShortWeekday={(_, d) => format(d, "EEEEE")}
+                />
+                <div className="ss-cal-legend">
+                  <div className="ss-leg-item"><span className="ss-leg-dot pink" />Available</div>
+                  <div className="ss-leg-item"><span className="ss-leg-dot dark" />Selected</div>
+                  <div className="ss-leg-item"><span className="ss-leg-dot ring" />Today</div>
                 </div>
-                <div className="slots-info">
-                  <Clock size={16} />
-                  <span>All slots are in your local timezone</span>
+              </div>
+
+              {/* Time slots */}
+              <div className="ss-slots-card">
+                <div className="ss-slots-header">
+                  <CalendarIcon size={14} />
+                  <span>{format(selectedDate, "EEE, d MMM yyyy")}</span>
                 </div>
-              </>
-            ) : (
-              <div className="no-slots">
-                <div className="no-slots-icon">
-                  <CalendarIcon size={48} />
+
+                {daySlots.length > 0 ? (
+                  <>
+                    <div className="ss-time-period">
+                      <span className="ss-period-label">Morning</span>
+                      <div className="ss-slots-row">
+                        {daySlots.filter(s => +s.startTime.split(":")[0] < 12).map(slot => (
+                          <SlotBtn key={slot.id} slot={slot} selected={selectedSlot?.id === slot.id} onClick={() => { setSelectedSlot(slot); setError(""); }} />
+                        ))}
+                      </div>
+                    </div>
+                    <div className="ss-time-period">
+                      <span className="ss-period-label">Afternoon</span>
+                      <div className="ss-slots-row">
+                        {daySlots.filter(s => +s.startTime.split(":")[0] >= 12).map(slot => (
+                          <SlotBtn key={slot.id} slot={slot} selected={selectedSlot?.id === slot.id} onClick={() => { setSelectedSlot(slot); setError(""); }} />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="ss-tz-note"><Clock size={12} /> All times in your local timezone</p>
+                  </>
+                ) : (
+                  <div className="ss-no-slots">
+                    <CalendarIcon size={36} />
+                    <p>No slots on this date</p>
+                    <span>Pick another date</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
+
+        {/* ── Right sidebar: live summary ── */}
+        <aside className="ss-sidebar">
+          <div className="ss-summary-card">
+            <div className="ss-summary-head">
+              <Sparkles size={16} />
+              <span>Booking Summary</span>
+            </div>
+
+            {/* Services */}
+            <div className="ss-summ-block">
+              <span className="ss-summ-label">Services</span>
+              {selectedServices.map(sv => (
+                <div key={sv.id} className="ss-summ-row">
+                  <span>{sv.name} <span className="ss-summ-dur">({sv.duration} min)</span></span>
+                  <span className="ss-summ-price">₹{sv.rate}</span>
                 </div>
-                <h3>No Slots Available</h3>
-                <p>Please select another date to view available time slots</p>
+              ))}
+            </div>
+
+            {/* Expert */}
+            <div className="ss-summ-block">
+              <span className="ss-summ-label">Specialist</span>
+              {expertData ? (
+                <div className="ss-summ-expert">
+                  <img src={expertData.image} alt={expertData.name} />
+                  <div>
+                    <strong>{expertData.name}</strong>
+                    <span>{expertData.specialist}</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="ss-summ-pending"><User size={14} /> Not selected yet</div>
+              )}
+            </div>
+
+            {/* Date / Time */}
+            <div className="ss-summ-block">
+              <span className="ss-summ-label">Date & Time</span>
+              {selectedSlot ? (
+                <div className="ss-summ-row">
+                  <CalendarIcon size={13} />
+                  <span>{format(selectedDate, "d MMM yyyy")} · {fmtTime(selectedSlot.startTime)}</span>
+                </div>
+              ) : (
+                <div className="ss-summ-pending"><CalendarIcon size={14} /> Not selected yet</div>
+              )}
+            </div>
+
+            <div className="ss-summ-divider" />
+
+            {/* Total */}
+            <div className="ss-summ-total">
+              <div>
+                <span className="ss-summ-tot-label">Total</span>
+                <span className="ss-summ-dur">{totalDuration} min session</span>
+              </div>
+              <span className="ss-summ-tot-amt">₹{totalAmount}</span>
+            </div>
+
+            <button className="ss-confirm-btn" onClick={handleConfirm} disabled={!canProceed}>
+              {canProceed ? <>Continue to Payment <ChevronRight size={18} /></> : "Complete all steps above"}
+            </button>
+
+            {!canProceed && (
+              <div className="ss-steps-left">
+                {!selectedExpert && <span>① Choose a specialist</span>}
+                {!selectedSlot   && <span>② Pick a time slot</span>}
               </div>
             )}
-          </section>
-        </div>
-
-        <div className="booking-summary">
-          <div className="summary-card">
-            <h3>Booking Summary</h3>
-            <div className="summary-items">
-              <div className="summary-item">
-                <span className="item-label">
-                  Services ({selectedServices.length})
-                </span>
-                <span className="item-value">₹{calculateTotalAmount()}</span>
-              </div>
-              {selectedExpert ? (
-                <div className="summary-item">
-                  <span className="item-label">Specialist</span>
-                  <span className="item-value">{selectedExpertData?.name}</span>
-                </div>
-              ) : (
-                <div className="summary-item placeholder">
-                  <span>No specialist selected</span>
-                </div>
-              )}
-              {selectedSlot ? (
-                <div className="summary-item">
-                  <span className="item-label">Date & Time</span>
-                  <span className="item-value">
-                    {format(selectedDate, "MMM d, yyyy")} •{" "}
-                    {selectedSlot.startTime.substring(0, 5)}
-                  </span>
-                </div>
-              ) : (
-                <div className="summary-item placeholder">
-                  <span>No time slot selected</span>
-                </div>
-              )}
-            </div>
           </div>
-        </div>
 
-        <div className="sticky-footer">
-          <div className="footer-content">
-            <div className="selection-preview">
-              {selectedExpert && selectedSlot ? (
-                <>
-                  <span className="preview-label">Ready to book</span>
-                  <div className="preview-details">
-                    <span className="preview-expert">
-                      {selectedExpertData?.name}
-                    </span>
-                    <span className="preview-divider">•</span>
-                    <span className="preview-time">
-                      {format(selectedDate, "MMM d")} •{" "}
-                      {selectedSlot.startTime.substring(0, 5)}
-                    </span>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <span className="preview-label">Selection pending</span>
-                  <p className="placeholder-text">
-                    {!selectedExpert
-                      ? "Choose a specialist"
-                      : "Select a time slot"}
-                  </p>
-                </>
-              )}
-            </div>
-            <button
-              className="confirm-btn"
-              onClick={handleConfirm}
-              disabled={
-                !selectedExpert ||
-                !selectedSlot ||
-                selectedServices.length === 0
-              }
-            >
-              <span>Continue to Summary</span>
-              <ChevronRight size={20} />
-            </button>
+          {/* Trust badges */}
+          <div className="ss-trust">
+            <div className="ss-trust-item">✓ Free cancellation up to 24 hrs</div>
+            <div className="ss-trust-item">✓ Instant confirmation</div>
+            <div className="ss-trust-item">✓ Certified professionals</div>
           </div>
-        </div>
+        </aside>
       </div>
 
-      {/* Services Details Modal */}
-      {showServicesModal && (
-        <div
-          className="modal-overlay"
-          onClick={() => setShowServicesModal(false)}
-        >
-          <div className="services-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
+      {/* ── Mobile sticky CTA ── */}
+      <div className={`ss-mobile-cta ${canProceed ? "ready" : ""}`}>
+        <div className="ss-mobile-cta-info">
+          <span className="ss-mobile-total">₹{totalAmount}</span>
+          <span className="ss-mobile-sub">{canProceed ? `${expertData?.name} · ${fmtTime(selectedSlot?.startTime)}` : "Complete your selection"}</span>
+        </div>
+        <button className="ss-mobile-btn" onClick={handleConfirm} disabled={!canProceed}>
+          Continue <ChevronRight size={16} />
+        </button>
+      </div>
+
+      {/* ── Services modal ── */}
+      {showModal && (
+        <div className="ss-modal-bg" onClick={() => setShowModal(false)}>
+          <div className="ss-modal" onClick={e => e.stopPropagation()}>
+            <div className="ss-modal-head">
               <h3>Selected Services</h3>
-              <button onClick={() => setShowServicesModal(false)}>
-                <X size={20} />
-              </button>
+              <button onClick={() => setShowModal(false)}><X size={20} /></button>
             </div>
-            <div className="modal-body">
-              {selectedServices.map((service) => (
-                <div key={service.id} className="modal-service-item">
-                  <div className="service-info">
-                    <h4>{service.name}</h4>
-                    <p className="service-duration">
-                      ⏳ {service.duration} mins
-                    </p>
-                    {service.description && (
-                      <p className="service-description">
-                        {service.description}
-                      </p>
-                    )}
+            <div className="ss-modal-body">
+              {selectedServices.map(sv => (
+                <div key={sv.id} className="ss-modal-row">
+                  <div>
+                    <h4>{sv.name}</h4>
+                    <span><Clock size={12} /> {sv.duration} mins</span>
+                    {sv.description && <p>{sv.description}</p>}
                   </div>
-                  <div className="service-actions">
-                    <span className="service-price">₹{service.rate}</span>
-                    <button
-                      className="remove-service-modal-btn"
-                      onClick={() => removeService(service.id)}
-                    >
-                      Remove
-                    </button>
+                  <div className="ss-modal-right">
+                    <strong>₹{sv.rate}</strong>
+                    <button className="ss-modal-remove" onClick={() => removeService(sv.id)}>Remove</button>
                   </div>
                 </div>
               ))}
-              <div className="modal-total">
-                <span>Total Duration: {calculateTotalDuration()} mins</span>
-                <span className="total-amount">
-                  Total: ₹{calculateTotalAmount()}
-                </span>
+              <div className="ss-modal-total">
+                <span>Total ({totalDuration} min)</span>
+                <strong>₹{totalAmount}</strong>
               </div>
             </div>
           </div>
@@ -637,4 +446,15 @@ function SelectSlotScreen() {
   );
 }
 
-export default SelectSlotScreen;
+function SlotBtn({ slot, selected, onClick }) {
+  return (
+    <button
+      disabled={!slot.isAvailable}
+      className={`ss-slot-btn ${selected ? "selected" : ""} ${!slot.isAvailable ? "booked" : ""}`}
+      onClick={onClick}
+    >
+      {fmtTime(slot.startTime)}
+      {!slot.isAvailable && <span className="ss-slot-tag">Booked</span>}
+    </button>
+  );
+}

@@ -27,7 +27,6 @@ const FAQS = [
     q: "Are the products used safe for sensitive skin?",
     a: "Yes. We exclusively use premium, organic, and dermatologist-approved products suitable for all skin and hair types including sensitive skin. Our stylists will consult you on the right products before every service.",
   },
-  
 ];
 
 function FAQItem({ item, index, isOpen, onToggle }) {
@@ -35,24 +34,24 @@ function FAQItem({ item, index, isOpen, onToggle }) {
 
   return (
     <div
-      className={`faq-item${isOpen ? " faq-item--open" : ""}`}
+      className={`hfaq-item${isOpen ? " hfaq-item--open" : ""}`}
       style={{ "--i": index }}
     >
-      <button className="faq-trigger" onClick={onToggle} aria-expanded={isOpen}>
-        <span className="faq-q">{item.q}</span>
-        <span className="faq-icon">
+      <button className="hfaq-trigger" onClick={onToggle} aria-expanded={isOpen}>
+        <span className="hfaq-q">{item.q}</span>
+        <span className="hfaq-icon">
           {isOpen ? <Minus size={18} /> : <Plus size={18} />}
         </span>
       </button>
 
       <div
-        className="faq-body"
+        className="hfaq-body"
         ref={bodyRef}
         style={{
           maxHeight: isOpen ? `${bodyRef.current?.scrollHeight ?? 300}px` : "0px",
         }}
       >
-        <p className="faq-answer">{item.a}</p>
+        <p className="hfaq-answer">{item.a}</p>
       </div>
     </div>
   );
@@ -62,15 +61,14 @@ function FAQ() {
   const [openIndex, setOpenIndex] = useState(0);
   const sectionRef = useRef(null);
 
-  /* Scroll-reveal for items */
   useEffect(() => {
-    const items = sectionRef.current?.querySelectorAll(".faq-item");
+    const items = sectionRef.current?.querySelectorAll(".hfaq-item");
     if (!items) return;
     const obs = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
           if (e.isIntersecting) {
-            e.target.classList.add("faq-item--visible");
+            e.target.classList.add("hfaq-item--visible");
             obs.unobserve(e.target);
           }
         }),
@@ -83,31 +81,27 @@ function FAQ() {
   const toggle = (i) => setOpenIndex((prev) => (prev === i ? null : i));
 
   return (
-    <section className="faq-section" ref={sectionRef}>
-      {/* Soft decorative blobs */}
-      <div className="faq-blob faq-blob-1" />
-      <div className="faq-blob faq-blob-2" />
+    <section className="hfaq-section" ref={sectionRef}>
+      <div className="hfaq-blob hfaq-blob-1" />
+      <div className="hfaq-blob hfaq-blob-2" />
 
-      <div className="faq-container">
-        {/* Header */}
-        <div className="faq-header">
-          <div className="faq-eyebrow">
+      <div className="hfaq-container">
+        <div className="hfaq-header">
+          <div className="hfaq-eyebrow">
             <Sparkles size={12} />
             <span>Got Questions?</span>
           </div>
-          <h2 className="faq-title">
+          <h2 className="hfaq-title">
             Frequently Asked<br />
             <em>Questions</em>
           </h2>
-          <p className="faq-sub">
+          <p className="hfaq-sub">
             Everything you need to know about booking and visiting Glamio.
           </p>
         </div>
 
-        {/* Two-column layout */}
-        <div className="faq-layout">
-          {/* Left: accordion */}
-          <div className="faq-list">
+        <div className="hfaq-layout">
+          <div className="hfaq-list">
             {FAQS.map((item, i) => (
               <FAQItem
                 key={i}
@@ -119,28 +113,25 @@ function FAQ() {
             ))}
           </div>
 
-          {/* Right: decorative panel */}
-          <div className="faq-panel">
-            <div className="faq-panel__inner">
-              <div className="faq-panel__icon">✦</div>
-              <h3 className="faq-panel__heading">Still have questions?</h3>
-              <p className="faq-panel__text">
+          <div className="hfaq-panel">
+            <div className="hfaq-panel__inner">
+              <div className="hfaq-panel__icon">✦</div>
+              <h3 className="hfaq-panel__heading">Still have questions?</h3>
+              <p className="hfaq-panel__text">
                 Our team is always happy to help. Reach out to us directly and
                 we'll get back to you within the hour.
               </p>
-              <a href="/contact" className="faq-panel__btn">
-                Contact Us
-              </a>
-              <div className="faq-panel__divider" />
-              <div className="faq-panel__stat">
+              <a href="/contact" className="hfaq-panel__btn">Contact Us</a>
+              <div className="hfaq-panel__divider" />
+              <div className="hfaq-panel__stat">
                 <strong>2 min</strong>
                 <span>Average response time</span>
               </div>
-              <div className="faq-panel__stat">
+              <div className="hfaq-panel__stat">
                 <strong>Mon – Sun</strong>
                 <span>We're available daily</span>
               </div>
-              <div className="faq-panel__stat">
+              <div className="hfaq-panel__stat">
                 <strong>100%</strong>
                 <span>Customer satisfaction rate</span>
               </div>

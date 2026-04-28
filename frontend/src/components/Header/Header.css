@@ -946,7 +946,8 @@
 
 @media (max-width: 640px) {
   .glam-header {
-    height: 64px;
+    height: 64px !important;
+            padding: 0 !important;
   }
 
   .glam-header.scrolled {

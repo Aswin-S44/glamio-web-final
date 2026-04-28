@@ -1,18 +1,15 @@
-import React, { useState } from "react";
+import React from "react";
 import "./SignUp.css";
 import vid from "../../../components/Media/Video/New1.mp4";
-import Header from "../../../components/Header/Header";
-import Footer from "../../../components/Footer/Footer";
 import GoogleImg from "../../../components/Media/Images/google.png";
 import { useNavigate } from "react-router-dom";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-
+import { Sparkles } from "lucide-react";
 import { auth } from "../../../config/firebase";
 import { googleSignInApi } from "../../../services/auth.service";
 import api from "../../../utils/api.util";
 
 function CustomerSignUp() {
-  const [mode, setMode] = useState(null); // null | 'salon' | 'customer'
   const navigate = useNavigate();
 
   const handleGoogleSignIn = async () => {
@@ -24,84 +21,60 @@ function CustomerSignUp() {
       localStorage.setItem("token", data.data.token);
 
       if (data.data.token) {
-        let dataToSignup = {
+        const dataToSignup = {
           email: data.data.user.email,
           username: data.data.user.name,
           profileImage: data.data.user.picture,
           userType: "customer",
         };
         const userResponse = await api.post("/auth/signup", dataToSignup);
-
         if (userResponse && userResponse.data.success) {
           navigate("/");
         }
-        //
-        // window.location.reload();
       }
-    } catch (error) {
-      console.error("Google sign-in failed", error);
+    } catch (err) {
+      console.error("Google sign-in failed", err);
     }
   };
 
   return (
-    <>
-      {" "}
-      <Header />
-      <div id="home-page-add-new">
-        <div className="container-fluid intro-container">
-          <video id="landing-vid" autoPlay loop muted playsInline src={vid} />
-          <div className="row form-layout">
-            {/* LEFT INFO */}
-            <div className="col-md-6 form-info">
-              <h1>{mode === "salon" ? "Salon Portal" : "Customer Access"}</h1>
-              <p>
-                {mode === "salon"
-                  ? "Access powerful tools to manage appointments, staff, services, and grow your luxury salon brand."
-                  : "Sign in to book premium salon services, manage appointments, and enjoy a seamless beauty experience."}
-              </p>
+    <div className="su-page">
+      <video className="su-video" autoPlay loop muted playsInline src={vid} />
+      <div className="su-overlay" />
 
-              <ul>
-                <li>✔ Secure & private access</li>
-                <li>✔ Premium experience</li>
-                <li>✔ Smart scheduling</li>
-              </ul>
+      <div className="su-content">
+        <div className="su-topbar" onClick={() => navigate("/")}>
+          <Sparkles size={22} />
+          <span>GLAM<em>IO</em></span>
+        </div>
 
-              <button className="back-btn" onClick={() => navigate("/signup")}>
-                ← Back
-              </button>
+        <div className="su-form-view">
+          <div className="su-form-info">
+            <h1>Customer Access</h1>
+            <p>Sign in to book premium salon services, manage appointments, and enjoy a seamless luxury beauty experience.</p>
+            <div className="su-info-list">
+              <div className="su-info-item">Discover top-rated salons near you</div>
+              <div className="su-info-item">Book multiple services in one go</div>
+              <div className="su-info-item">Free cancellation up to 24 hours</div>
+              <div className="su-info-item">Instant confirmation & reminders</div>
             </div>
+            <button className="su-back-btn" onClick={() => navigate("/signup")}>← Back</button>
+          </div>
 
-            {/* RIGHT GLASS FORM */}
-            <div className="col-md-6 glass-form-wrapper">
-              <div className="glass-card animate-fade-up">
-                <h2 className="glass-title">
-                  {mode === "salon" ? "Salon Access" : "Customer Access"}
-                </h2>
-
-                <p className="glass-subtitle">
-                  {mode === "salon"
-                    ? "Manage bookings, clients, and grow your luxury brand"
-                    : "Book premium services and experience luxury care"}
-                </p>
-
-                <button
-                  className="google-hero-btn"
-                  onClick={handleGoogleSignIn}
-                >
-                  <img src={GoogleImg} alt="Google" />
-                  Continue with Google
-                </button>
-
-                <span className="secure-text">
-                  Secure authentication powered by Google
-                </span>
-              </div>
+          <div className="su-glass-wrap">
+            <div className="su-glass-card">
+              <h2>Join Glamio</h2>
+              <p>Create your account and start booking premium beauty services instantly.</p>
+              <button className="su-google-btn" onClick={handleGoogleSignIn}>
+                <img src={GoogleImg} alt="Google" />
+                Continue with Google
+              </button>
+              <span className="su-secure-text">Secure authentication powered by Google</span>
             </div>
           </div>
         </div>
-      </div>{" "}
-      <Footer />
-    </>
+      </div>
+    </div>
   );
 }
 
