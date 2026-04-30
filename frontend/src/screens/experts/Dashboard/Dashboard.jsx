@@ -53,6 +53,29 @@ function Dashboard() {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
+  /* ── Approval guard: redirect un-approved shops ── */
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) { navigate("/signin"); return; }
+
+    (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/auth/profile`, {
+          headers: { Authorization: token },
+        });
+        if (!res.ok) { navigate("/signin"); return; }
+        const profile = await res.json();
+        const shop = profile.shop;
+        if (!shop) { navigate("/"); return; }
+        if (!shop.isOnboarded) {
+          navigate(shop.isProfileCompleted ? "/shop/onboard" : "/shop/edit-profile");
+        }
+      } catch {
+        navigate("/signin");
+      }
+    })();
+  }, [navigate]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -303,16 +326,18 @@ function Dashboard() {
                       <div>
                         <h4 className="glam-name">{item.customer.username}</h4>
                         <p className="glam-subtext">
-                          {item.expert.name} • {item.slot.time}
+                          {item.expert.name} • {item.slot.startTime?.slice(0, 5)}
                         </p>
                       </div>
                     </div>
                     <div
                       className={`glam-status-dot ${
-                        item.appointment.status?.toLowerCase() || "confirmed"
+                        item.status?.toLowerCase() || "pending"
                       }`}
                     >
-                      {item.appointment.status || "Confirmed"}
+                      {item.status
+                        ? item.status.charAt(0).toUpperCase() + item.status.slice(1)
+                        : "Pending"}
                     </div>
                   </div>
                 ))

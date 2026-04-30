@@ -50,13 +50,16 @@ const DUMMY_BOOKINGS = [
 ];
 
 const STATUS_CONFIG = {
+  pending:   { label: "Pending",   icon: <AlertCircle size={14} />, color: "amber" },
+  accepted:  { label: "Confirmed", icon: <CheckCircle size={14} />, color: "green" },
+  completed: { label: "Completed", icon: <CheckCircle size={14} />, color: "blue"  },
+  rejected:  { label: "Cancelled", icon: <XCircle     size={14} />, color: "red"   },
+  on_hold:   { label: "On Hold",   icon: <AlertCircle size={14} />, color: "amber" },
   confirmed: { label: "Confirmed", icon: <CheckCircle size={14} />, color: "green" },
-  pending: { label: "Pending", icon: <AlertCircle size={14} />, color: "amber" },
-  completed: { label: "Completed", icon: <CheckCircle size={14} />, color: "blue" },
-  cancelled: { label: "Cancelled", icon: <XCircle size={14} />, color: "red" },
+  cancelled: { label: "Cancelled", icon: <XCircle     size={14} />, color: "red"   },
 };
 
-const TABS = ["All", "Confirmed", "Completed", "Cancelled"];
+const TABS = ["All", "Pending", "Confirmed", "Completed", "Cancelled"];
 
 export default function MyBookingsScreen() {
   const navigate = useNavigate();
@@ -70,18 +73,23 @@ export default function MyBookingsScreen() {
 
   useEffect(() => {
     const fetchBookings = async () => {
+      if (!token) {
+        setBookings(DUMMY_BOOKINGS);
+        setUsingDummy(true);
+        setLoading(false);
+        return;
+      }
       try {
-        const res = await fetch(`${BASE_URL}/customer/appointments`, {
+        const res = await fetch(`${BASE_URL}/appointments/my`, {
           headers: { Authorization: token },
         });
         if (!res.ok) throw new Error("failed");
         const data = await res.json();
-        const list = data.appointments || data || [];
+        const list = data.appointments || [];
         if (list.length > 0) {
           setBookings(list);
         } else {
-          setBookings(DUMMY_BOOKINGS);
-          setUsingDummy(true);
+          setBookings([]);
         }
       } catch {
         setBookings(DUMMY_BOOKINGS);
@@ -93,9 +101,17 @@ export default function MyBookingsScreen() {
     fetchBookings();
   }, [token]);
 
+  const STATUS_TAB_MAP = {
+    Confirmed: ["accepted", "confirmed"],
+    Cancelled: ["rejected", "cancelled"],
+    Pending:   ["pending", "on_hold"],
+    Completed: ["completed"],
+  };
+
   const filtered = bookings.filter((b) => {
     if (activeTab === "All") return true;
-    return b.status?.toLowerCase() === activeTab.toLowerCase();
+    const allowed = STATUS_TAB_MAP[activeTab] || [activeTab.toLowerCase()];
+    return allowed.includes(b.status?.toLowerCase());
   });
 
   const formatDate = (dateStr) => {
@@ -136,7 +152,10 @@ export default function MyBookingsScreen() {
               <span className="tab-count">
                 {tab === "All"
                   ? bookings.length
-                  : bookings.filter((b) => b.status?.toLowerCase() === tab.toLowerCase()).length}
+                  : bookings.filter((b) => {
+                      const allowed = STATUS_TAB_MAP[tab] || [tab.toLowerCase()];
+                      return allowed.includes(b.status?.toLowerCase());
+                    }).length}
               </span>
             </button>
           ))}
@@ -200,12 +219,18 @@ function BookingCard({ booking, formatDate, formatTime, onRebook }) {
   const services = booking.services || booking.appointmentServices || [];
   const shopName = booking.shopName || booking.shop?.parlourName || "Salon";
   const shopAddress = booking.shopAddress || booking.shop?.address || "";
-  const shopImage = booking.shopImage || booking.shop?.profileImage ||
+  const shopImage =
+    booking.shopImage ||
+    booking.shop?.shopImage ||
+    booking.shop?.profileImage ||
     "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200";
   const expertName = booking.expertName || booking.expert?.name || "";
   const date = booking.date || booking.slot?.slotDate || "";
   const time = booking.time || booking.slot?.startTime || "";
-  const total = booking.total || services.reduce((s, sv) => s + (sv.rate || sv.price || 0), 0);
+  const total =
+    booking.total ||
+    booking.rate ||
+    services.reduce((s, sv) => s + (sv.rate || sv.price || 0), 0);
 
   return (
     <div className={`booking-card status-${status.color}`}>
@@ -262,7 +287,7 @@ function BookingCard({ booking, formatDate, formatTime, onRebook }) {
             Rebook <ChevronRight size={14} />
           </button>
         )}
-        {(booking.status === "confirmed" || booking.status === "pending") && (
+        {(booking.status === "accepted" || booking.status === "confirmed" || booking.status === "pending" || booking.status === "on_hold") && (
           <button className="view-btn" onClick={onRebook}>
             View <ChevronRight size={14} />
           </button>

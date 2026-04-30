@@ -25,38 +25,38 @@ export const updateShopDB = async (userId, payload) => {
 
   return db.transaction(async (tx) => {
     if (user && Object.keys(user).length > 0) {
-      await tx
-        .update(users)
-        .set({
-          username: user.username,
-          phone: user.phone,
-          profileImage: user.profileImage,
-          fcmToken: user.fcmToken,
-          updatedAt: new Date(),
-        })
-        .where(eq(users.id, userId));
+      const userFields = { updatedAt: new Date() };
+      if (user.username     !== undefined) userFields.username     = user.username;
+      if (user.phone        !== undefined) userFields.phone        = user.phone;
+      if (user.profileImage !== undefined) userFields.profileImage = user.profileImage;
+      if (user.fcmToken     !== undefined) userFields.fcmToken     = user.fcmToken;
+      await tx.update(users).set(userFields).where(eq(users.id, userId));
     }
 
     if (shop && Object.keys(shop).length > 0) {
       let shopId = shopDetails?.shop?.id;
 
       if (shopId) {
-        await tx
-          .update(shopOwners)
-          .set({
-            about: shop.about,
-            address: shop.address,
-            latitude: shop.latitude,
-            longitude: shop.longitude,
-            googleReviewUrl: shop.googleReviewUrl,
-            openingHours: shop.openingHours,
-            parlourName: shop.parlourName,
-            placeId: shop.placeId,
-            totalRating: shop.totalRating,
-            isProfileCompleted: shop.isProfileCompleted,
-            isOnboarded: shop.isOnboarded,
-          })
-          .where(eq(shopOwners.id, shopId));
+        // Only include fields that were explicitly provided — avoids
+        // writing undefined into NOT NULL columns (latitude, longitude, etc.)
+        const shopFields = {};
+        if (shop.about        !== undefined) shopFields.about        = shop.about;
+        if (shop.address      !== undefined) shopFields.address      = shop.address;
+        if (shop.latitude     !== undefined) shopFields.latitude     = shop.latitude;
+        if (shop.longitude    !== undefined) shopFields.longitude    = shop.longitude;
+        if (shop.googleReviewUrl !== undefined) shopFields.googleReviewUrl = shop.googleReviewUrl;
+        if (shop.openingHours !== undefined) shopFields.openingHours = shop.openingHours;
+        if (shop.parlourName  !== undefined) shopFields.parlourName  = shop.parlourName;
+        if (shop.placeId      !== undefined) shopFields.placeId      = shop.placeId;
+        if (shop.totalRating  !== undefined) shopFields.totalRating  = shop.totalRating;
+        if (shop.isProfileCompleted !== undefined) shopFields.isProfileCompleted = shop.isProfileCompleted;
+        if (shop.isOnboarded  !== undefined) shopFields.isOnboarded  = shop.isOnboarded;
+        if (shop.shopImage    !== undefined) shopFields.shopImage    = shop.shopImage;
+        if (shop.galleryImages !== undefined) shopFields.galleryImages = shop.galleryImages;
+
+        if (Object.keys(shopFields).length > 0) {
+          await tx.update(shopOwners).set(shopFields).where(eq(shopOwners.id, shopId));
+        }
       } else {
         const [result] = await tx
           .insert(shopOwners)

@@ -12,7 +12,7 @@ export const users = pgTable("users", {
 
   username: varchar("username", { length: 256 }).notNull(),
   email: varchar("email", { length: 256 }).notNull().unique(),
-  phone: varchar("phone", { length: 15 }).unique(),
+  phone: varchar("phone", { length: 20 }),
 
   isActive: boolean("is_active").notNull().default(false),
   emailVerified: boolean("email_verified").notNull().default(false),

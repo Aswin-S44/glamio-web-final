@@ -29,7 +29,11 @@
 .ss-progress-bar {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  position: sticky; top: 68px; z-index: 90;
+  position: sticky; top: 76px; z-index: 90;
+}
+
+@media (max-width: 640px) {
+  .ss-progress-bar { top: 64px; }
 }
 .ss-progress-inner {
   max-width: 1200px; margin: 0 auto;
@@ -565,4 +569,15 @@
   .ss-progress-inner { padding: 12px 16px; gap: 0; }
   .ss-step-label { display: none; }
   .ss-step.active .ss-step-label { display: block; }
+}
+
+@media (max-width: 480px) {
+  .ss-services-strip { flex-wrap: nowrap; overflow-x: auto; gap: 10px; padding: 10px 14px; }
+  .ss-strip-chips { flex-wrap: nowrap; }
+  .ss-section { padding: 16px; }
+  .ss-expert-card { padding: 12px 14px; gap: 12px; }
+  .ss-expert-info h3 { font-size: 14px; }
+  .ss-slots-row { gap: 6px; }
+  .ss-slot-btn { padding: 7px 10px; font-size: 12px; }
+  .ss-mobile-cta { padding: 12px 16px; }
 }

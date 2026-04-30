@@ -1,6 +1,9 @@
 import React from "react";
 import "./Footer.css";
 import { ArrowRight, Sparkles, ChevronUp, Shield, Award, Star } from "lucide-react";
+import logoImage from "../Media/Images/Orucom wide.png"
+
+
 
 const DISCOVER = [
   { label: "Home", href: "/" },
@@ -39,10 +42,7 @@ function Footer() {
           {/* ── Brand ── */}
           <div className="gf__brand">
             <div className="gf__logo">
-              <div className="gf__logo-icon">
-                <Sparkles size={17} />
-              </div>
-              <span className="gf__logo-text">GLAM<em>IO</em></span>
+            <img src={logoImage}  style={{width:"70%"}}/>
             </div>
 
             <p className="gf__brand-desc">

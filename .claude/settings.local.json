@@ -1,7 +1,32 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(node -e ' *)",
+      "Bash(npx react-scripts *)",
+      "Bash(findstr /v \"^$\")",
+      "Bash(xargs grep *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:5000/api/v1/admin/shops\" -H \"Authorization: admin $\\(echo -n 'admin@glamio.com:Admin@123')",
+      "Bash(node -e \"console.log\\(Buffer.from\\('admin@glamio.com:Admin@123'\\).toString\\('base64'\\)\\)\")",
+      "Bash(curl -s \"http://localhost:5000/health\")",
+      "Bash(curl -s \"http://localhost:5000/api/v1/admin/shops\")",
+      "Bash(netstat -ano)",
+      "Bash(findstr \":5000\")",
+      "Bash(lsof -ti:5000)",
+      "Bash(cmd.exe /c \"taskkill /F /IM node.exe\")",
+      "Bash(awk '{print $1}')",
+      "Bash(node src/server.js)",
+      "Bash(curl -s \"http://localhost:5000/api/v1/admin/shops\" -H \"Authorization: admin YWRtaW5AZ2xhbWlvLmNvbTpBZG1pbkAxMjM=\")",
+      "Bash(fuser -k 5000/tcp)",
+      "Bash(curl -s http://localhost:5000/api/v1/admin/shops -H 'Authorization: admin YWRtaW5AZ2xhbWlvLmNvbTpBZG1pbkAxMjM=')",
+      "Bash(curl -s http://localhost:5000/health)",
+      "Bash(curl -s http://localhost:5001/health)",
+      "Bash(awk '{print $2, $9, $10}')",
+      "Read(//tmp/**)",
+      "Bash(curl -sv \"http://localhost:5000/health\")",
+      "Bash(curl -sv http://localhost:5000/api/v1/admin/shops -H 'Authorization: admin YWRtaW5AZ2xhbWlvLmNvbTpBZG1pbkAxMjM=')",
+      "Bash(curl -s http://127.0.0.1:5000/api/v1/admin/shops -H 'Authorization: admin YWRtaW5AZ2xhbWlvLmNvbTpBZG1pbkAxMjM=')",
+      "Bash(curl -s 'http://[::1]:5000/api/v1/admin/shops' -H 'Authorization: admin YWRtaW5AZ2xhbWlvLmNvbTpBZG1pbkAxMjM=')"
     ]
   }
 }

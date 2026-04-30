@@ -123,8 +123,8 @@ export const getShopReviewsAndImages = async (req, res) => {
 
 export const getAllShopsServices = async (req, res) => {
   try {
-    let limit = 1;
-    let offset = 10;
+    let limit = 20;
+    let offset = 0;
     const result = await getAllServices(limit, offset);
 
     res.status(200).json(result);

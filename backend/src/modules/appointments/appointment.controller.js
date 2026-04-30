@@ -2,6 +2,7 @@ import {
   approveAppointmentLogic,
   getAppointmentById,
   getAppointmentService,
+  getCustomerAppointmentsService,
 } from "./appointment.service.js";
 import { getShopIdByUserId } from "../slots/slot.service.js";
 
@@ -24,6 +25,14 @@ export const getAppointmentDetailsById = async (req, res) => {
     return res.status(404).json({ message: "Appointment not found" });
 
   res.json({ appointment });
+};
+
+export const getCustomerAppointments = async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+  const appointments = await getCustomerAppointmentsService(userId);
+  res.json({ appointments });
 };
 
 export const approveAppointment = async (req, res) => {

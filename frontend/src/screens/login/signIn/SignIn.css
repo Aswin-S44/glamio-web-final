@@ -360,6 +360,30 @@
   box-shadow: var(--shadow-pink);
 }
 
+/* Admin portal link */
+.si-admin-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  padding: 11px;
+  background: #f7f7f8;
+  border: 1.5px solid #e8e8e8;
+  border-radius: 50px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #666;
+  cursor: pointer;
+  transition: border-color .18s, color .18s, background .18s;
+  font-family: 'DM Sans', sans-serif;
+}
+.si-admin-link:hover {
+  border-color: #c2185b;
+  color: #c2185b;
+  background: #fff5f8;
+}
+
 /* Signup link */
 .si-signup-link {
   text-align: center;
