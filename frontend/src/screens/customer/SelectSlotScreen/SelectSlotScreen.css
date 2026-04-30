@@ -581,3 +581,10 @@
   .ss-slot-btn { padding: 7px 10px; font-size: 12px; }
   .ss-mobile-cta { padding: 12px 16px; }
 }
+
+@media (max-width: 360px) {
+  .ss-summary-card { padding: 14px; }
+  .ss-confirm-btn { font-size: 13px; padding: 12px; }
+  .ss-mobile-total { font-size: 1.1rem; }
+  .ss-section-head h2 { font-size: 1rem; }
+}

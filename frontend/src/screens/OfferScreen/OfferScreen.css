@@ -190,3 +190,20 @@
     .of-form-side { width: 100%; display: flex; justify-content: center; }
     .of-row { grid-template-columns: 1fr; }
   }
+@media (max-width: 640px) {
+  .of-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .of-header { gap: 1rem; }
+  .of-nav-brand h1 { font-size: 1.4rem; }
+  .of-header-actions { width: 100%; }
+  .of-modal { border-radius: 20px; }
+  .of-modal-header, .of-form, .of-modal-footer { padding: 1rem 1.2rem; }
+  .of-modal-footer { flex-direction: column; }
+  .of-cancel, .of-submit { width: 100%; text-align: center; justify-content: center; }
+}
+
+@media (max-width: 420px) {
+  .of-grid { grid-template-columns: 1fr; }
+  .of-add-btn span { display: none; }
+  .of-add-btn { padding: 0.8rem; }
+  .of-body h3 { font-size: 0.95rem; }
+}

@@ -560,3 +560,20 @@
   .filter-panel { flex-direction: column; align-items: flex-start; gap: 20px; }
   .clear-all-btn { margin-left: 0; }
 }
+
+@media (max-width: 640px) {
+  .shops-hero h1 { font-size: 1.8rem; }
+  .shops-hero p { font-size: 14px; }
+  .shops-hero-tag { font-size: 12px; }
+  .shops-search-bar { padding: 10px 14px; }
+  .service-chips { gap: 6px; }
+  .service-chip { padding: 6px 12px; font-size: 12px; }
+  .shops-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .shops-body { padding: 16px; }
+}
+
+@media (max-width: 420px) {
+  .shops-grid { grid-template-columns: 1fr; }
+  .shops-hero h1 { font-size: 1.5rem; }
+  .shop-card-name { font-size: 14px; }
+}

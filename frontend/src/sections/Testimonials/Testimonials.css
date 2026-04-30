@@ -17,3 +17,15 @@
   border-radius: 14px;
   box-shadow: 0 15px 30px rgba(0,0,0,0.07);
 }
+
+@media (max-width: 768px) {
+  .testimonials { padding: 56px 16px; }
+  .testimonial-grid { gap: 16px; margin-top: 28px; }
+  .testimonial-card { padding: 22px; }
+}
+
+@media (max-width: 480px) {
+  .testimonials { padding: 48px 12px; }
+  .testimonial-grid { grid-template-columns: 1fr; }
+  .testimonial-card { padding: 18px; border-radius: 12px; }
+}

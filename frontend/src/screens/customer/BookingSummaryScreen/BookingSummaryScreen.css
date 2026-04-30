@@ -629,3 +629,8 @@
     text-align: center;
   }
 }
+@media (max-width: 480px) {
+  .date-block, .time-block { gap: 4px; }
+  .booking-summary-card { padding: 16px; border-radius: 16px; }
+  .summary-title { font-size: 1.1rem; }
+}

@@ -396,19 +396,12 @@ function Dashboard() {
       <main className="glam-main">
         <header className="glam-header">
           <div className="glam-header-left">
-            {/* <button
+            <button
               className="glam-menu-toggle"
               onClick={() => setIsMobileOpen(true)}
             >
-              <Menu />
+              <Menu size={22} />
             </button>
-            <div className="glam-search">
-              <Search size={18} />
-              <input
-                type="text"
-                placeholder="Search appointments or services..."
-              />
-            </div> */}
           </div>
 
           <div className="glam-header-right">

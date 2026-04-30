@@ -265,3 +265,11 @@
   .sv-pagination-modern { width: 100%; justify-content: space-between; }
   .sv-pag-numbers { padding: 0 0.5rem; font-size: 0.9rem; }
 }
+@media (max-width: 400px) {
+  .sv-title-sec h1 { font-size: 1.3rem; }
+  .sv-card { border-radius: 14px; }
+  .sv-card-body { padding: 10px 12px; }
+  .sv-name { font-size: 0.9rem; }
+  .sv-filter-tabs { gap: 4px; }
+  .sv-filter-tab { font-size: 11px; padding: 6px 10px; }
+}

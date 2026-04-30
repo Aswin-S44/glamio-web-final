@@ -154,3 +154,13 @@
     padding: 30px 20px;
   }
 }
+@media (max-width: 640px) {
+  .onboard-container { padding: 16px; min-height: 100vh; display: flex; align-items: center; }
+  .onboard-card { padding: 28px 20px; border-radius: 20px; width: 100%; }
+  .onboard-card h1 { font-size: 1.4rem; }
+  .contact-btn { width: 100%; }
+}
+
+@media (max-width: 360px) {
+  .onboard-card { padding: 20px 14px; }
+}

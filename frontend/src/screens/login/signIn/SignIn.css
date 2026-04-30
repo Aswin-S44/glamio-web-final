@@ -420,3 +420,9 @@
   }
   .si-form-panel { padding: 24px 16px; align-items: flex-start; padding-top: 48px; }
 }
+
+@media (max-width: 360px) {
+  .si-form-card { padding: 24px 16px; }
+  .si-form-header h1 { font-size: 1.4rem; }
+  .si-google-btn { padding: 12px; font-size: 13px; }
+}

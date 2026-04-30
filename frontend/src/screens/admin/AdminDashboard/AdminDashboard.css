@@ -647,3 +647,19 @@
   .ad-drawer { width: 100vw; }
   .ad-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 640px) {
+  .ad-main { padding: 12px 12px 60px; }
+  .ad-stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ad-stat { padding: 12px 14px; }
+  .ad-stat-value { font-size: 20px; }
+  .ad-page-title { font-size: 18px; }
+  .ad-topbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .ad-refresh-btn { align-self: flex-end; }
+  .ad-shop-cover { height: 110px; }
+}
+
+@media (max-width: 380px) {
+  .ad-stats-row { grid-template-columns: 1fr; gap: 8px; }
+  .ad-stat-value { font-size: 22px; }
+}

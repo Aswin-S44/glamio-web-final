@@ -290,3 +290,9 @@
   .hfaq-trigger { padding: 18px 0; }
   .hfaq-answer { padding: 0 24px 18px 0; font-size: 14px; }
 }
+
+@media (max-width: 400px) {
+  .hfaq-section { padding: 56px 4%; }
+  .hfaq-title { font-size: 26px; }
+  .hfaq-panel__stat strong { font-size: 16px; }
+}
