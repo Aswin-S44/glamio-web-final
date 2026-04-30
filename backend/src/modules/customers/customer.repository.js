@@ -10,14 +10,21 @@ import { appointments } from "../../db/schemas/appointments.js";
 import { db } from "../../db/index.js";
 
 export const getAllShopsDB = async () => {
+  // Query FROM shopOwners (source of truth) — avoids missing shops
+  // whose users have the wrong userTypeId.
   const result = await db
     .select({
-      user: users, 
+      user: users,
       shop: shopOwners,
     })
-    .from(users)
-    .where(eq(users.userTypeId, DEFAULT_SHOP_ID))
-    .leftJoin(shopOwners, eq(shopOwners.userId, users.id));
+    .from(shopOwners)
+    .leftJoin(users, eq(shopOwners.userId, users.id))
+    .where(
+      and(
+        eq(shopOwners.isOnboarded, true),
+        eq(shopOwners.isProfileCompleted, true)
+      )
+    );
 
   return result ?? [];
 };

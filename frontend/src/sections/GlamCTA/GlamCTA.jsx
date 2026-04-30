@@ -46,7 +46,7 @@ function GlamCTA() {
         <div className="gcta__left">
           <div className="gcta__eyebrow">
             <Sparkles size={12} />
-            <span>Experience Glamio</span>
+            <span>Experience Orucom</span>
           </div>
 
           <h2 className="gcta__heading">
@@ -87,7 +87,7 @@ function GlamCTA() {
           <div className="gcta__img-frame">
             <img
               src={img}
-              alt="Glamio Salon Experience"
+              alt="Orucom Salon Experience"
               className="gcta__img"
             />
             <div className="gcta__img-grad" />
@@ -105,7 +105,7 @@ function GlamCTA() {
               </defs>
               <text>
                 <textPath href="#gctaPath">
-                  GLAMIO · YOUR GLOW · BOOK NOW · GLAMIO · YOUR GLOW ·
+                  ORUCOM · YOUR GLOW · BOOK NOW · ORUCOM · YOUR GLOW ·
                 </textPath>
               </text>
             </svg>

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import Upload from "antd/es/upload";
 import Swal from "sweetalert2";
 import {
   Plus,
@@ -88,7 +87,7 @@ function OfferScreen() {
       const data = await res.json();
       if (data.offers) {
         setOffers(data.offers);
-        setPagination(data.pagination);
+        if (data.pagination) setPagination(data.pagination);
       }
     } catch (error) {
       console.error(error);
@@ -264,9 +263,9 @@ function OfferScreen() {
                   </div>
                   <div className="of-body">
                     <span className="of-category-tag">
-                      {offer.categoryName}
+                      {offer.categoryName || "General"}
                     </span>
-                    <h3>{offer.serviceName}</h3>
+                    <h3>{offer.serviceName || offer.service?.name}</h3>
                     <div className="of-pricing-row">
                       <span className="of-old-price">
                         ${offer.regularPrice}

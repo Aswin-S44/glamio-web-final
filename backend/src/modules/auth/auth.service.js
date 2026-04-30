@@ -16,7 +16,7 @@ export const googleSignInService = async (idToken) => {
      Using "customer" as default userType; existing shop owners keep their type. */
   const upserted = await createUserService({
     email,
-    username: name,
+    username: name || email.split("@")[0],
     profileImage: picture,
     userType: "customer",
   });

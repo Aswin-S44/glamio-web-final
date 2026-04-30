@@ -9,68 +9,6 @@ import Footer from "../../components/Footer/Footer";
 import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 import "./ShopsScreen.css";
 
-const DUMMY_SHOPS = [
-  {
-    shop: {
-      id: 1, parlourName: "Glamour Studio", address: "12, MG Road, Bangalore",
-      totalRating: 4.8, latitude: "12.9716", longitude: "77.5946",
-      openTime: "09:00", closeTime: "21:00", category: "Unisex",
-    },
-    user: { profileImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400" },
-    services: ["Hair", "Makeup", "Nails"],
-    reviewCount: 248,
-  },
-  {
-    shop: {
-      id: 2, parlourName: "Velvet Beauty Lounge", address: "45, Indiranagar, Bangalore",
-      totalRating: 4.6, latitude: "12.9784", longitude: "77.6408",
-      openTime: "10:00", closeTime: "20:00", category: "Women",
-    },
-    user: { profileImage: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400" },
-    services: ["Bridal", "Skin", "Waxing"],
-    reviewCount: 182,
-  },
-  {
-    shop: {
-      id: 3, parlourName: "The Glow Lab", address: "8, Koramangala, Bangalore",
-      totalRating: 4.9, latitude: "12.9352", longitude: "77.6245",
-      openTime: "09:30", closeTime: "21:30", category: "Unisex",
-    },
-    user: { profileImage: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400" },
-    services: ["Hair", "Skin", "Lashes"],
-    reviewCount: 312,
-  },
-  {
-    shop: {
-      id: 4, parlourName: "Radiance Spa & Salon", address: "22, HSR Layout, Bangalore",
-      totalRating: 4.5, latitude: "12.9116", longitude: "77.6389",
-      openTime: "10:00", closeTime: "22:00", category: "Women",
-    },
-    user: { profileImage: "https://images.unsplash.com/photo-1470259078422-826894b933aa?w=400" },
-    services: ["Massage", "Facials", "Nails"],
-    reviewCount: 95,
-  },
-  {
-    shop: {
-      id: 5, parlourName: "Chic Cuts & Color", address: "33, Whitefield, Bangalore",
-      totalRating: 4.7, latitude: "12.9698", longitude: "77.7500",
-      openTime: "09:00", closeTime: "20:30", category: "Unisex",
-    },
-    user: { profileImage: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400" },
-    services: ["Hair", "Color", "Beard"],
-    reviewCount: 167,
-  },
-  {
-    shop: {
-      id: 6, parlourName: "Pearl Nails Studio", address: "15, Jayanagar, Bangalore",
-      totalRating: 4.4, latitude: "12.9258", longitude: "77.5833",
-      openTime: "10:30", closeTime: "20:00", category: "Women",
-    },
-    user: { profileImage: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400" },
-    services: ["Nails", "Lashes", "Brows"],
-    reviewCount: 74,
-  },
-];
 
 const SERVICE_FILTERS = ["All", "Hair", "Makeup", "Nails", "Skin", "Bridal", "Lashes", "Massage", "Waxing"];
 const SORT_OPTIONS = [
@@ -90,28 +28,19 @@ export default function ShopsScreen() {
   const [showFilters, setShowFilters] = useState(false);
   const [wishlist, setWishlist] = useState([]);
   const [sortOpen, setSortOpen] = useState(false);
-  const [usingDummy, setUsingDummy] = useState(false);
 
   useEffect(() => {
-    const fetchShops = async () => {
+    (async () => {
       try {
-        const res = await fetch(`${BASE_URL}/customer/shops`);
+        const res  = await fetch(`${BASE_URL}/customer/shops`);
         const data = await res.json();
-        const list = data.shops || [];
-        if (list.length > 0) {
-          setShops(list);
-        } else {
-          setShops(DUMMY_SHOPS);
-          setUsingDummy(true);
-        }
+        setShops(data.shops || []);
       } catch {
-        setShops(DUMMY_SHOPS);
-        setUsingDummy(true);
+        setShops([]);
       } finally {
         setLoading(false);
       }
-    };
-    fetchShops();
+    })();
   }, []);
 
   const toggleWishlist = (e, id) => {
@@ -272,9 +201,6 @@ export default function ShopsScreen() {
           <span>
             {loading ? "Loading..." : `${filtered.length} salon${filtered.length !== 1 ? "s" : ""} found`}
           </span>
-          {/* {usingDummy && (
-            <span className="demo-badge">Demo data — connect backend to see live salons</span>
-          )} */}
         </div>
 
         {loading ? (
@@ -335,7 +261,7 @@ function ShopCard({ item, wishlisted, onWishlist, onClick }) {
     <div className="shop-card" onClick={onClick}>
       <div className="shop-card-img-wrap">
         <img
-          src={user?.profileImage || DEFAULT_NO_IMAGE}
+          src={shop?.shopImage || user?.profileImage || DEFAULT_NO_IMAGE}
           alt={shop.parlourName}
           className="shop-card-img"
           onError={(e) => { e.target.src = DEFAULT_NO_IMAGE; }}

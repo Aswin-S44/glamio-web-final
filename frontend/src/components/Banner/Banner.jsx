@@ -142,7 +142,7 @@ function Banner() {
               <div className="h-oval">
                 <img
                   src={img}
-                  alt="Glamio Salon"
+                  alt="Orucom Salon"
                 />
                 <div className="h-oval-overlay" />
               </div>
@@ -153,7 +153,7 @@ function Banner() {
                   <defs>
                     <path id="hSpinPath" d="M 65,65 m -48,0 a 48,48 0 1,1 96,0 a 48,48 0 1,1 -96,0" fill="none" />
                   </defs>
-                  <text><textPath href="#hSpinPath">GLAMIO BEAUTY · BOOK NOW · GLAMIO BEAUTY · BOOK NOW ·</textPath></text>
+                  <text><textPath href="#hSpinPath">ORUCOM BEAUTY · BOOK NOW · ORUCOM BEAUTY · BOOK NOW ·</textPath></text>
                 </svg>
                 <div className="h-spin-center"><ArrowRight size={18} /></div>
               </a>

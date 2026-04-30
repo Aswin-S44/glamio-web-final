@@ -4,7 +4,7 @@ import { Plus, Minus, Sparkles } from "lucide-react";
 
 const FAQS = [
   {
-    q: "How do I book an appointment at Glamio?",
+    q: "How do I book an appointment at Orucom?",
     a: "Booking is simple — browse our featured salons, select your preferred location (Manjeri or Kondotty), choose a service, pick your slot and confirm. You'll receive an instant booking confirmation.",
   },
   {
@@ -12,7 +12,7 @@ const FAQS = [
     a: "Yes! We offer free cancellation and flexible rescheduling up to 2 hours before your appointment. Just visit your bookings page or contact us directly — no hidden fees, ever.",
   },
   {
-    q: "What services do Glamio salons offer?",
+    q: "What services do Orucom salons offer?",
     a: "We offer a full range of beauty services including hair styling & cuts, hair spa & coloring, bridal & event makeup, advanced skin treatments, nail art & extensions, eyebrow threading & lash work, and body waxing.",
   },
   {
@@ -96,7 +96,7 @@ function FAQ() {
             <em>Questions</em>
           </h2>
           <p className="hfaq-sub">
-            Everything you need to know about booking and visiting Glamio.
+            Everything you need to know about booking and visiting Orucom.
           </p>
         </div>
 

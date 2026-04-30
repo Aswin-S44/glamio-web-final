@@ -5,21 +5,15 @@ export class OfferController {
   static async addOffer(req, res) {
     try {
       const userId = req.user?.id;
-
-      if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
-      }
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
       const shopId = await getShopIdByUserId(userId);
-
-      if (!shopId) {
-        res.status(401).json({ message: "Shop not found" });
-      }
+      if (!shopId) return res.status(404).json({ message: "Shop not found" });
 
       await OfferService.createOffer(shopId, req.body);
-      res.status(201).json({ message: "Offer created successfully" });
+      return res.status(201).json({ message: "Offer created successfully" });
     } catch (error) {
-      res.status(400).json({
+      return res.status(400).json({
         message: error instanceof Error ? error.message : "Unknown error",
       });
     }
@@ -28,33 +22,34 @@ export class OfferController {
   static async getOffers(req, res) {
     try {
       const userId = req.user?.id;
-
-      if (!userId) {
-        res.status(401).json({ message: "Unauthorized" });
-      }
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
       const shopId = await getShopIdByUserId(userId);
+      if (!shopId) return res.status(404).json({ message: "Shop not found" });
 
-      if (!shopId) {
-        res.status(401).json({ message: "Shop not found" });
-      }
+      const page  = Number(req.query.page)  || 1;
+      const limit = Number(req.query.limit) || 8;
 
-      const offers = await OfferService.getOffers(shopId);
-      res.status(200).json({ offers });
+      const result = await OfferService.getOffers(shopId, { page, limit });
+      return res.status(200).json(result);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch offers" });
+      return res.status(500).json({ message: "Failed to fetch offers" });
     }
   }
 
   static async getOfferById(req, res) {
     try {
-      const shopId = req.user?.id;
-      const offerId = Number(req.params.id);
+      const userId  = req.user?.id;
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-      const offer = await OfferService.getOfferById(shopId, offerId);
-      res.status(200).json(offer);
+      const shopId  = await getShopIdByUserId(userId);
+      if (!shopId) return res.status(404).json({ message: "Shop not found" });
+
+      const offerId = Number(req.params.id);
+      const offer   = await OfferService.getOfferById(shopId, offerId);
+      return res.status(200).json(offer);
     } catch (error) {
-      res.status(404).json({
+      return res.status(404).json({
         message: error instanceof Error ? error.message : "Offer not found",
       });
     }
@@ -62,13 +57,17 @@ export class OfferController {
 
   static async updateOfferById(req, res) {
     try {
-      const shopId = req.user?.id;
-      const offerId = Number(req.params.id);
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
+      const shopId  = await getShopIdByUserId(userId);
+      if (!shopId) return res.status(404).json({ message: "Shop not found" });
+
+      const offerId = Number(req.params.id);
       await OfferService.updateOffer(shopId, offerId, req.body);
-      res.status(200).json({ message: "Offer updated successfully" });
+      return res.status(200).json({ message: "Offer updated successfully" });
     } catch (error) {
-      res.status(400).json({
+      return res.status(400).json({
         message: error instanceof Error ? error.message : "Update failed",
       });
     }
@@ -76,13 +75,17 @@ export class OfferController {
 
   static async deleteOfferById(req, res) {
     try {
-      const shopId = req.user?.id;
-      const offerId = Number(req.params.id);
+      const userId = req.user?.id;
+      if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
+      const shopId  = await getShopIdByUserId(userId);
+      if (!shopId) return res.status(404).json({ message: "Shop not found" });
+
+      const offerId = Number(req.params.id);
       await OfferService.deleteOffer(shopId, offerId);
-      res.status(200).json({ message: "Offer deleted successfully" });
+      return res.status(200).json({ message: "Offer deleted successfully" });
     } catch (error) {
-      res.status(404).json({
+      return res.status(404).json({
         message: error instanceof Error ? error.message : "Delete failed",
       });
     }

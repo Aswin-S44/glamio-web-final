@@ -29,7 +29,13 @@ function CustomerSignUp() {
         };
         const userResponse = await api.post("/auth/signup", dataToSignup);
         if (userResponse && userResponse.data.success) {
-          navigate("/");
+          const redirect = sessionStorage.getItem("redirectAfterLogin");
+          if (redirect) {
+            sessionStorage.removeItem("redirectAfterLogin");
+            navigate(redirect);
+          } else {
+            navigate("/");
+          }
         }
       }
     } catch (err) {
@@ -63,7 +69,7 @@ function CustomerSignUp() {
 
           <div className="su-glass-wrap">
             <div className="su-glass-card">
-              <h2>Join Glamio</h2>
+              <h2>Join Orucom</h2>
               <p>Create your account and start booking premium beauty services instantly.</p>
               <button className="su-google-btn" onClick={handleGoogleSignIn}>
                 <img src={GoogleImg} alt="Google" />

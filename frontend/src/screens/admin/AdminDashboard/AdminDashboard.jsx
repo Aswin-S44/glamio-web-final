@@ -118,13 +118,13 @@ export default function AdminDashboard() {
       {/* ── Sidebar ── */}
       <aside className="ad-sidebar">
         <div className="ad-logo-wrap" onClick={() => navigate("/")}>
-          <img src={logoImg} alt="Glamio" className="ad-logo-img" />
+          <img src={logoImg} alt="Orucom" className="ad-logo-img" />
         </div>
 
         <div className="ad-admin-card">
           <div className="ad-admin-avatar">A</div>
           <div>
-            <p className="ad-admin-name">Glamio Admin</p>
+            <p className="ad-admin-name">Orucom Admin</p>
             <p className="ad-admin-email">admin@glamio.com</p>
           </div>
         </div>
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
           ))}
         </nav>
 
-        <button className="ad-logout-btn" onClick={handleLogout}>
+        <button className="ad-logout-btn" onClick={handleLogout} >
           <LogOut size={15} /> Sign Out
         </button>
       </aside>

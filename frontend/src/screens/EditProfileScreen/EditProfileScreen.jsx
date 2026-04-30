@@ -33,8 +33,9 @@ export default function EditProfileScreen() {
   const [phone,    setPhone]    = useState("");
   const [errors,   setErrors]   = useState({});
   const [loading,  setLoading]  = useState(false);
-  const [fetching, setFetching] = useState(true);
-  const [saved,    setSaved]    = useState(false);
+  const [fetching,    setFetching]    = useState(true);
+  const [saved,       setSaved]       = useState(false);
+  const [isOnboarded, setIsOnboarded] = useState(false);
   const token = localStorage.getItem("token");
 
   /* ── Pre-load ── */
@@ -55,6 +56,7 @@ export default function EditProfileScreen() {
             shopImage:       s.shopImage       || null,
             galleryImages:   Array.isArray(s.galleryImages) ? s.galleryImages : [],
           });
+          setIsOnboarded(!!s.isOnboarded);
         }
         if (data?.user?.phone) setPhone(data.user.phone);
       } catch { /* silent */ } finally { setFetching(false); }
@@ -154,12 +156,14 @@ export default function EditProfileScreen() {
         setSaved(true);
         await Swal.fire({
           title: "Profile Saved!",
-          text:  "Your profile has been submitted for admin review.",
+          text:  isOnboarded
+            ? "Your changes have been updated successfully."
+            : "Your profile has been submitted for admin review.",
           icon:  "success",
           confirmButtonColor: "#c2185b",
           confirmButtonText: "OK",
         });
-        navigate("/shop/onboard");
+        navigate(isOnboarded ? "/shop/dashboard" : "/shop/onboard");
       } else {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.message || "Update failed");

@@ -69,7 +69,7 @@ function WhyChooseUs() {
           </span>
           <h2 className="title">Experience Excellence</h2>
           <p className="why-lead">
-            Four pillars of beauty that set Glamio apart from the rest.
+            Four pillars of beauty that set Orucom apart from the rest.
           </p>
         </div>
 

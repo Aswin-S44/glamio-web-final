@@ -46,7 +46,7 @@ function Footer() {
             </div>
 
             <p className="gf__brand-desc">
-              Glamio connects you with the finest beauty salons in Kerala.
+              Orucom connects you with the finest beauty salons in Kerala.
               Premium experiences, expert hands, unforgettable results —
               all bookable in seconds.
             </p>
@@ -163,7 +163,7 @@ function Footer() {
         {/* ── Bottom bar ── */}
         <div className="gf__bottom">
           <p className="gf__copy">
-            &copy; 2025 Glamio Beauty Platform · All rights reserved ·
+            &copy; 2025 Orucom Beauty Platform · All rights reserved ·
             <span>Made with ✦ in Kerala, India</span>
           </p>
           <div className="gf__legal">

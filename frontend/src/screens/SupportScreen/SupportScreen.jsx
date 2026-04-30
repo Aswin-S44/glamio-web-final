@@ -26,7 +26,7 @@ const FAQS = [
     a: "Absolutely. We use industry-standard encryption and do not store your card details. All transactions are processed through a certified payment gateway.",
   },
   {
-    q: "How do I list my salon on Glamio?",
+    q: "How do I list my salon on Orucom?",
     a: "Sign up with a business account, then use our 'Onboard Your Shop' flow to add your salon details, services, and photos. Our team reviews submissions within 48 hours.",
   },
   {

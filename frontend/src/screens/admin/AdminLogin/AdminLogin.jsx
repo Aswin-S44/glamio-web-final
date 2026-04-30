@@ -23,7 +23,7 @@ export default function AdminLogin() {
     await new Promise(r => setTimeout(r, 600));
 
     if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-      const adminData = { email: ADMIN_EMAIL, role: "ADMIN", name: "Glamio Admin" };
+      const adminData = { email: ADMIN_EMAIL, role: "ADMIN", name: "Orucom Admin" };
       localStorage.setItem("admin", JSON.stringify(adminData));
       localStorage.setItem("isAdminLoggedIn", "true");
       navigate("/admin/dashboard");
@@ -37,7 +37,7 @@ export default function AdminLogin() {
     <div className="al-page">
       <div className="al-card">
         <div className="al-brand" onClick={() => navigate("/")}>
-          <img src={logoImg} alt="Glamio" className="al-logo-img" />
+          <img src={logoImg} alt="Orucom" className="al-logo-img" />
         </div>
 
         <div className="al-badge">
@@ -45,7 +45,7 @@ export default function AdminLogin() {
         </div>
 
         <h1 className="al-title">Admin Sign In</h1>
-        <p className="al-sub">Access the Glamio administration dashboard</p>
+        <p className="al-sub">Access the Orucom administration dashboard</p>
 
         <form onSubmit={handleSubmit} className="al-form" noValidate>
           <div className="al-field">

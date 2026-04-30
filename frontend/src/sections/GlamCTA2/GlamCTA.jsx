@@ -68,12 +68,12 @@ function GlamCTA() {
         <div className="gcta__left" data-anim="fade-left" style={{ "--d": "0s" }}>
           <div className="gcta__eyebrow">
             <Sparkles size={12} />
-            <span>The Glamio Experience</span>
+            <span>The Orucom Experience</span>
           </div>
 
           <h2 className="gcta__title">
             Why Thousands<br />
-            <em>Choose Glamio</em>
+            <em>Choose Orucom</em>
           </h2>
 
           <p className="gcta__desc">

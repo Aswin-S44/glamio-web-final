@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../../config/firebase";
 import { googleSignInApi } from "../../../services/auth.service";
-import { Eye, EyeOff, Sparkles, Star, Shield, Clock, Lock } from "lucide-react";
+import { Sparkles, Star, Shield, Clock, Lock } from "lucide-react";
 import Swal from "sweetalert2";
 import img from "../../../components/Media/Images/model-with-smokey-eyes-golden-circle-earrings.webp";
 
@@ -39,7 +39,14 @@ function SignIn() {
           navigate("/shop/edit-profile");
         }
       } else {
-        navigate("/");
+        // Customer — honour any saved redirect (e.g. from booking flow)
+        const redirect = sessionStorage.getItem("redirectAfterLogin");
+        if (redirect) {
+          sessionStorage.removeItem("redirectAfterLogin");
+          navigate(redirect);
+        } else {
+          navigate("/");
+        }
       }
     } catch (err) {
       console.error("Google sign-in failed", err);
@@ -94,7 +101,7 @@ function SignIn() {
           </div>
 
           <div className="si-testimonial">
-            <p>"Glamio completely transformed how I discover and book beauty services. It's effortless and luxurious."</p>
+            <p>"Orucom completely transformed how I discover and book beauty services. It's effortless and luxurious."</p>
             <div className="si-testimonial-author">
               <img src={img} alt="Priya" />
               <div>
@@ -111,7 +118,7 @@ function SignIn() {
         <div className="si-form-card">
           <div className="si-form-header">
             <h1>Welcome back</h1>
-            <p>Sign in to your Glamio account</p>
+            <p>Sign in to your Orucom account</p>
           </div>
 
           <button

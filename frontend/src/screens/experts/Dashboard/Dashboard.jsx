@@ -40,6 +40,7 @@ import AppointmentScreen from "../../AppointmentScreen/AppointmentScreen";
 import OfferScreen from "../../OfferScreen/OfferScreen";
 import NotificationScreen from "../../Notifications/NotificationScreen";
 import { BASE_URL } from "../../../constants/urls";
+import logoImg from "../../../components/Media/Images/Logo.png"
 
 function Dashboard() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -362,10 +363,7 @@ function Dashboard() {
 
       <aside className={`glam-sidebar ${isMobileOpen ? "is-open" : ""}`}>
         <div className="glam-logo-section">
-          <div className="glam-logo-box">
-            <Scissors size={22} />
-          </div>
-          <span className="glam-logo-text">GLAMIO</span>
+          <img src={logoImg}  style={{width:"100%"}} />
         </div>
 
         <nav className="glam-nav">
@@ -388,7 +386,7 @@ function Dashboard() {
         </nav>
 
         <div className="glam-sidebar-footer">
-          <button className="glam-logout-trigger" onClick={handleLogout}>
+          <button className="glam-logout-trigger" onClick={handleLogout}  style={{width:"100%"}}>
             <LogOut size={20} />
             <span>Sign Out</span>
           </button>
@@ -462,7 +460,7 @@ function Dashboard() {
         <section className="glam-content">
           {activeTab === "home" && (
             <div className="glam-welcome">
-              <h1 className="glam-title">Glamio Dashboard</h1>
+              <h1 className="glam-title">Orucom Dashboard</h1>
               <p className="glam-subtitle">
                 Curating your shop's performance and growth today.
               </p>

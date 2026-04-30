@@ -142,12 +142,22 @@ export default function SelectSlotScreen() {
   const handleConfirm = () => {
     if (!selectedExpert) { setError("Please select a specialist to continue"); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     if (!selectedSlot)   { setError("Please select a time slot to continue"); return; }
+
     const params = new URLSearchParams();
-    params.append("slotId",    selectedSlot.id);
-    params.append("expertId",  selectedExpert);
-    params.append("shopId",    selectedSlot.shopId);
-    params.append("services",  selectedServices.map(s => s.id).join(","));
-    navigate(`/summary?${params.toString()}`);
+    params.append("slotId",   selectedSlot.id);
+    params.append("expertId", selectedExpert);
+    params.append("shopId",   selectedSlot.shopId);
+    params.append("services", selectedServices.map(s => s.id).join(","));
+    const summaryUrl = `/summary?${params.toString()}`;
+
+    // Require sign-in before booking
+    if (!localStorage.getItem("token")) {
+      sessionStorage.setItem("redirectAfterLogin", summaryUrl);
+      navigate("/signin");
+      return;
+    }
+
+    navigate(summaryUrl);
   };
 
   /* ── Loading ── */
@@ -381,7 +391,7 @@ export default function SelectSlotScreen() {
             </div>
 
             <button className="ss-confirm-btn" onClick={handleConfirm} disabled={!canProceed}>
-              {canProceed ? <>Continue to Payment <ChevronRight size={18} /></> : "Complete all steps above"}
+              {canProceed ? <>Continue </> : "Complete all steps above"}
             </button>
 
             {!canProceed && (

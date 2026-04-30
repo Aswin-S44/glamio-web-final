@@ -36,17 +36,24 @@ export const createUserService = async (payload) => {
     .limit(1);
 
   if (existingUser.length > 0) {
-    const user = existingUser[0];
-    let shopDetails = null;
+    let user = existingUser[0];
 
-    if (user.userTypeId === DEFAULT_SHOP_ID) {
-      const shop = await db
-        .select()
-        .from(shopOwners)
-        .where(eq(shopOwners.userId, user.id))
-        .limit(1);
-      shopDetails = shop[0] || null;
+    // If signing up as shop but user was previously a customer, upgrade their type
+    if (userType === "shop" && user.userTypeId !== DEFAULT_SHOP_ID) {
+      await db
+        .update(users)
+        .set({ userTypeId: DEFAULT_SHOP_ID })
+        .where(eq(users.id, user.id));
+      user = { ...user, userTypeId: DEFAULT_SHOP_ID };
     }
+
+    // Always fetch shop profile regardless of current userTypeId
+    const shop = await db
+      .select()
+      .from(shopOwners)
+      .where(eq(shopOwners.userId, user.id))
+      .limit(1);
+    const shopDetails = shop[0] || null;
 
     const token = jwt.sign({ email }, process.env.JWT_SECRET, {
       expiresIn: "30d",
