@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>297588641134-1qu9gdcb5jpades23g1mnj4v5iiuf92m.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.297588641134-1qu9gdcb5jpades23g1mnj4v5iiuf92m</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>297588641134-0rt0rv9dms6p8dim5n1ikkmt06uj3gbv.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAadw-X1gqzJ4A4E8AqKM5chemBGGkadLI</string>
+	<key>GCM_SENDER_ID</key>
+	<string>297588641134</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.app.beautyApp</string>
+	<key>PROJECT_ID</key>
+	<string>freelance1-f1f57</string>
+	<key>STORAGE_BUCKET</key>
+	<string>freelance1-f1f57.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:297588641134:ios:e060b2dedafc7cde24457f</string>
+</dict>
+</plist>
