@@ -1,4 +1,4 @@
-import { and, eq, inArray, sum } from "drizzle-orm";
+import { and, desc, eq, inArray, sum } from "drizzle-orm";
 import {
   BookingService,
   createBookingService,
@@ -16,6 +16,7 @@ import { slots } from "../../db/schemas/slots.js";
 import { shopOwners } from "../../db/schemas/shop-owners.js";
 import { db } from "../../db/index.js";
 import { appointmentStatuses } from "../../constants/constants.js";
+import { notifications } from "../../db/schemas/notifications.js";
 
 export const getAllShops = async (req, res) => {
   const shops = await getAllShopsService();
@@ -216,5 +217,30 @@ export const getServiceDetailsById = async (req, res) => {
     res.json(services);
   } catch (e) {
     res.status(404).json({ message: e.message });
+  }
+};
+
+export const getCustomerNotifications = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const list = await db
+      .select()
+      .from(notifications)
+      .where(eq(notifications.toId, userId))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+    res.json({ notifications: list });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
+  }
+};
+
+export const markNotificationRead = async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
 };

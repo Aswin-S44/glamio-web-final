@@ -16,16 +16,14 @@ import {
 import { primaryColor } from '../../constants/colors';
 import { AuthContext } from '../../context/AuthContext';
 import { resentOTP, verifyOtp } from '../../apis/auth';
-import auth from '@react-native-firebase/auth';
-import { firestore } from '../../config/firebase';
-import { COLLECTIONS } from '../../constants/collections';
+import api from '../../config/api';
 
 export const resetPassword = async email => {
   try {
-    await auth().sendPasswordResetEmail(email);
+    await api.post('/auth/reset-password', { email });
     return true;
-  } catch (error) {
-    throw error;
+  } catch (err) {
+    throw err;
   }
 };
 
@@ -56,18 +54,7 @@ const OTPVerificationScreen = ({ navigation, route }) => {
       const res = await verifyOtp(emailFromRoute, otpValue);
 
       if (res && res.success) {
-        const uidToUpdate = user?.uid || res.userData?.uid;
-
-        if (uidToUpdate) {
-          await firestore()
-            .collection(COLLECTIONS.SHOP_OWNERS)
-            .doc(uidToUpdate)
-            .update({ isOTPVerified: true });
-
-          setUserData(prevData => ({ ...prevData, isOTPVerified: true }));
-        } else {
-          Alert.alert('Error', 'User ID not found after OTP verification.');
-        }
+        setUserData(prevData => ({ ...prevData, isOTPVerified: true }));
       } else {
         Alert.alert('Invalid OTP', 'Invalid OTP. Please try again.');
       }

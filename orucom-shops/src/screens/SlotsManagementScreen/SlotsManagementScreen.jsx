@@ -16,13 +16,11 @@ import {
 import { Calendar } from 'react-native-calendars';
 import moment from 'moment';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import firestore from '@react-native-firebase/firestore';
 import DateTimePicker from '@react-native-community/datetimepicker';
-
 import { AuthContext } from '../../context/AuthContext';
 import { primaryColor } from '../../constants/colors';
 import SlotsSkeleton from '../../components/SlotsSkeleton/SlotsSkeleton';
-import { COLLECTIONS } from '../../constants/collections';
+import api from '../../config/api';
 
 const { width } = Dimensions.get('window');
 
@@ -46,64 +44,29 @@ const SlotsManagementScreen = ({ navigation }) => {
   const [repeatUntilModalVisible, setRepeatUntilModalVisible] = useState(false);
   const [maxCapacity, setMaxCapacity] = useState(1);
 
-  useEffect(() => {
-    if (!user?.uid) return;
-
+  const fetchSlots = async () => {
+    if (!user) return;
     setLoading(true);
-
-    const unsubscribeExperts = firestore()
-      .collection(COLLECTIONS.BEAUTY_EXPERTS)
-      .where('shopId', '==', user.uid)
-      .onSnapshot(querySnapshot => {
-        setMaxCapacity(querySnapshot.size || 1);
+    try {
+      const { data } = await api.get('/slots');
+      const slotsData = {};
+      (data.slots || []).forEach(slot => {
+        if (!slotsData[slot.date]) slotsData[slot.date] = [];
+        slotsData[slot.date].push(slot);
       });
+      setSlots(slotsData);
 
-    const unsubscribeSlots = firestore()
-      .collection(COLLECTIONS.SLOTS)
-      .where('shopId', '==', user.uid)
-      .onSnapshot(
-        querySnapshot => {
-          const slotsData = {};
-          querySnapshot.forEach(doc => {
-            const slot = { id: doc.id, ...doc.data() };
-            const slotDate = slot.date;
-            if (!slotsData[slotDate]) {
-              slotsData[slotDate] = [];
-            }
-            slotsData[slotDate].push(slot);
-          });
-          setSlots(slotsData);
-          setLoading(false);
-        },
-        error => {
-          console.error('Error fetching slots:', error);
-          setLoading(false);
-          Alert.alert('Error', 'Failed to load slots');
-        },
-      );
+      const expertsRes = await api.get('/expert');
+      setMaxCapacity((expertsRes.data.experts || []).length || 1);
+    } catch {
+      Alert.alert('Error', 'Failed to load slots');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const unsubscribeHolidays = firestore()
-      .collection(COLLECTIONS.HOLIDAYS)
-      .where('shopId', '==', user.uid)
-      .onSnapshot(
-        querySnapshot => {
-          const holidaysData = {};
-          querySnapshot.forEach(doc => {
-            const holiday = { id: doc.id, ...doc.data() };
-            holidaysData[holiday.date] = true;
-          });
-          setHolidays(holidaysData);
-        },
-        error => {
-          console.error('Error fetching holidays:', error);
-        },
-      );
-
-    return () => {
-      unsubscribeExperts();
-      unsubscribeSlots();
-      unsubscribeHolidays();
-    };
+  useEffect(() => {
+    fetchSlots();
   }, [user]);
 
   const onDayPress = day => {
@@ -111,80 +74,31 @@ const SlotsManagementScreen = ({ navigation }) => {
   };
 
   const addSlotToFirestore = async slotData => {
-    try {
-      await firestore()
-        .collection(COLLECTIONS.SLOTS)
-        .add({
-          ...slotData,
-          shopId: user.uid,
-          createdAt: new Date(),
-        });
-      return { success: true };
-    } catch (error) {
-      console.error('Error adding slot:', error);
-      throw error;
-    }
+    await api.post('/slots', slotData);
+    await fetchSlots();
+    return { success: true };
   };
 
   const updateSlotInFirestore = async (slotId, slotData) => {
-    try {
-      await firestore()
-        .collection(COLLECTIONS.SLOTS)
-        .doc(slotId)
-        .update({
-          ...slotData,
-          updatedAt: new Date(),
-        });
-      return { success: true };
-    } catch (error) {
-      console.error('Error updating slot:', error);
-      throw error;
-    }
+    await api.patch(`/slots/${slotId}`, slotData);
+    await fetchSlots();
+    return { success: true };
   };
 
   const deleteSlotFromFirestore = async slotId => {
-    try {
-      await firestore().collection(COLLECTIONS.SLOTS).doc(slotId).delete();
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting slot:', error);
-      throw error;
-    }
+    await api.delete(`/slots/${slotId}`);
+    await fetchSlots();
+    return { success: true };
   };
 
   const addHolidayToFirestore = async date => {
-    try {
-      await firestore().collection(COLLECTIONS.HOLIDAYS).add({
-        date,
-        shopId: user.uid,
-        createdAt: new Date(),
-      });
-      return { success: true };
-    } catch (error) {
-      console.error('Error adding holiday:', error);
-      throw error;
-    }
+    setHolidays(prev => ({ ...prev, [date]: true }));
+    return { success: true };
   };
 
   const deleteHolidayFromFirestore = async date => {
-    try {
-      const querySnapshot = await firestore()
-        .collection(COLLECTIONS.HOLIDAYS)
-        .where('shopId', '==', user.uid)
-        .where('date', '==', date)
-        .get();
-
-      if (!querySnapshot.empty) {
-        await firestore()
-          .collection(COLLECTIONS.HOLIDAYS)
-          .doc(querySnapshot.docs[0].id)
-          .delete();
-      }
-      return { success: true };
-    } catch (error) {
-      console.error('Error deleting holiday:', error);
-      throw error;
-    }
+    setHolidays(prev => { const next = { ...prev }; delete next[date]; return next; });
+    return { success: true };
   };
 
   const handleAddOrUpdateSlot = async () => {
@@ -399,9 +313,9 @@ const SlotsManagementScreen = ({ navigation }) => {
     }
 
     try {
-      const batch = firestore().batch();
       let currentDate = moment(selectedDate).add(1, 'day');
       const untilDate = moment(repeatUntilDate);
+      const promises = [];
 
       while (currentDate.isSameOrBefore(untilDate, 'day')) {
         const dateString = currentDate.format('YYYY-MM-DD');
@@ -414,24 +328,22 @@ const SlotsManagementScreen = ({ navigation }) => {
                 existingSlot.endTime === slot.endTime,
             );
             if (!isDuplicate) {
-              const slotRef = firestore().collection(COLLECTIONS.SLOTS).doc();
-              batch.set(slotRef, {
+              promises.push(api.post('/slots', {
                 startTime: slot.startTime,
                 endTime: slot.endTime,
-                maxCapacity: maxCapacity,
+                maxCapacity,
                 bookedCount: 0,
                 isAvailable: slot.isAvailable,
                 isRecurring: true,
                 date: dateString,
-                shopId: user.uid,
-                createdAt: new Date(),
-              });
+              }));
             }
           });
         }
         currentDate.add(1, 'day');
       }
-      await batch.commit();
+      await Promise.all(promises);
+      await fetchSlots();
       Alert.alert('Success', 'Slots have been repeated daily.');
     } catch (error) {
       console.error('Error repeating slots daily:', error);

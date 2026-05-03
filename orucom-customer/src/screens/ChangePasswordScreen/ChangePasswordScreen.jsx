@@ -12,8 +12,8 @@ import {
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { primaryColor } from '../../constants/colors';
-import auth from '@react-native-firebase/auth';
 import { AuthContext } from '../../context/AuthContext';
+import api from '../../config/api';
 
 const PasswordInput = ({
   label,
@@ -86,27 +86,15 @@ const ChangePasswordScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      if (user && user.email) {
-        const credential = auth.EmailAuthProvider.credential(
-          user.email,
-          oldPassword,
-        );
-        await user.reauthenticateWithCredential(credential);
-
-        await user.updatePassword(newPassword);
-
-        Alert.alert('Success', 'Password changed successfully');
-        navigation.goBack();
-        logout();
-      }
+      await api.patch('/auth/change-password', {
+        oldPassword,
+        newPassword,
+      });
+      Alert.alert('Success', 'Password changed successfully');
+      navigation.goBack();
+      logout();
     } catch (error) {
-      if (error.code === 'auth/wrong-password') {
-        Alert.alert('Error', 'Current password is incorrect');
-      } else if (error.code === 'auth/requires-recent-login') {
-        Alert.alert('Error', 'Please sign in again to change your password');
-      } else {
-        Alert.alert('Error', error.message);
-      }
+      Alert.alert('Error', error.message || 'Failed to change password');
     } finally {
       setLoading(false);
     }

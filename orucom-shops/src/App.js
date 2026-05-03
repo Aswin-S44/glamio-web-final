@@ -41,8 +41,7 @@ import ServiceSummaryScreen from './screens/ServiceSummaryScreen/ServiceSummaryS
 import ConfirmationWaitingScreen from './screens/ConfirmationWaitingScreen/ConfirmationWaitingScreen';
 import GeneralInformationScreen from './screens/GeneralInformationScreen/GeneralInformationScreen';
 import SlotsManagementScreen from './screens/SlotsManagementScreen/SlotsManagementScreen';
-import FirebaseNotificationService from './apis/FirebaseNotificationService';
-import { auth } from './config/firebase';
+import NotificationService from './apis/FirebaseNotificationService';
 import AllNotificationScreen from './screens/AllNotificationScreen/AllNotificationScreen';
 import NofificationDetailsScreen from './screens/NofificationDetailsScreen/NofificationDetailsScreen';
 import EditServicesScreen from './screens/EditServicesScreen/EditServicesScreen';
@@ -257,37 +256,17 @@ export default function App() {
   const [timeoutReached, setTimeoutReached] = useState(false);
 
   useEffect(() => {
-    if (user && userData?.isOnboarded) {
-      const initializeAppNotifications = async () => {
-        try {
-          FirebaseNotificationService.setupNotificationHandlers();
-          const hasPermission =
-            await FirebaseNotificationService.requestNotificationPermission();
-          if (hasPermission) {
-            const token = await FirebaseNotificationService.getFCMToken();
-            setFcmToken(token);
-          }
-        } catch (error) {
-          console.error('App notification initialization error:', error);
+    if (userData?.isOnboarded) {
+      NotificationService.setupNotificationHandlers();
+      NotificationService.requestNotificationPermission().then(granted => {
+        if (granted) {
+          NotificationService.getFCMToken().then(token => {
+            if (token) setFcmToken(token);
+          });
         }
-      };
-
-      initializeAppNotifications();
-
-      const unsubscribeAuthTokenRefresh = auth().onAuthStateChanged(
-        async currentUser => {
-          if (currentUser) {
-            const token = await FirebaseNotificationService.getFCMToken();
-            setFcmToken(token);
-          }
-        },
-      );
-
-      return () => {
-        unsubscribeAuthTokenRefresh();
-      };
+      });
     }
-  }, [user?.uid, userData]);
+  }, [userData]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -303,44 +282,15 @@ export default function App() {
 
   let currentStack;
 
-  let curentScreen = 'no screen';
-  console.log('user.isOnboarded-----------', userData?.isOnboarded);
-  console.log(
-    'userData.profileCompleted--------------',
-    userData?.profileCompleted,
-  );
-  if (!user || !userData) {
+  if (!userData) {
     currentStack = <AuthStack />;
-    curentScreen = 'auth';
-  } else if (!user && !timeoutReached) {
-    currentStack = <SplashScreen1 />;
-    curentScreen = 'splash';
-  } else if (!user && timeoutReached) {
-    currentStack = <AuthStack />;
-    curentScreen = 'auth2';
-  } else if (
-    userData &&
-    userData?.emailVerified &&
-    !userData?.profileCompleted
-  ) {
+  } else if (userData && !userData?.shop?.isOnboarded && !userData?.shop?.isProfileCompleted) {
     currentStack = <GeneralInformationScreen />;
-  } else if (
-    userData &&
-    !userData?.isOnboarded &&
-    !userData?.profileCompleted
-  ) {
-    console.log('-----------------');
-    currentStack = <GeneralInformationScreen />;
-    curentScreen = 'general information';
-  } else if (userData && !userData?.isOnboarded && userData?.profileCompleted) {
+  } else if (userData && userData?.shop && !userData?.shop?.isOnboarded) {
     currentStack = <ConfirmationWaitingScreen />;
-    curentScreen = 'confirmation';
   } else {
     currentStack = <MainAppStack />;
-    curentScreen = 'main';
   }
-
-  console.log('curentScreen===================', curentScreen);
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>{currentStack}</NavigationContainer>

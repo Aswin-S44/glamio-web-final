@@ -14,8 +14,7 @@ import React, { useContext, useEffect, useState, useCallback } from 'react';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import moment from 'moment';
 import Toast from 'react-native-toast-message';
-import firestore from '@react-native-firebase/firestore';
-import { primaryColor } from '../../constants/colors'; // Ensure this color is strong (e.g., #6C63FF or #2A2D3E)
+import { primaryColor } from '../../constants/colors';
 import { AuthContext } from '../../context/AuthContext';
 import {
   getAppointmentsByShopId,
@@ -39,34 +38,26 @@ const HomeScreen = ({ navigation }) => {
 
   // --- LOGIC SAME AS BEFORE ---
   useEffect(() => {
-    if (user && user.uid) {
-      const fetchNotificationCount = async () => {
-        const unsubscribe = firestore()
-          .collection(COLLECTIONS.NOTIFICATIONS)
-          .where('toId', '==', user.uid)
-          .where('isRead', '==', false)
-          .onSnapshot(
-            snapshot => setNotificationCount(snapshot.size),
-            err => console.error(err),
-          );
-        return () => unsubscribe();
-      };
-      fetchNotificationCount();
+    if (user) {
+      const { getNotificationsCountByShopId } = require('../../apis/services');
+      getNotificationsCountByShopId(user.id).then(count => {
+        setNotificationCount(count);
+      }).catch(() => {});
     }
   }, [user]);
 
   const fetchServiceData = useCallback(async () => {
-    if (user && user.uid) {
+    if (user && user.id) {
       setRefreshing(true);
       try {
-        const statsRes = await getAppointmentStats(user.uid);
+        const statsRes = await getAppointmentStats(user.id);
         if (statsRes) {
           setTotalServices(statsRes.totalAppointments);
           setPendingServices(statsRes.pendingCount);
           setCompletedServices(statsRes.completedCount);
         }
 
-        const appointmentsRes = await getAppointmentsByShopId(user.uid);
+        const appointmentsRes = await getAppointmentsByShopId(user.id);
         if (appointmentsRes) {
           // Chart Logic
           const sevenDaysAgo = moment().subtract(6, 'days').startOf('day');

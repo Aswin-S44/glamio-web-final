@@ -24,12 +24,6 @@ import {
   updateSlotInFirestore,
 } from '../../apis/services';
 import { DEFAULT_AVATAR } from '../../constants/images';
-import firestore, {
-  doc,
-  getDoc,
-  getFirestore,
-  updateDoc,
-} from '@react-native-firebase/firestore';
 
 const Row = ({ icon, label, value }) => (
   <View style={styles.row}>
@@ -166,33 +160,21 @@ const BookingSummaryScreen = ({ route, navigation }) => {
         return;
       }
 
-      const appointmentRes = firestore().collection('appointments').doc();
-      await appointmentRes.set({
+      const appointmentRes = await createAppointment(userId, {
         ...bookingData,
         userId,
         createdAt: new Date(),
       });
 
       setModalVisible(true);
-      const availabilityStatus =
-        currentSlot?.bookedCount < currentSlot?.maxCapacity ? true : false;
-      updateSlotInFirestore(selectedSlot.id, {
-        bookedCount: updatedSlotCount,
-        isAvailable: availabilityStatus,
-      });
-      await createNotification(
-        userId,
-        route.params.shopId,
-        appointmentRes.id ?? null,
-        userData?.fullName ?? '',
-        userData?.profileImage ?? DEFAULT_AVATAR,
-      );
-      sendAppointmentNotification(
-        userId,
-        route.params.shopId,
-        APPOINTMENT_TYPES.BOOKING_REQUEST_SENT,
-        appointmentRes.id ?? null,
-      );
+      if (appointmentRes?.id) {
+        sendAppointmentNotification(
+          userId,
+          route.params.shopId,
+          APPOINTMENT_TYPES.BOOKING_REQUEST_SENT,
+          appointmentRes.id,
+        );
+      }
     } catch (error) {
       console.error('Error creating appointment:', error);
     } finally {

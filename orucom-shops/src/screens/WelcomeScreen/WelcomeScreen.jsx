@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import {
   View,
   Text,
@@ -8,22 +8,21 @@ import {
   Image,
   Alert,
   ActivityIndicator,
-  Modal,
+  Platform,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import firestore from '@react-native-firebase/firestore';
-import auth, { GoogleAuthProvider } from '@react-native-firebase/auth';
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { WEB_CLIENT_ID } from '@env';
-import { primaryColor } from '../../constants/colors';
-import { COLLECTIONS } from '../../constants/collections';
-import { generateRandomName } from '../../utils/utils';
-import { GOOGLE_ICON, NO_IMAGE } from '../../constants/images';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { primaryColor, primaryDark, dark, textMuted } from '../../constants/colors';
+import { GOOGLE_ICON } from '../../constants/images';
+import api from '../../config/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../../context/AuthContext';
 
-const WelcomeScreen = () => {
+const WelcomeScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const lighterPrimaryColor = '#FBCDFF';
-  console.log('WEB_CLIENT_ID-------------', WEB_CLIENT_ID);
+  const { refreshUserData } = useContext(AuthContext);
+
   useEffect(() => {
     GoogleSignin.configure({
       webClientId:
@@ -32,174 +31,147 @@ const WelcomeScreen = () => {
     });
   }, []);
 
-  async function onGoogleButtonPress() {
+  const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
-      await GoogleSignin.signOut();
-      await GoogleSignin.hasPlayServices({
-        showPlayServicesUpdateDialog: true,
-      });
+      await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+      const result = await GoogleSignin.signIn();
+      const idToken = result.data?.idToken || result.idToken;
+      if (!idToken) throw new Error('No ID token from Google');
 
-      const signInResult = await GoogleSignin.signIn();
-      let idToken = signInResult.data?.idToken || signInResult.idToken;
-
-      if (!idToken) {
-        throw new Error('No ID token found');
+      const { data } = await api.post('/auth/signin/google', { idToken, userType: 'shop' });
+      await AsyncStorage.setItem('auth_token', data.data.token);
+      await refreshUserData();
+    } catch (err) {
+      if (err.code !== 'SIGN_IN_CANCELLED') {
+        Alert.alert('Error', err.message || 'Failed to sign in with Google');
       }
-
-      const googleCredential = GoogleAuthProvider.credential(idToken);
-      const userCredential = await auth().signInWithCredential(
-        googleCredential,
-      );
-      const firebaseUser = userCredential.user;
-
-      const querySnapshot = await firestore()
-        .collection(COLLECTIONS.SHOP_OWNERS)
-        .where('email', '==', firebaseUser.email)
-        .get();
-
-      if (querySnapshot.empty) {
-        const updateData = {
-          uid: firebaseUser.uid,
-          fullName: firebaseUser.displayName || generateRandomName(),
-          phone: '',
-          email: firebaseUser.email,
-          createdAt: new Date(),
-          parlourName: '',
-          about: '',
-          address: '',
-          isOnboarded: false,
-          profileImage: NO_IMAGE,
-          isOTPVerified: false,
-          accountInitiated: true,
-          profileCompleted: false,
-          emailVerified: true,
-          openingHours: [],
-        };
-        await firestore()
-          .collection(COLLECTIONS.SHOP_OWNERS)
-          .doc(firebaseUser.uid)
-          .set(updateData);
-      }
-    } catch (error) {
-      console.log('GOOGLE SIGN-IN ERROR =====>', error);
-      Alert.alert('Error', 'Failed to sign in with Google');
     } finally {
       setIsLoading(false);
     }
-  }
+  };
 
   return (
     <LinearGradient
-      colors={[primaryColor, lighterPrimaryColor]}
-      style={styles.container}
+      colors={[primaryDark, primaryColor]}
+      style={styles.root}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
     >
-      <StatusBar backgroundColor={primaryColor} barStyle="light-content" />
+      <StatusBar backgroundColor={primaryDark} barStyle="light-content" />
 
-      <Image
-        source={require('../../assets/images/splash_logo.png')}
-        style={styles.welcomeImage}
-      />
-      <Text style={styles.title}>Beauty Expert App</Text>
+      <View style={styles.content}>
+        <View style={styles.logoCircle}>
+          <Ionicons name="sparkles" size={44} color={primaryColor} />
+        </View>
+        <Text style={styles.appName}>Glamio</Text>
+        <Text style={styles.tagline}>Business Portal</Text>
+        <Text style={styles.subtitle}>Manage your salon, grow your business</Text>
 
-      <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={styles.signInButton}
-          onPress={onGoogleButtonPress}
+          style={[styles.googleBtn, isLoading && { opacity: 0.7 }]}
+          onPress={handleGoogleSignIn}
           disabled={isLoading}
+          activeOpacity={0.9}
         >
-          <Image source={{ uri: GOOGLE_ICON }} style={styles.googleIcon} />
-          <Text style={styles.signInButtonText}>Sign in with Google</Text>
+          {isLoading ? (
+            <ActivityIndicator color={primaryColor} size="small" />
+          ) : (
+            <>
+              <Image source={{ uri: GOOGLE_ICON }} style={styles.googleIcon} />
+              <Text style={styles.googleBtnText}>Continue with Google</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.emailBtn}
+          onPress={() => navigation?.navigate('SignIn')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="mail-outline" size={20} color="#fff" />
+          <Text style={styles.emailBtnText}>Sign in with Email</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation?.navigate('SignUp')}>
+          <Text style={styles.signupLink}>
+            New here?{' '}
+            <Text style={{ fontWeight: '700', textDecorationLine: 'underline' }}>
+              Create Account
+            </Text>
+          </Text>
         </TouchableOpacity>
       </View>
-
-      <Modal
-        transparent={true}
-        animationType="fade"
-        visible={isLoading}
-        onRequestClose={() => {}}
-      >
-        <View style={styles.loadingOverlay}>
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color={primaryColor} />
-            <Text style={styles.loadingText}>Signing in...</Text>
-          </View>
-        </View>
-      </Modal>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  root: { flex: 1 },
+  content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    paddingHorizontal: 28,
+    paddingBottom: 30,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#fff',
-    textAlign: 'center',
-    marginTop: 20,
-    marginBottom: 60,
-  },
-  buttonContainer: {
-    width: '100%',
-    alignItems: 'center',
-  },
-  signInButton: {
+  logoCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 28,
     backgroundColor: '#fff',
-    paddingVertical: 15,
-    width: '90%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  appName: { fontSize: 36, fontWeight: '800', color: '#fff', marginBottom: 4 },
+  tagline: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.9)',
+    letterSpacing: 2,
+    marginBottom: 8,
+    textTransform: 'uppercase',
+  },
+  subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.75)', marginBottom: 52 },
+  googleBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
-    marginBottom: 20,
+    backgroundColor: '#fff',
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginBottom: 14,
+    gap: 10,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
     elevation: 5,
   },
-  signInButtonText: {
-    color: primaryColor,
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  welcomeImage: {
-    width: 100,
-    height: 100,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  googleIcon: {
-    width: 24,
-    height: 24,
-    marginRight: 10,
-  },
-  loadingOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  googleIcon: { width: 22, height: 22 },
+  googleBtnText: { fontSize: 16, fontWeight: '700', color: '#333' },
+  emailBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginBottom: 24,
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.4)',
   },
-  loadingContainer: {
-    backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    elevation: 5,
-  },
-  loadingText: {
-    marginTop: 10,
-    color: primaryColor,
-    fontWeight: '500',
-  },
+  emailBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  signupLink: { fontSize: 14, color: 'rgba(255,255,255,0.85)' },
 });
 
 export default WelcomeScreen;

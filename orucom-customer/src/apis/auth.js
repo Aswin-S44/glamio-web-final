@@ -1,75 +1,47 @@
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-import { DEFAULT_AVATAR } from '../constants/images';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../config/api';
 import { USER_TYPES } from '../constants/variables';
-import axios from 'axios';
-import { generateRandomName } from '../utils/utils';
 
-export const googleSignUp = async data => {
-  await firestore().collection('customers').doc(user.uid).set({
-    uid: user.uid,
-    fullName: generateRandomName(),
-    phone: '',
+export const signup = async (email, password, username) => {
+  const { data } = await api.post('/auth/register', {
     email,
-    createdAt: firestore.FieldValue.serverTimestamp(),
-    profileImage: DEFAULT_AVATAR,
-    fcmToken: null,
-    emailVerified: false,
-    otp: '123456',
+    password,
+    username: username || email.split('@')[0],
   });
-};
-
-export const signup = async (email, password) => {
-  try {
-    const userCredential = await auth().createUserWithEmailAndPassword(
-      email,
-      password,
-    );
-    const user = userCredential.user;
-    await firestore().collection('customers').doc(user.uid).set({
-      uid: user.uid,
-      fullName: generateRandomName(),
-      phone: '',
-      email,
-      createdAt: firestore.FieldValue.serverTimestamp(),
-      profileImage: DEFAULT_AVATAR,
-      fcmToken: null,
-      emailVerified: false,
-      otp: '123456',
-    });
-
-    return user;
-  } catch (error) {
-    throw error;
-  }
+  const { token, user } = data.data;
+  await AsyncStorage.setItem('auth_token', token);
+  await AsyncStorage.setItem('user_data', JSON.stringify(user));
+  return user;
 };
 
 export const login = async (email, password) => {
-  try {
-    const userCredential = await auth().signInWithEmailAndPassword(
-      email,
-      password,
-    );
-    return userCredential.user;
-  } catch (error) {
-    throw error;
-  }
+  const { data } = await api.post('/auth/login', { email, password });
+  const { token, user } = data.data;
+  await AsyncStorage.setItem('auth_token', token);
+  await AsyncStorage.setItem('user_data', JSON.stringify(user));
+  return user;
 };
 
 export const logout = async () => {
-  try {
-    await auth().signOut();
-  } catch (error) {
-    throw error;
-  }
+  await AsyncStorage.multiRemove(['auth_token', 'user_data']);
+};
+
+export const getMe = async () => {
+  const { data } = await api.get('/auth/me');
+  return data;
 };
 
 export const resentOTP = async email => {
-  const res = await axios.post(
-    `https://beauty-parlor-app-backend.onrender.com/api/v1/user/send-otp`,
-    {
-      email,
-      userType: USER_TYPES.CUSTOMER,
-    },
-  );
+  await api.post('/auth/send-otp', {
+    email,
+    userType: USER_TYPES.CUSTOMER,
+  });
+};
+
+export const googleSignIn = async idToken => {
+  const { data } = await api.post('/auth/signin/google', { idToken });
+  const { token, user } = data.data;
+  await AsyncStorage.setItem('auth_token', token);
+  await AsyncStorage.setItem('user_data', JSON.stringify(user));
+  return user;
 };

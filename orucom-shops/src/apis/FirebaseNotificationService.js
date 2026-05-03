@@ -1,9 +1,7 @@
 import { Platform, PermissionsAndroid, Alert } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
-import { auth, firestore } from '../config/firebase';
-import { COLLECTIONS } from '../constants/collections';
+import api from '../config/api';
 
-class FirebaseNotificationService {
+class NotificationService {
   static async requestNotificationPermission() {
     try {
       if (Platform.OS === 'android') {
@@ -12,127 +10,77 @@ class FirebaseNotificationService {
             PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
             {
               title: 'Notification Permission',
-              message:
-                'This app needs notification permissions to send you updates',
+              message: 'This app needs notification permissions to send you updates',
               buttonPositive: 'OK',
             },
           );
           return granted === PermissionsAndroid.RESULTS.GRANTED;
         }
-
         return true;
-      } else {
-        const authStatus = await messaging().requestPermission();
-        return (
-          authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-          authStatus === messaging.AuthorizationStatus.PROVISIONAL
-        );
       }
-    } catch (error) {
-      console.error('Permission request error:', error);
+      try {
+        const messaging = require('@react-native-firebase/messaging').default;
+        const authStatus = await messaging().requestPermission();
+        return authStatus === 1 || authStatus === 2;
+      } catch {
+        return false;
+      }
+    } catch {
       return false;
     }
   }
 
   static async getFCMToken() {
     try {
+      const messaging = require('@react-native-firebase/messaging').default;
       if (Platform.OS === 'ios') {
         await messaging().registerDeviceForRemoteMessages();
       }
-
       const token = await messaging().getToken();
-
       await this.storeFCMToken(token);
-
       return token;
-    } catch (error) {
-      console.error('Error getting FCM token:', error);
+    } catch {
       return null;
     }
   }
 
   static async storeFCMToken(token) {
     try {
-      const currentUser = auth().currentUser;
-
-      if (currentUser) {
-        console.log('EXOSTS');
-        const userDoc = await firestore()
-          .collection('shop-owners')
-          .doc(currentUser.uid)
-          .get();
-
-        if (userDoc.exists) {
-          const userData = userDoc.data();
-          const fcmToken = userData.fcmToken;
-          console.log('FCM TOKEN=============', fcmToken);
-          console.log(' TOKEN------------', token);
-          if (fcmToken !== token) {
-            await firestore()
-              .collection(COLLECTIONS.SHOP_OWNERS)
-              .doc(currentUser.uid)
-              .set(
-                {
-                  fcmToken: token,
-                  updatedAt: firestore.FieldValue.serverTimestamp(),
-                },
-                { merge: true },
-              );
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error storing FCM token:', error);
-    }
+      await api.patch('/auth/fcm-token', { fcmToken: token });
+    } catch {}
   }
 
   static setupNotificationHandlers() {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert(
-        remoteMessage.notification?.title || 'Notification',
-        remoteMessage.notification?.body || 'New message received',
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              // Notification pressed
-              // TODO: If any logic need
-            },
-          },
-        ],
-      );
-    });
-
-    messaging().onNotificationOpenedApp(remoteMessage => {
-      // Handle navigation based on notification data
-    });
-
-    messaging()
-      .getInitialNotification()
-      .then(remoteMessage => {
-        if (remoteMessage) {
-          // App opened by notification
-        }
+    try {
+      const messaging = require('@react-native-firebase/messaging').default;
+      const unsubscribe = messaging().onMessage(async remoteMessage => {
+        Alert.alert(
+          remoteMessage.notification?.title || 'Notification',
+          remoteMessage.notification?.body || 'New message received',
+          [{ text: 'OK' }],
+        );
       });
-
-    return unsubscribe;
+      messaging().onNotificationOpenedApp(_msg => {});
+      messaging().getInitialNotification().then(_msg => {});
+      return unsubscribe;
+    } catch {
+      return () => {};
+    }
   }
 
   static async subscribeToShopTopic(shopId) {
     try {
+      const messaging = require('@react-native-firebase/messaging').default;
       await messaging().subscribeToTopic(`shop_${shopId}`);
-    } catch (error) {
-      return error;
-    }
+    } catch {}
   }
 
   static async unsubscribeFromShopTopic(shopId) {
     try {
+      const messaging = require('@react-native-firebase/messaging').default;
       await messaging().unsubscribeFromTopic(`shop_${shopId}`);
-    } catch (error) {
-      console.error('Error unsubscribing from topic:', error);
-    }
+    } catch {}
   }
 }
 
-export default FirebaseNotificationService;
+export default NotificationService;

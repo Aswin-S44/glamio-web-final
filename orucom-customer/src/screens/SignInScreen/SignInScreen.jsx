@@ -8,18 +8,18 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
-  Modal,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Feather from 'react-native-vector-icons/Feather';
-import { primaryColor } from '../../constants/colors';
-import auth from '@react-native-firebase/auth';
-import firestore from '@react-native-firebase/firestore';
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Added this
+import LinearGradient from 'react-native-linear-gradient';
+import { primaryColor, primaryDark, primaryPale, textMuted, dark } from '../../constants/colors';
+import { login } from '../../apis/auth';
 import { AuthContext } from '../../context/AuthContext';
+import { LOGO } from '../../constants/images';
 
 const SignInScreen = ({ navigation }) => {
-  const [rememberMe, setRememberMe] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState('');
@@ -27,318 +27,264 @@ const SignInScreen = ({ navigation }) => {
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [loginError, setLoginError] = useState('');
-  const [isSignInButtonEnabled, setIsSignInButtonEnabled] = useState(false);
 
   const { refreshUser } = useContext(AuthContext);
 
+  const isFormValid =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && password.length >= 6;
+
   useEffect(() => {
-    let newErrors = {};
-    if (!email) newErrors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-      newErrors.email = 'Invalid email format';
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6)
-      newErrors.password = 'Password must be at least 6 characters';
-    setErrors(newErrors);
-    setIsSignInButtonEnabled(
-      Object.keys(newErrors).length === 0 && email !== '' && password !== '',
-    );
-  }, [email, password]);
-
-  const ensureUserDocument = async firebaseUser => {
-    try {
-      const customerRef = firestore()
-        .collection('customers')
-        .doc(firebaseUser.uid);
-      const customerSnapshot = await customerRef.get();
-
-      if (!customerSnapshot.exists) {
-        await customerRef.set({
-          uid: firebaseUser.uid,
-          fullName: firebaseUser.email?.split('@')[0] || 'User',
-          phone: '',
-          email: firebaseUser.email,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-          profileImage: 'https://via.placeholder.com/150',
-          emailVerified: true,
-        });
-      } else {
-        await customerRef.update({
-          emailVerified: true,
-        });
-      }
-      return firebaseUser.uid;
-    } catch (error) {
-      console.error('Error ensuring user document:', error);
-      throw error;
+    const errs = {};
+    if (submitted) {
+      if (!email) errs.email = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+        errs.email = 'Invalid email format';
+      if (!password) errs.password = 'Password is required';
+      else if (password.length < 6)
+        errs.password = 'Password must be at least 6 characters';
     }
-  };
+    setErrors(errs);
+  }, [email, password, submitted]);
 
   const handleSignIn = async () => {
     setSubmitted(true);
     setLoginError('');
-
-    if (!isSignInButtonEnabled) return;
+    if (!isFormValid) return;
 
     setIsLoading(true);
     try {
-      const userCredential = await auth().signInWithEmailAndPassword(
-        email,
-        password,
-      );
-      const firebaseUser = userCredential.user;
-
-      if (firebaseUser) {
-        // 1. Update Firestore
-        await ensureUserDocument(firebaseUser);
-
-        // 2. IMPORTANT: Save UID to AsyncStorage (Just like Google Sign-in)
-        // This is likely what your AuthContext needs to fetch userData
-        await AsyncStorage.setItem('user_uid', firebaseUser.uid);
-
-        // 3. Refresh context state
-        await refreshUser();
-
-        // Navigation will happen automatically via App.js state change
-      }
-    } catch (error) {
-      console.error('Login error:', error);
-      if (
-        error.code === 'auth/user-not-found' ||
-        error.code === 'auth/wrong-password' ||
-        error.code === 'auth/invalid-credential'
-      ) {
-        setLoginError('Invalid email or password.');
-      } else if (error.code === 'auth/too-many-requests') {
-        setLoginError('Too many failed login attempts. Try again later.');
-      } else {
-        setLoginError('Failed to sign in. Please try again.');
-      }
+      await login(email, password);
+      await refreshUser();
+    } catch (err) {
+      setLoginError(err.message || 'Failed to sign in. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <View style={styles.outerContainer}>
+    <View style={styles.root}>
       <StatusBar backgroundColor={primaryColor} barStyle="light-content" />
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => navigation.goBack()}
+
+      <LinearGradient
+        colors={[primaryDark, primaryColor]}
+        style={styles.topSection}
       >
-        <Ionicons name="chevron-back" size={24} color="#fff" />
-        <Text style={styles.backButtonText}>Back</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+        >
+          <Ionicons name="chevron-back" size={22} color="#fff" />
+        </TouchableOpacity>
 
-      <View style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <Text style={styles.mainTitle}>Sign In</Text>
+        <View style={styles.brandRow}>
+          <View style={styles.logoCircle}>
+            <Ionicons name="sparkles" size={28} color={primaryColor} />
+          </View>
+          <Text style={styles.brandName}>Glamio</Text>
+        </View>
 
+        <Text style={styles.heroTitle}>Welcome{'\n'}Back</Text>
+        <Text style={styles.heroSub}>Sign in to book your next look</Text>
+      </LinearGradient>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.flex1}
+      >
+        <ScrollView
+          style={styles.card}
+          contentContainerStyle={styles.cardContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
           {loginError ? (
-            <View style={styles.errorBox}>
-              <Text style={styles.loginErrorText}>{loginError}</Text>
+            <View style={styles.errorBanner}>
+              <Ionicons name="alert-circle-outline" size={18} color="#D41172" />
+              <Text style={styles.errorBannerText}>{loginError}</Text>
             </View>
           ) : null}
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Email</Text>
-            <View
-              style={[
-                styles.inputContainer,
-                submitted && errors.email && { borderColor: 'red' },
-              ]}
-            >
-              <Feather
-                name="send"
-                size={20}
-                color="#888"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="demo@gmail.com"
-                placeholderTextColor="#888"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
-            </View>
-            {submitted && errors.email && (
-              <Text style={styles.errorText}>{errors.email}</Text>
-            )}
+          <Text style={styles.sectionLabel}>Email address</Text>
+          <View style={[styles.inputWrap, submitted && errors.email && styles.inputWrapError]}>
+            <Ionicons name="mail-outline" size={20} color={textMuted} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="you@email.com"
+              placeholderTextColor={textMuted}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
           </View>
+          {submitted && errors.email ? (
+            <Text style={styles.fieldError}>{errors.email}</Text>
+          ) : null}
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Password</Text>
-            <View
-              style={[
-                styles.inputContainer,
-                submitted && errors.password && { borderColor: 'red' },
-              ]}
-            >
+          <Text style={[styles.sectionLabel, { marginTop: 18 }]}>Password</Text>
+          <View style={[styles.inputWrap, submitted && errors.password && styles.inputWrapError]}>
+            <Ionicons name="lock-closed-outline" size={20} color={textMuted} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Min. 6 characters"
+              placeholderTextColor={textMuted}
+              secureTextEntry={secureTextEntry}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity onPress={() => setSecureTextEntry(!secureTextEntry)}>
               <Ionicons
-                name="lock-closed-outline"
-                size={20}
-                color="#888"
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder="Type Password"
-                placeholderTextColor="#888"
-                secureTextEntry={secureTextEntry}
-                value={password}
-                onChangeText={setPassword}
-              />
-              <TouchableOpacity
-                onPress={() => setSecureTextEntry(!secureTextEntry)}
-              >
-                <Ionicons
-                  name={secureTextEntry ? 'eye-off-outline' : 'eye-outline'}
-                  size={22}
-                  color="#888"
-                />
-              </TouchableOpacity>
-            </View>
-            {submitted && errors.password && (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            )}
-          </View>
-
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity
-              style={styles.rememberMe}
-              onPress={() => setRememberMe(!rememberMe)}
-            >
-              <Ionicons
-                name={rememberMe ? 'checkbox' : 'square-outline'}
+                name={secureTextEntry ? 'eye-off-outline' : 'eye-outline'}
                 size={22}
-                color={rememberMe ? primaryColor : '#888'}
+                color={textMuted}
               />
-              <Text style={styles.rememberMeText}>Remember me</Text>
             </TouchableOpacity>
           </View>
+          {submitted && errors.password ? (
+            <Text style={styles.fieldError}>{errors.password}</Text>
+          ) : null}
 
           <TouchableOpacity
-            style={[
-              styles.signInButton,
-              (!isSignInButtonEnabled || isLoading) && {
-                backgroundColor: '#ccc',
-              },
-            ]}
+            style={[styles.btn, (!isFormValid || isLoading) && styles.btnDisabled]}
             onPress={handleSignIn}
-            disabled={!isSignInButtonEnabled || isLoading}
+            disabled={isLoading}
+            activeOpacity={0.85}
           >
-            <Text style={styles.signInButtonText}>
-              {isLoading ? 'Signing in...' : 'SIGN IN ACCOUNT'}
-            </Text>
+            {isLoading ? (
+              <ActivityIndicator color="#fff" size="small" />
+            ) : (
+              <Text style={styles.btnText}>Sign In</Text>
+            )}
           </TouchableOpacity>
 
-          <View style={styles.signUpContainer}>
-            <Text style={styles.signUpText}>If you have no account? </Text>
+          <View style={styles.signUpRow}>
+            <Text style={styles.signUpText}>Don't have an account? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
               <Text style={styles.signUpLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
-      </View>
-
-      {isLoading && (
-        <Modal transparent animationType="fade" visible={isLoading}>
-          <View style={styles.loadingOverlay}>
-            <ActivityIndicator size="large" color="#fff" />
-          </View>
-        </Modal>
-      )}
+      </KeyboardAvoidingView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  outerContainer: { flex: 1, backgroundColor: primaryColor },
-  backButton: {
-    position: 'absolute',
-    top: 55,
-    left: 20,
-    flexDirection: 'row',
+  root: { flex: 1, backgroundColor: '#fff' },
+  flex1: { flex: 1 },
+  topSection: {
+    paddingTop: Platform.OS === 'ios' ? 60 : 45,
+    paddingBottom: 36,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 36,
+    borderBottomRightRadius: 36,
+  },
+  backBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     alignItems: 'center',
-    zIndex: 10,
-  },
-  backButtonText: { color: '#fff', fontSize: 18, marginLeft: 5 },
-  container: {
-    flex: 1,
-    marginTop: 100,
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    padding: 25,
-  },
-  mainTitle: {
-    fontSize: 28,
-    fontWeight: '400',
-    color: '#333',
-    textAlign: 'center',
-    marginTop: 10,
-    marginBottom: 30,
-  },
-  errorBox: {
-    backgroundColor: '#ffebeb',
-    padding: 10,
-    borderRadius: 8,
+    justifyContent: 'center',
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#ff0000',
-    alignItems: 'center',
   },
-  loginErrorText: { color: '#ff0000', fontSize: 14, textAlign: 'center' },
-  inputGroup: { marginBottom: 20 },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 10,
-  },
-  inputContainer: {
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    paddingHorizontal: 15,
+    marginBottom: 24,
   },
-  inputIcon: { marginRight: 10 },
-  input: { flex: 1, height: 50, fontSize: 16, color: '#333' },
-  optionsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  logoCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#fff',
     alignItems: 'center',
-    marginBottom: 30,
-  },
-  rememberMe: { flexDirection: 'row', alignItems: 'center' },
-  rememberMeText: { marginLeft: 8, fontSize: 14, color: '#555' },
-  signInButton: {
-    backgroundColor: primaryColor,
-    padding: 18,
-    borderRadius: 15,
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  signInButtonText: { color: '#fff', fontSize: 16, fontWeight: '500' },
-  signUpContainer: {
-    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
+    marginRight: 10,
   },
-  signUpText: { fontSize: 15, color: '#555' },
-  signUpLink: { fontSize: 15, color: primaryColor, fontWeight: '500' },
-  errorText: { color: 'red', fontSize: 13, marginTop: 5 },
-  loadingOverlay: {
+  brandName: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 0.5,
+  },
+  heroTitle: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#fff',
+    lineHeight: 42,
+    marginBottom: 6,
+  },
+  heroSub: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.82)',
+  },
+  card: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: '#fff',
+    marginTop: -2,
+  },
+  cardContent: {
+    paddingHorizontal: 24,
+    paddingTop: 32,
+    paddingBottom: 40,
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFF0F7',
+    borderWidth: 1,
+    borderColor: '#FFB3D9',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 20,
+    gap: 8,
+  },
+  errorBannerText: { color: primaryColor, fontSize: 13, flex: 1 },
+  sectionLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: dark,
+    marginBottom: 8,
+  },
+  inputWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: '#E2E8F0',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    backgroundColor: '#FAFAFA',
+    height: 54,
+  },
+  inputWrapError: { borderColor: primaryColor },
+  inputIcon: { marginRight: 10 },
+  input: { flex: 1, fontSize: 15, color: dark, height: 54 },
+  fieldError: { color: primaryColor, fontSize: 12, marginTop: 4 },
+  btn: {
+    backgroundColor: primaryColor,
+    borderRadius: 14,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 30,
+    shadowColor: primaryColor,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 6,
+  },
+  btnDisabled: { backgroundColor: '#ccc', shadowOpacity: 0 },
+  btnText: { color: '#fff', fontSize: 16, fontWeight: '700', letterSpacing: 0.3 },
+  signUpRow: {
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 24,
   },
+  signUpText: { fontSize: 14, color: textMuted },
+  signUpLink: { fontSize: 14, color: primaryColor, fontWeight: '700' },
 });
 
 export default SignInScreen;

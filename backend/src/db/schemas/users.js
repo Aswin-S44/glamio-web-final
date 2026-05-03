@@ -17,6 +17,7 @@ export const users = pgTable("users", {
   isActive: boolean("is_active").notNull().default(false),
   emailVerified: boolean("email_verified").notNull().default(false),
 
+  passwordHash: varchar("password_hash", { length: 256 }),
   fcmToken: varchar("fcm_token", { length: 256 }),
   profileImage: varchar("profile_image", { length: 256 }),
 

@@ -1,207 +1,132 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   StyleSheet,
   StatusBar,
-  ActivityIndicator,
-  Modal,
-  Image,
-  Linking,
-  Alert,
+  Platform,
 } from 'react-native';
-import firestore from '@react-native-firebase/firestore';
-import auth from '@react-native-firebase/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { GoogleAuthProvider } from '@react-native-firebase/auth';
-import { AuthContext } from '../../context/AuthContext';
-import { GOOGLE_ICON, DEFAULT_AVATAR } from '../../constants/images';
-import { lightPurple, primaryColor, white } from '../../constants/colors';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import LinearGradient from 'react-native-linear-gradient';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { generateRandomUid, generateRandomName } from '../../utils/utils';
+import { primaryColor, primaryDark, textMuted } from '../../constants/colors';
 
 const SigninWithGoogleScreen = ({ navigation }) => {
-  const { refreshUser } = useContext(AuthContext);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    GoogleSignin.configure({
-      webClientId:
-        '273666754104-8kqhpnril7nlsnvgf7mmddsc1mbf9r91.apps.googleusercontent.com',
-      offlineAccess: false,
-    });
-  }, []);
-
-  const openLink = async url => {
-    try {
-      await Linking.openURL(url);
-    } catch (err) {
-      Alert.alert('Error', 'Unable to open browser.');
-    }
-  };
-
-  async function onGoogleButtonPress() {
-    setLoading(true);
-    setError(null);
-    try {
-      const signInResult = await GoogleSignin.signIn();
-      let idToken = signInResult.data?.idToken || signInResult.idToken;
-      const googleCredential = GoogleAuthProvider.credential(idToken);
-      const userCredential = await auth().signInWithCredential(
-        googleCredential,
-      );
-      const firebaseUser = userCredential.user;
-
-      const shopOwnerSnap = await firestore()
-        .collection('shop-owners')
-        .doc(firebaseUser.uid)
-        .get();
-      const customerSnap = await firestore()
-        .collection('customers')
-        .where('email', '==', firebaseUser.email)
-        .get();
-
-      let uid = !customerSnap.empty
-        ? customerSnap.docs[0].id
-        : shopOwnerSnap.exists
-        ? generateRandomUid()
-        : firebaseUser.uid;
-      const customerRef = firestore().collection('customers').doc(uid);
-
-      await customerRef.set(
-        {
-          uid,
-          fullName: firebaseUser.displayName || generateRandomName(),
-          phone: '',
-          email: firebaseUser.email,
-          createdAt: firestore.FieldValue.serverTimestamp(),
-          profileImage: firebaseUser.photoURL || DEFAULT_AVATAR,
-          emailVerified: true,
-        },
-        { merge: true },
-      );
-
-      await AsyncStorage.setItem('user_uid', uid);
-      await refreshUser();
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  }
-
   return (
     <LinearGradient
-      colors={[primaryColor, lightPurple]}
-      style={styles.container}
+      colors={[primaryDark, primaryColor]}
+      style={styles.root}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
     >
-      <StatusBar backgroundColor={primaryColor} barStyle="light-content" />
-      <View style={styles.contentContainer}>
-        <Image
-          source={require('../../assets/images/splash_logo.png')}
-          style={styles.welcomeImage}
-        />
-        <Text style={styles.title}>Orucom</Text>
+      <StatusBar backgroundColor={primaryDark} barStyle="light-content" />
+
+      <View style={styles.content}>
+        <View style={styles.logoCircle}>
+          <Ionicons name="sparkles" size={44} color={primaryColor} />
+        </View>
+        <Text style={styles.brandName}>Glamio</Text>
+        <Text style={styles.tagline}>Your beauty, perfected</Text>
+
         <TouchableOpacity
-          style={[styles.signInButton, loading && styles.disabledButton]}
-          onPress={onGoogleButtonPress}
-          disabled={loading}
-        >
-          <Image source={{ uri: GOOGLE_ICON }} style={styles.googleIcon} />
-          <Text style={styles.signInButtonText}>Sign in with Google</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+          style={styles.emailBtn}
           onPress={() => navigation.navigate('SignIn')}
-          style={styles.emailLinkContainer}
+          activeOpacity={0.85}
         >
-          <Text style={styles.emailLinkText}>Sign in with email</Text>
+          <Ionicons name="mail-outline" size={20} color="#fff" />
+          <Text style={styles.emailBtnText}>Sign in with Email</Text>
         </TouchableOpacity>
-        <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>
-            By signing in, you agree to our{' '}
-            <Text
-              style={styles.linkText}
-              onPress={() =>
-                openLink(
-                  'https://www.nominoinnovations.com/p/orucom-terms-and-conditions.html',
-                )
-              }
-            >
-              Terms
-            </Text>{' '}
-            and{' '}
-            <Text
-              style={styles.linkText}
-              onPress={() =>
-                openLink(
-                  'https://www.nominoinnovations.com/p/orucom-privacy-policy.html',
-                )
-              }
-            >
-              Privacy
-            </Text>
-          </Text>
-        </View>
+
+        <TouchableOpacity
+          style={styles.signupBtn}
+          onPress={() => navigation.navigate('SignUp')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="person-add-outline" size={20} color={primaryColor} />
+          <Text style={styles.signupBtnText}>Create Account</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.footerText}>
+          By continuing, you agree to our Terms & Privacy Policy
+        </Text>
       </View>
-      <Modal visible={loading} transparent>
-        <View style={styles.modalOverlay}>
-          <ActivityIndicator size="large" color={white} />
-        </View>
-      </Modal>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-  contentContainer: {
+  root: { flex: 1 },
+  content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 28,
+    paddingBottom: 30,
   },
-  welcomeImage: { width: 125, height: 125, borderRadius: 12 },
-  title: {
-    fontSize: 30,
-    fontWeight: '600',
-    color: '#fff',
-    marginTop: 20,
-    marginBottom: 60,
-  },
-  signInButton: {
+  logoCircle: {
+    width: 96,
+    height: 96,
+    borderRadius: 28,
     backgroundColor: '#fff',
-    paddingVertical: 15,
-    width: '90%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  brandName: {
+    fontSize: 36,
+    fontWeight: '800',
+    color: '#fff',
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  tagline: {
+    fontSize: 15,
+    color: 'rgba(255,255,255,0.78)',
+    marginBottom: 52,
+  },
+  emailBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    backgroundColor: 'rgba(255,255,255,0.18)',
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginBottom: 14,
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.4)',
   },
-  googleIcon: { width: 24, height: 24, marginRight: 10 },
-  signInButtonText: { color: primaryColor, fontSize: 16, fontWeight: 'bold' },
-  emailLinkContainer: { marginVertical: 15 },
-  emailLinkText: {
-    color: '#fff',
-    fontSize: 16,
-    textDecorationLine: 'underline',
-  },
-  footerContainer: { marginTop: 15, width: '90%' },
-  footerText: { color: '#fff', fontSize: 13, textAlign: 'center' },
-  linkText: {
-    color: '#2768F5',
-    textDecorationLine: 'underline',
-    fontWeight: 'bold',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
+  emailBtnText: { fontSize: 16, fontWeight: '600', color: '#fff' },
+  signupBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 16,
+    marginBottom: 28,
+    gap: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  disabledButton: { opacity: 0.7 },
+  signupBtnText: { fontSize: 16, fontWeight: '700', color: primaryColor },
+  footerText: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.55)',
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: 20,
+  },
 });
 
 export default SigninWithGoogleScreen;

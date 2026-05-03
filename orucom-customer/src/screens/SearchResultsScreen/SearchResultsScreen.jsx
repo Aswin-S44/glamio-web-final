@@ -17,10 +17,10 @@ import { NO_IMAGE } from '../../constants/images';
 import Loader from '../../components/Loader/Loader';
 import EmptyComponent from '../../components/EmptyComponent/EmptyComponent';
 import { AuthContext } from '../../context/AuthContext';
-import firestore from '@react-native-firebase/firestore';
 import ServiceCardSkeleton from '../../components/ServiceCardSkeleton/ServiceCardSkeleton';
 import LocationPrompt from '../../components/LocationPrompt/LocationPrompt';
 import SearchPrompt from '../../components/SearchPrompt/SearchPrompt';
+import api from '../../config/api';
 
 const debounce = (func, wait) => {
   let timeout;
@@ -36,51 +36,9 @@ const debounce = (func, wait) => {
 
 const searchAllParloursAndServices = async searchTerm => {
   try {
-    const shopsSnapshot = await firestore()
-      .collection('shop-owners')
-      .where('isOnboarded', '==', true)
-      .where('profileCompleted', '==', true)
-      .get();
-
-    const allShops = shopsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    const shopUids = allShops.map(shop => shop.uid);
-
-    const [servicesSnapshot, offersSnapshot, expertsSnapshot] =
-      await Promise.all([
-        firestore()
-          .collection('services')
-          .where('shopId', 'in', shopUids)
-          .get(),
-        firestore().collection('offers').where('shopId', 'in', shopUids).get(),
-        firestore()
-          .collection('beauty_experts')
-          .where('shopId', 'in', shopUids)
-          .get(),
-      ]);
-
-    const allServices = servicesSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    const allOffers = offersSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    const allExperts = expertsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    const enrichedShops = allShops.map(shop => ({
-      ...shop,
-      services: allServices.filter(s => s.shopId === shop.uid),
-      offers: allOffers.filter(o => o.shopId === shop.uid),
-      experts: allExperts.filter(e => e.shopId === shop.uid),
-    }));
+    const { data } = await api.get('/customer/shops');
+    const allShops = data.shops || [];
+    const enrichedShops = allShops;
 
     if (!searchTerm) {
       return enrichedShops;

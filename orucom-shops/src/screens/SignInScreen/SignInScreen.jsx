@@ -16,42 +16,14 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
 import { primaryColor } from '../../constants/colors';
 import { login } from '../../apis/auth';
-import axios from 'axios';
-import { BACKEND_URL, USER_TYPES } from '../../constants/variables';
-import auth from '@react-native-firebase/auth';
+import api from '../../config/api';
 
 export const resetPassword = async email => {
   try {
-    await auth().sendPasswordResetEmail(email);
+    await api.post('/auth/reset-password', { email });
     return true;
-  } catch (error) {
-    throw error;
-  }
-};
-
-const sendOtp = async email => {
-  try {
-    const results = await Promise.allSettled([
-      axios.post(BACKEND_URL + `/send-otp`, {
-        email,
-        userType: USER_TYPES.BEAUTY_SHOP,
-      }),
-    ]);
-
-    const successResult = results.find(
-      result =>
-        result.status === 'fulfilled' &&
-        (result.value.data?.success || result.value.data === 'send otp called'),
-    );
-
-    if (successResult) {
-      return successResult.value.data;
-    } else {
-      const errorResult = results.find(result => result.status === 'rejected');
-      throw errorResult ? errorResult.reason : new Error('Failed to send OTP');
-    }
-  } catch (error) {
-    throw error;
+  } catch (err) {
+    throw err;
   }
 };
 

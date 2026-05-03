@@ -14,8 +14,8 @@ import { Calendar } from 'react-native-calendars';
 import { lightPurple, primaryColor } from '../../constants/colors';
 import BookingScreenSkeleton from '../../components/BookingScreenSkeleton/BookingScreenSkeleton';
 import { NO_IMAGE } from '../../constants/images';
-import firestore from '@react-native-firebase/firestore';
 import moment from 'moment';
+import api from '../../config/api';
 import { AuthContext } from '../../context/AuthContext';
 
 const BookingScreen = ({ route, navigation }) => {
@@ -45,35 +45,20 @@ const BookingScreen = ({ route, navigation }) => {
 
     setLoading(true);
 
-    const unsubscribe = firestore()
-      .collection('slots')
-      .where('shopId', '==', route.params.shopId)
-      .onSnapshot(
-        querySnapshot => {
-          const slotsData = {};
+    api.get(`/customer/slots/${route.params.shopId}`)
+      .then(({ data }) => {
+        const slotsData = {};
+        (data.slots || []).forEach(slot => {
+          const slotDate = slot.date;
+          if (!slotsData[slotDate]) slotsData[slotDate] = [];
+          slotsData[slotDate].push(slot);
+        });
+        setSlots(slotsData);
+      })
+      .catch(() => Alert.alert('Error', 'Failed to load slots'))
+      .finally(() => setLoading(false));
 
-          querySnapshot.forEach(doc => {
-            const slot = { id: doc.id, ...doc.data() };
-            const slotDate = slot.date;
-
-            if (!slotsData[slotDate]) {
-              slotsData[slotDate] = [];
-            }
-
-            slotsData[slotDate].push(slot);
-          });
-
-          setSlots(slotsData);
-          setLoading(false);
-        },
-        error => {
-          // Error fetching slots
-          setLoading(false);
-          Alert.alert('Error', 'Failed to load slots');
-        },
-      );
-
-    return () => unsubscribe();
+    return () => {};
   }, [route]);
 
   useEffect(() => {
