@@ -25,7 +25,7 @@ const SigninWithGoogleScreen = ({ navigation }) => {
         <View style={styles.logoCircle}>
           <Ionicons name="sparkles" size={44} color={primaryColor} />
         </View>
-        <Text style={styles.brandName}>Glamio</Text>
+        <Text style={styles.brandName}>Orucom</Text>
         <Text style={styles.tagline}>Your beauty, perfected</Text>
 
         <TouchableOpacity

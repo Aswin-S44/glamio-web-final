@@ -86,10 +86,10 @@ const SignUpScreen = ({ navigation }) => {
           <View style={styles.logoCircle}>
             <Ionicons name="sparkles" size={28} color={primaryColor} />
           </View>
-          <Text style={styles.brandName}>Glamio</Text>
+          <Text style={styles.brandName}>Orucom</Text>
         </View>
         <Text style={styles.heroTitle}>Create{'\n'}Account</Text>
-        <Text style={styles.heroSub}>Join thousands who trust Glamio</Text>
+        <Text style={styles.heroSub}>Join thousands who trust Orucom</Text>
       </LinearGradient>
 
       <KeyboardAvoidingView

@@ -81,7 +81,7 @@ const SignInScreen = ({ navigation }) => {
           <View style={styles.logoCircle}>
             <Ionicons name="sparkles" size={28} color={primaryColor} />
           </View>
-          <Text style={styles.brandName}>Glamio</Text>
+          <Text style={styles.brandName}>Orucom</Text>
         </View>
 
         <Text style={styles.heroTitle}>Welcome{'\n'}Back</Text>

@@ -337,10 +337,7 @@ function Header() {
       <aside className={`side-panel ${isSidebarOpen ? "open" : ""}`}>
         <div className="side-header">
           <div className="side-logo">
-            <Sparkles size={24} />
-            <span className="logo-text">
-              GLAM<span>IO</span>
-            </span>
+            <img src={logoImage} style={{width:"60%"}}/>
           </div>
           <button onClick={() => setIsSidebarOpen(false)}>
             <X size={24} />

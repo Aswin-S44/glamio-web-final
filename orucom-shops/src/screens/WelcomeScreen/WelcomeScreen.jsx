@@ -64,7 +64,7 @@ const WelcomeScreen = ({ navigation }) => {
         <View style={styles.logoCircle}>
           <Ionicons name="sparkles" size={44} color={primaryColor} />
         </View>
-        <Text style={styles.appName}>Glamio</Text>
+        <Text style={styles.appName}>Orucom</Text>
         <Text style={styles.tagline}>Business Portal</Text>
         <Text style={styles.subtitle}>Manage your salon, grow your business</Text>
 
