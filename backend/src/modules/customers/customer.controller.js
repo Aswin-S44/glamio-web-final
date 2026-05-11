@@ -5,9 +5,11 @@ import {
   getAllExpertsByShopIdService,
   getAllServices,
   getAllShopsService,
+  getCustomerAppointmentsService,
   getServiceDetailsByIdService,
   getShopByIdService,
   getSHopReviewsAndImageServices,
+  updateUserService,
 } from "./customer.service.js";
 import { SlotService } from "../slots/slot.service.js";
 import { services } from "../../db/schemas/services.js";
@@ -16,11 +18,12 @@ import { slots } from "../../db/schemas/slots.js";
 import { shopOwners } from "../../db/schemas/shop-owners.js";
 import { db } from "../../db/index.js";
 import { appointmentStatuses } from "../../constants/constants.js";
+import { updateUserSchema } from "./customer.validation.js";
 
 export const getAllShops = async (req, res) => {
   const shops = await getAllShopsService();
   res.json({ shops });
-}; 
+};
 
 export const getShopById = async (req, res) => {
   try {
@@ -216,5 +219,49 @@ export const getServiceDetailsById = async (req, res) => {
     res.json(services);
   } catch (e) {
     res.status(404).json({ message: e.message });
+  }
+};
+
+export const updateUserController = async (req, res) => {
+  try {
+    const userId = Number(req.user?.id);
+
+    const validatedData = updateUserSchema.parse(req.body);
+
+    const updatedUser = await updateUserService(userId, validatedData);
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const getCustomerAppointments = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const appointments = await getCustomerAppointmentsService(userId);
+
+    return res.json({
+      message: "Appointments fetched successfully",
+      data: appointments,
+    });
+  } catch (e) {
+    return res.status(400).json({
+      message: e.message,
+    });
   }
 };

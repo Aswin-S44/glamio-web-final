@@ -1,3 +1,4 @@
+import { createUserService } from "../users/user.service.js";
 import { googleSignInService } from "./auth.service.js";
 
 export const googleSignIn = async (req, res) => {
@@ -6,15 +7,15 @@ export const googleSignIn = async (req, res) => {
 
     const result = await googleSignInService(idToken);
 
-    // if (result && result.user) {
-    //   let userData = {
-    //     email: result.user.email ?? "",
-    //     username: result.user.name ?? "",
-    //     profileImage: result.user.picture ?? DEFAULT_IMAGE_URL,
-    //     userType,
-    //   };
-    //   await createUserService(userData);
-    // }
+    if (result && result.user) {
+      let userData = {
+        email: result.user.email ?? "",
+        username: result.user.name ?? "",
+        profileImage: result.user.picture ?? DEFAULT_IMAGE_URL,
+        userType,
+      };
+      await createUserService(userData);
+    }
 
     res.status(200).json({
       success: true,

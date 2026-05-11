@@ -4,16 +4,18 @@ import {
   createBooking,
   getAllShops,
   getAllShopsServices,
+  getCustomerAppointments,
   getExpertsByShopId,
   getOrderSummary,
   getServiceDetailsById,
   getShopById,
   getShopReviewsAndImages,
   getSlotsByShopId,
+  updateUserController,
 } from "./customer.controller.js";
 
 const router = Router();
- 
+
 router.get("/shops", getAllShops);
 router.get("/shop/:id", getShopById);
 router.get("/experts/:shopId", getExpertsByShopId);
@@ -23,5 +25,8 @@ router.get("/reviews/:placeId", getShopReviewsAndImages);
 router.get("/services", getAllShopsServices);
 router.get("/order/summary/:shopId/:slotId/:expertId", getOrderSummary);
 router.get("/service/:id", getServiceDetailsById);
+
+router.get("/appointments", authMiddleware, getCustomerAppointments);
+router.patch("/profile", authMiddleware, updateUserController);
 
 export default router;
