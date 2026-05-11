@@ -6,10 +6,13 @@ dotenv.config();
 
 const { Pool } = pg;
 
+// const dbUrl =
+//   process.env.NODE_ENV === "development"
+//     ? process.env.DATABASE_URL_LOCAL
+//     : process.env.DATABASE_URL_PROD;
+
 const dbUrl =
-  process.env.NODE_ENV === "development"
-    ? process.env.DATABASE_URL_LOCAL
-    : process.env.DATABASE_URL_PROD;
+  "postgresql://postgres:&ZFC7-7nC%7m8VZ@db.ozvloioxtygihqyspslp.supabase.co:5432/postgres";
 
 const pool = new Pool({
   connectionString: dbUrl,
