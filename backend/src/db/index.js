@@ -32,7 +32,7 @@ const { Pool } = pg;
 // 2. IMPORTANT: If your password has special characters, ensure the URL is encoded
 // 3. IMPORTANT: Add ?sslmode=require to the string OR set ssl in the config
 const dbUrl =
-  "postgresql://postgres:&ZFC7-7nC%7m8VZ@db.ozvloioxtygihqyspslp.supabase.co:6543/postgres";
+  "postgresql://postgres:8979UOIDS23829382932932IKKKKKKKKKKKKK;;;IIII<<<kOOPO@db.ozvloioxtygihqyspslp.supabase.co:5432/postgres";
 
 const pool = new Pool({
   connectionString: dbUrl,

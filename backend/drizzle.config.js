@@ -7,7 +7,7 @@ import "dotenv/config";
 //     : process.env.DATABASE_URL_PROD;
 
 const dbUrl =
-  "postgresql://postgres:&ZFC7-7nC%7m8VZ@db.ozvloioxtygihqyspslp.supabase.co:5432/postgres";
+  "postgresql://postgres:8979UOIDS23829382932932IKKKKKKKKKKKKK;;;IIII<<<kOOPO@db.ozvloioxtygihqyspslp.supabase.co:5432/postgres";
 
 export default defineConfig({
   schema: "./src/db/schemas",
