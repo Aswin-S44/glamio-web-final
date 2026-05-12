@@ -22,6 +22,7 @@ export const googleSignIn = async (req, res) => {
       data: result,
     });
   } catch (error) {
+    console.error("DETAILED BACKEND ERROR:", error);
     res.status(401).json({
       success: false,
       message: error.message || "Invalid Google token",
