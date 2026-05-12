@@ -4,8 +4,9 @@ import { googleSignInService } from "./auth.service.js";
 export const googleSignIn = async (req, res) => {
   try {
     const { idToken, userType } = req.body;
-
+    console.log("===================");
     const result = await googleSignInService(idToken);
+    console.log("result----------", result ? result : "no result");
 
     if (result && result.user) {
       let userData = {
