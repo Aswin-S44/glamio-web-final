@@ -6,14 +6,18 @@ dotenv.config();
 
 const { Pool } = pg;
 
+// const dbUrl =
+//   "postgresql://postgres:8979UOIDS23829382932932IKKKKKKKKKKKKK;;;IIII<<<kOOPO@db.ozvloioxtygihqyspslp.supabase.co:5432/postgres";
+
 const dbUrl =
-  "postgresql://postgres:8979UOIDS23829382932932IKKKKKKKKKKKKK;;;IIII<<<kOOPO@db.ozvloioxtygihqyspslp.supabase.co:5432/postgres";
+  "postgresql://postgres.ozvloioxtygihqyspslp:8979UOIDS23829382932932IKKKKKKKKKKKKK;;;IIII<<<kOOPO@aws-1-ap-northeast-1.pooler.supabase.com:5432/postgres";
 
 const pool = new Pool({
   connectionString: dbUrl,
   ssl: {
     rejectUnauthorized: false,
   },
+  family: 4,
 });
 
 console.log("dbUrl*****************", dbUrl);
