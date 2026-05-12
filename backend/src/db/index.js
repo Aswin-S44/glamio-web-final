@@ -16,6 +16,8 @@ const pool = new Pool({
   },
 });
 
+console.log("dbUrl*****************", dbUrl);
+
 pool
   .connect()
   .then((client) => {
