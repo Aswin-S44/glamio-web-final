@@ -8,6 +8,7 @@ import { googleSignInApi } from "../../../services/auth.service";
 import { Sparkles, Star, Shield, Clock, Lock } from "lucide-react";
 import Swal from "sweetalert2";
 import img from "../../../components/Media/Images/model-with-smokey-eyes-golden-circle-earrings.webp";
+import imgLogo from "../../../components/Media/Images/Logo.png";
 
 function SignIn() {
   const navigate = useNavigate();
@@ -67,8 +68,7 @@ function SignIn() {
       <div className="si-brand">
         <div className="si-brand-inner">
           <div className="si-logo" onClick={() => navigate("/")}>
-            <Sparkles size={22} />
-            <span>GLAM<em>IO</em></span>
+            <img src={imgLogo} style={{width:"50%"}}/>
           </div>
 
           <div className="si-brand-copy">

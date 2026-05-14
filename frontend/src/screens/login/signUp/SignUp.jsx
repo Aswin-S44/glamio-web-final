@@ -8,6 +8,8 @@ import { Sparkles } from "lucide-react";
 import { auth } from "../../../config/firebase";
 import { googleSignInApi } from "../../../services/auth.service";
 import { googleLogin } from "../../../store/slice/auth";
+import imgLogo from "../../../components/Media/Images/Logo.png";
+
 
 function SignUp() {
   const [mode, setMode] = useState(null);
@@ -34,8 +36,7 @@ function SignUp() {
 
       <div className="su-content">
         <div className="su-topbar" onClick={() => navigate("/")}>
-          <Sparkles size={22} />
-          <span>GLAM<em>IO</em></span>
+            <img src={imgLogo} style={{width:"12%"}}/>
         </div>
 
         {/* Default split view */}
