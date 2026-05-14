@@ -100,7 +100,6 @@ function ParlorListings({ featuredParlors, loading, onFilterClick }) {
               </div> */}
 
               <div className="parlor-actions">
-                {console.log("parlor----------------", parlor)}
                 <button
                   className="book-btn"
                   onClick={() => {

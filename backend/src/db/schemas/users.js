@@ -24,7 +24,8 @@ export const users = pgTable("users", {
   userTypeId: bigint("user_type_id", { mode: "number" })
     .notNull()
     .references(() => userTypes.id),
-
+ 
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+ 

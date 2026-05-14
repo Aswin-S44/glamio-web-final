@@ -37,7 +37,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
     const [shop] = await db
       .select()
       .from(shopOwners)
-      .where(eq(shopOwners.userId, user.id))
+    .where(eq(shopOwners.userId, user.id))
       .limit(1);
 
     return res.json({

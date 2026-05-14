@@ -51,6 +51,7 @@ app.use("/api/v1/slots", slotRouter);
 app.use("/api/v1/appointments", appointmentRouter);
 app.use("/api/v1/shops", shopsRouter);
 app.use("/api/v1/customer", customerRouter);
+app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/v1/admin", adminRouter);
 

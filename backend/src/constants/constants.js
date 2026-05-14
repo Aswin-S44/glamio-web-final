@@ -46,3 +46,18 @@ export const DEFAULT_CUSTOMER_ID = 1;
 export const DEFAULT_SHOP_ID = 2;
 
 export const DEFAULT_ADMIN_ID = 3;
+
+export const notificationTypess = {
+  BOOKING_REQUESTED: {
+    name: "requested",
+  },
+  BOOKING_ACCEPTED: {
+    name: "accepted",
+  },
+  BOOKING_REJECTED: {
+    name: "rejected",
+  },
+  BOOKING_COMPLETED: {
+    name: "completed",
+  },
+};
