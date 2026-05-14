@@ -5,6 +5,7 @@ import {
   getAllShops,
   getAllShopsServices,
   getCustomerAppointments,
+  getExpertDetails,
   getExpertsByShopId,
   getOrderSummary,
   getServiceDetailsById,
@@ -28,5 +29,7 @@ router.get("/service/:id", getServiceDetailsById);
 
 router.get("/appointments", authMiddleware, getCustomerAppointments);
 router.patch("/profile", authMiddleware, updateUserController);
+
+router.get("/expert/:id", getExpertDetails);
 
 export default router;

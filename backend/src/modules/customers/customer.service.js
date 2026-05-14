@@ -15,6 +15,8 @@ import { services } from "../../db/schemas/services.js";
 import { category } from "../../db/schemas/category.js";
 import { db } from "../../db/index.js";
 import { getServicesByIds } from "../services/service.repository.js";
+import { experts } from "../../db/schemas/experts.js";
+import { shopOwners } from "../../db/schemas/shop-owners.js";
 dotenv.config();
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
@@ -121,4 +123,37 @@ export const updateUserService = async (id, data) => {
 
 export const getCustomerAppointmentsService = async (customerId) => {
   return await getCustomerAppointmentsDB(customerId);
+};
+
+export const fetchExpertById = async (expertId) => {
+  const result = await db
+    .select({
+      expert: {
+        id: experts.id,
+        name: experts.name,
+        about: experts.about,
+        address: experts.address,
+        image: experts.image,
+        specialist: experts.specialist,
+        isActive: experts.isActive,
+        createdAt: experts.createdAt,
+      },
+      shop: {
+        id: shopOwners.id,
+        parlourName: shopOwners.parlourName,
+        address: shopOwners.address,
+        about: shopOwners.about,
+        latitude: shopOwners.latitude,
+        longitude: shopOwners.longitude,
+        shopImage: shopOwners.shopImage,
+        totalRating: shopOwners.totalRating,
+        openingHours: shopOwners.openingHours,
+        placeId: shopOwners.placeId,
+      },
+    })
+    .from(experts)
+    .innerJoin(shopOwners, eq(experts.shopId, shopOwners.id))
+    .where(eq(experts.id, expertId));
+
+  return result[0] || null;
 };

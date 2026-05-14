@@ -2,6 +2,7 @@ import { and, eq, inArray, sum } from "drizzle-orm";
 import {
   BookingService,
   createBookingService,
+  fetchExpertById,
   getAllExpertsByShopIdService,
   getAllServices,
   getAllShopsService,
@@ -263,5 +264,26 @@ export const getCustomerAppointments = async (req, res) => {
     return res.status(400).json({
       message: e.message,
     });
+  }
+};
+
+export const getExpertDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const expertId = parseInt(id);
+
+    if (isNaN(expertId)) {
+      return res.status(400).json({ message: "Invalid expert ID" });
+    }
+
+    const data = await fetchExpertById(expertId);
+
+    if (!data) {
+      return res.status(404).json({ message: "Expert not found" });
+    }
+
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };
