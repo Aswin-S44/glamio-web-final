@@ -6,10 +6,16 @@ export const googleSignInApi = async (idToken, userType) => {
     userType,
   });
 
+  console.log("response----------------", response ? response : "no response");
+
   return response.data;
 };
 
 export const completeGoogleAuth = async ({ idToken, userType }) => {
-  console.log("Completing Google authentication with ID token:", idToken, userType);
+  console.log(
+    "Completing Google authentication with ID token:",
+    idToken,
+    userType
+  );
   return googleSignInApi(idToken, userType);
 };

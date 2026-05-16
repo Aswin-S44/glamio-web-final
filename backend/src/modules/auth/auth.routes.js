@@ -10,8 +10,8 @@ import { createUser } from "../users/user.controller.js";
 
 const router = express.Router();
 
-router.post("/register", register);
-router.post("/login", login);
+// router.post("/register", register);
+// router.post("/login", login);
 // router.post("/signin/google", googleSignIn);
 
 router.post("/signin/google", googleSignIn);

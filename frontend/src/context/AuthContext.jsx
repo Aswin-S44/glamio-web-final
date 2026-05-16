@@ -18,7 +18,8 @@ const normalizeAuthUser = (rawUser) => {
   const name = rawUser.name ?? rawUser.username ?? "";
   const picture = rawUser.picture ?? rawUser.profileImage ?? "";
   const userType =
-    rawUser.userType ?? (shop ? "shop" : rawUser.role === "SHOP_OWNER" ? "shop" : "customer");
+    rawUser.userType ??
+    (shop ? "shop" : rawUser.role === "SHOP_OWNER" ? "shop" : "customer");
 
   return {
     ...rawUser,
@@ -74,7 +75,8 @@ export const AuthProvider = ({ children }) => {
   }, [fetchProfile]);
 
   const setAuthenticatedUser = useCallback((authData) => {
-    if (authData?.token) {
+    console.log("authData-------------", authData);
+    if (authData?.data?.token) {
       localStorage.setItem("token", authData.token);
     }
 

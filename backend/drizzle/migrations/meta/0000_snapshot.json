@@ -1,9 +1,76 @@
 {
-  "id": "8735f111-6bbe-4756-9bec-ebda75f08e90",
+  "id": "3ab17537-c9a8-4ee4-ab51-fa86727c354e",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
+    "public.appointment_services": {
+      "name": "appointment_services",
+      "schema": "",
+      "columns": {
+        "appointment_id": {
+          "name": "appointment_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "service_id": {
+          "name": "service_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "appointment_services_appointment_id_appointments_id_fk": {
+          "name": "appointment_services_appointment_id_appointments_id_fk",
+          "tableFrom": "appointment_services",
+          "tableTo": "appointments",
+          "columnsFrom": [
+            "appointment_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "appointment_services_service_id_services_id_fk": {
+          "name": "appointment_services_service_id_services_id_fk",
+          "tableFrom": "appointment_services",
+          "tableTo": "services",
+          "columnsFrom": [
+            "service_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "appointment_services_appointment_id_service_id_pk": {
+          "name": "appointment_services_appointment_id_service_id_pk",
+          "columns": [
+            "appointment_id",
+            "service_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.appointment_status": {
       "name": "appointment_status",
       "schema": "",
@@ -230,6 +297,73 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.expert_services": {
+      "name": "expert_services",
+      "schema": "",
+      "columns": {
+        "expert_id": {
+          "name": "expert_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "service_id": {
+          "name": "service_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "expert_services_expert_id_experts_id_fk": {
+          "name": "expert_services_expert_id_experts_id_fk",
+          "tableFrom": "expert_services",
+          "tableTo": "experts",
+          "columnsFrom": [
+            "expert_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "expert_services_service_id_services_id_fk": {
+          "name": "expert_services_service_id_services_id_fk",
+          "tableFrom": "expert_services",
+          "tableTo": "services",
+          "columnsFrom": [
+            "service_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "expert_services_expert_id_service_id_pk": {
+          "name": "expert_services_expert_id_service_id_pk",
+          "columns": [
+            "expert_id",
+            "service_id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -895,10 +1029,10 @@
         },
         "total_rating": {
           "name": "total_rating",
-          "type": "integer",
+          "type": "numeric(3, 1)",
           "primaryKey": false,
           "notNull": true,
-          "default": 0
+          "default": "'0'"
         },
         "is_profile_completed": {
           "name": "is_profile_completed",
@@ -909,16 +1043,9 @@
         },
         "shop_image": {
           "name": "shop_image",
-          "type": "text",
+          "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false
-        },
-        "gallery_images": {
-          "name": "gallery_images",
-          "type": "json",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'[]'::json"
         }
       },
       "indexes": {},
@@ -1185,7 +1312,7 @@
         },
         "phone": {
           "name": "phone",
-          "type": "varchar(20)",
+          "type": "varchar(15)",
           "primaryKey": false,
           "notNull": false
         },
@@ -1202,12 +1329,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "password_hash": {
-          "name": "password_hash",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": false
         },
         "fcm_token": {
           "name": "fcm_token",
@@ -1265,6 +1386,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
+          ]
+        },
+        "users_phone_unique": {
+          "name": "users_phone_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "phone"
           ]
         }
       },

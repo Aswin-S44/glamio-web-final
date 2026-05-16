@@ -1,3 +1,10 @@
+CREATE TABLE "appointment_services" (
+	"appointment_id" bigint NOT NULL,
+	"service_id" bigint NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "appointment_services_appointment_id_service_id_pk" PRIMARY KEY("appointment_id","service_id")
+);
+--> statement-breakpoint
 CREATE TABLE "appointment_status" (
 	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "appointment_status_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
 	"name" varchar(256) NOT NULL
@@ -20,6 +27,13 @@ CREATE TABLE "appointments" (
 CREATE TABLE "category" (
 	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "category_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
 	"name" varchar(256) NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "expert_services" (
+	"expert_id" bigint NOT NULL,
+	"service_id" bigint NOT NULL,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "expert_services_expert_id_service_id_pk" PRIMARY KEY("expert_id","service_id")
 );
 --> statement-breakpoint
 CREATE TABLE "experts" (
@@ -97,10 +111,9 @@ CREATE TABLE "shop_owners" (
 	"opening_hours" json NOT NULL,
 	"parlour_name" varchar(256) NOT NULL,
 	"place_id" varchar(100),
-	"total_rating" integer DEFAULT 0 NOT NULL,
+	"total_rating" numeric(3, 1) DEFAULT '0' NOT NULL,
 	"is_profile_completed" boolean DEFAULT false,
-	"shop_image" text,
-	"gallery_images" json DEFAULT '[]'::json
+	"shop_image" varchar(256)
 );
 --> statement-breakpoint
 CREATE TABLE "shop_statistics" (
@@ -133,16 +146,16 @@ CREATE TABLE "users" (
 	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "users_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
 	"username" varchar(256) NOT NULL,
 	"email" varchar(256) NOT NULL,
-	"phone" varchar(20),
+	"phone" varchar(15),
 	"is_active" boolean DEFAULT false NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
-	"password_hash" varchar(256),
 	"fcm_token" varchar(256),
 	"profile_image" varchar(256),
 	"user_type_id" bigint NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "users_email_unique" UNIQUE("email")
+	CONSTRAINT "users_email_unique" UNIQUE("email"),
+	CONSTRAINT "users_phone_unique" UNIQUE("phone")
 );
 --> statement-breakpoint
 CREATE TABLE "user_types" (
@@ -151,11 +164,15 @@ CREATE TABLE "user_types" (
 	CONSTRAINT "uq_user_types_name" UNIQUE("name")
 );
 --> statement-breakpoint
+ALTER TABLE "appointment_services" ADD CONSTRAINT "appointment_services_appointment_id_appointments_id_fk" FOREIGN KEY ("appointment_id") REFERENCES "public"."appointments"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "appointment_services" ADD CONSTRAINT "appointment_services_service_id_services_id_fk" FOREIGN KEY ("service_id") REFERENCES "public"."services"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_status_id_appointment_status_id_fk" FOREIGN KEY ("status_id") REFERENCES "public"."appointment_status"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_customer_id_users_id_fk" FOREIGN KEY ("customer_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_expert_id_experts_id_fk" FOREIGN KEY ("expert_id") REFERENCES "public"."experts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_slot_id_slots_id_fk" FOREIGN KEY ("slot_id") REFERENCES "public"."slots"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "appointments" ADD CONSTRAINT "appointments_shop_id_shop_owners_id_fk" FOREIGN KEY ("shop_id") REFERENCES "public"."shop_owners"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "expert_services" ADD CONSTRAINT "expert_services_expert_id_experts_id_fk" FOREIGN KEY ("expert_id") REFERENCES "public"."experts"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "expert_services" ADD CONSTRAINT "expert_services_service_id_services_id_fk" FOREIGN KEY ("service_id") REFERENCES "public"."services"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "experts" ADD CONSTRAINT "experts_shop_id_shop_owners_id_fk" FOREIGN KEY ("shop_id") REFERENCES "public"."shop_owners"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "holidays" ADD CONSTRAINT "holidays_shop_id_shop_owners_id_fk" FOREIGN KEY ("shop_id") REFERENCES "public"."shop_owners"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_notification_type_id_notification_types_id_fk" FOREIGN KEY ("notification_type_id") REFERENCES "public"."notification_types"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
