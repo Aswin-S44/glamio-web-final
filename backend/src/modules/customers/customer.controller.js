@@ -229,6 +229,8 @@ export const updateUserController = async (req, res) => {
 
     const validatedData = updateUserSchema.parse(req.body);
 
+    console.log("validatedData=-----------------", validatedData);
+
     const updatedUser = await updateUserService(userId, validatedData);
 
     return res.status(200).json({

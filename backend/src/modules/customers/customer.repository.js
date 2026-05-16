@@ -19,11 +19,14 @@ export const getAllShopsDB = async () => {
       shop: shopOwners,
     })
     .from(users)
-    .where(eq(users.userTypeId, DEFAULT_SHOP_ID))
+    // .where(eq(users.userTypeId, DEFAULT_SHOP_ID))
     .leftJoin(shopOwners, eq(shopOwners.userId, users.id));
+
+  console.log("----------------", result);
 
   return result ?? [];
 };
+
 // export const getShopByIdDB = async (id) => {
 //   const rows = await db
 //     .select({
@@ -122,6 +125,7 @@ export const getServiceDetailsByIdDB = (id) => {
 };
 
 export const updateUserByIdDB = async (id, data) => {
+  console.log("ID-------------", id);
   const updatedUser = await db
     .update(users)
     .set({
@@ -130,6 +134,8 @@ export const updateUserByIdDB = async (id, data) => {
     })
     .where(eq(users.id, id))
     .returning();
+
+  console.log("updatedUser[0];--------------", updatedUser[0]);
 
   return updatedUser[0];
 };
