@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../../config/firebase";
 import { googleSignInApi } from "../../../services/auth.service";
+import { useAuth } from "../../../context/AuthContext";
 import { Sparkles, Star, Shield, Clock, Lock } from "lucide-react";
 import Swal from "sweetalert2";
 import img from "../../../components/Media/Images/model-with-smokey-eyes-golden-circle-earrings.webp";
@@ -12,6 +13,7 @@ import imgLogo from "../../../components/Media/Images/Logo.png";
 
 function SignIn() {
   const navigate = useNavigate();
+  const { refreshProfile } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -29,7 +31,10 @@ function SignIn() {
 
       localStorage.setItem("token", token);
 
-      // Step 3: Navigate based on shop profile state
+      // Step 3: Refresh AuthContext so Header/all components see the user immediately
+      await refreshProfile();
+
+      // Step 4: Navigate based on shop profile state
       const shop = user?.shopProfile;
       if (shop) {
         if (shop.isProfileCompleted && shop.isOnboarded) {

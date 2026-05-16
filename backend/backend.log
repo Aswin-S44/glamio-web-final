@@ -1,0 +1,14 @@
+[dotenv@17.3.1] injecting env (13) from .env -- tip: ⚙️  override existing env vars with { override: true }
+dbUrl***************** postgresql://postgres.ozvloioxtygihqyspslp:8908jkdsjkdjskdjskdjkhuyui,,.kodiosdsdisodisoid@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🔐 prevent committing .env to code: https://dotenvx.com/precommit
+allowedOrigins [ 'https://glamio-web-1.netlify.app/' ]
+Server is running at the port 5000
+✅ PostgreSQL connected successfully
+[dotenv@17.3.1] injecting env (13) from .env -- tip: ⚡️ secrets for agents: https://dotenvx.com/as2
+dbUrl***************** postgresql://postgres.ozvloioxtygihqyspslp:8908jkdsjkdjskdjskdjkhuyui,,.kodiosdsdisodisoid@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+[dotenv@17.3.1] injecting env (0) from .env -- tip: 🛡️ auth for agents: https://vestauth.com
+[dotenv@17.3.1] injecting env (0) from .env -- tip: ⚙️  suppress all logs with { quiet: true }
+allowedOrigins [ 'https://glamio-web-1.netlify.app/' ]
+Server is running at the port 5000
+✅ PostgreSQL connected successfully

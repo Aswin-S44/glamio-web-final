@@ -241,12 +241,12 @@ function Header() {
                     onClick={() => toggleDropdown("profile")}
                   >
                     <div className="avatar">
-                      {user?.picture
-                        ? <img src={user.picture} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                        : user?.name?.charAt(0) || <User size={16} />}
+                      {user?.profileImage
+                        ? <img src={user.profileImage} alt={user.username} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                        : user?.username?.charAt(0) || <User size={16} />}
                     </div>
                     <div className="user-info">
-                      <span className="user-name">{user?.name?.split(" ")[0] || "User"}</span>
+                      <span className="user-name">{user?.username?.split(" ")[0] || "User"}</span>
                       <span className="user-badge">{user?.shop ? "Business" : "Customer"}</span>
                     </div>
                     <ChevronDown size={16} className={`chevron ${activeDropdown === "profile" ? "rotate" : ""}`} />
@@ -257,12 +257,12 @@ function Header() {
                       {/* User header */}
                       <div className="pm-header">
                         <div className="pm-avatar">
-                          {user?.picture
-                            ? <img src={user.picture} alt={user.name} />
-                            : user?.name?.charAt(0) || "U"}
+                          {user?.profileImage
+                            ? <img src={user.profileImage} alt={user.username} />
+                            : user?.username?.charAt(0) || "U"}
                         </div>
                         <div className="pm-info">
-                          <h4>{user?.name || "User"}</h4>
+                          <h4>{user?.username || "User"}</h4>
                           <p>{user?.email || ""}</p>
                           <span className="pm-role">{user?.shop ? "Business" : "Customer"}</span>
                         </div>
@@ -346,9 +346,9 @@ function Header() {
 
         {isAuthenticated && (
           <div className="side-profile">
-            <div className="side-avatar">{user?.name?.charAt(0) || "U"}</div>
+            <div className="side-avatar">{user?.username?.charAt(0) || "U"}</div>
             <div className="side-user-info">
-              <h4>{user?.name || "User"}</h4>
+              <h4>{user?.username || "User"}</h4>
               <p>{user?.email || "user@example.com"}</p>
             </div>
           </div>
