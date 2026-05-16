@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import "./Services.css";
 import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
+import { Sparkles } from "lucide-react";
 
 function Services() {
   const [services, setServices] = useState([]);
@@ -25,10 +26,6 @@ function Services() {
     fetchServices();
   }, [fetchServices]);
 
-  if (services.length == 0) {
-    return null;
-  }
-
   return (
     <section className="services-section">
       <div className="container">
@@ -45,7 +42,8 @@ function Services() {
           </div>
         ) : services.length === 0 ? (
           <div className="empty-state">
-            <p>No services found at the moment.</p>
+            <Sparkles size={36} strokeWidth={1.5} style={{ color: "#ddd", marginBottom: 12 }} />
+            <p style={{ color: "#aaa", fontSize: 15 }}>No services available at the moment.</p>
           </div>
         ) : (
           <div className="services-grid">

@@ -2,26 +2,29 @@ import { createUserService } from "../users/user.service.js";
 import { googleSignInService } from "./auth.service.js";
 
 export const googleSignIn = async (req, res) => {
+  console.log("Received Google sign-in request with body:", req.body);
   try {
     const { idToken, userType } = req.body;
-    console.log("===================");
-    const result = await googleSignInService(idToken);
-    console.log("result----------", result ? result : "no result");
+    console.log("===================", userType);
+    const googleResult = await googleSignInService(idToken);
+    console.log("result----------", googleResult ? googleResult : "no result");
 
-    if (result && result.user) {
-      let userData = {
-        email: result.user.email ?? "",
-        username: result.user.name ?? "",
-        profileImage: result.user.picture ?? DEFAULT_IMAGE_URL,
+    if (googleResult && googleResult.user) {
+      const authResult = await createUserService({
+        email: googleResult.user.email ?? "",
+        username: googleResult.user.name ?? "",
+        profileImage: googleResult.user.picture ?? "",
         userType,
-      };
-      await createUserService(userData);
+      });
+
+      return res.status(200).json({
+        success: true,
+        token: authResult.token,
+        user: authResult.user,
+      });
     }
 
-    res.status(200).json({
-      success: true,
-      data: result,
-    });
+    throw new Error("Google account details were not returned");
   } catch (error) {
     console.error("DETAILED BACKEND ERROR:", error);
     res.status(401).json({

@@ -38,6 +38,8 @@ router.get("/profile", authMiddleware, async (req, res) => {
       emailVerified: user.emailVerified,
       profileImage: user.profileImage,
       role: shop ? "SHOP_OWNER" : "CUSTOMER", //????
+      userTypeId: user.userTypeId,
+      userType: shop ? "shop" : "customer",
       shop: shop || null,
     });
   } catch (error) {

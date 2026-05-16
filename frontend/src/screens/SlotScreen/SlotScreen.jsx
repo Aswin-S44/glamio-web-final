@@ -73,12 +73,16 @@ function SlotScreen() {
       const data = await res.json();
       if (data.slots) {
         const grouped = data.slots.reduce((acc, slot) => {
-          const d = format(parseISO(slot.slotDate), "yyyy-MM-dd");
+          // Avoid parseISO timezone shift — slotDate is already "YYYY-MM-DD"
+          const d = typeof slot.slotDate === "string"
+            ? slot.slotDate.substring(0, 10)
+            : format(slot.slotDate, "yyyy-MM-dd");
           if (!acc[d]) acc[d] = [];
           acc[d].push({
             ...slot,
+            slotDate: d,
             startTime: slot.startTime.substring(0, 5),
-            endTime: slot.endTime.substring(0, 5),
+            endTime:   slot.endTime.substring(0, 5),
           });
           return acc;
         }, {});
@@ -121,7 +125,7 @@ function SlotScreen() {
       return;
     }
 
-    const existingSlots = slots[dateKey] || [];
+    const existingSlots = slots[slotDate] || [];
     const isDuplicate = existingSlots.some(
       (s) =>
         s.startTime === startTime &&
@@ -166,6 +170,9 @@ function SlotScreen() {
         fetchSlots();
         toast.success(editingSlot ? "Slot updated" : "New slot created");
         closeModal();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err.message || "Failed to save slot");
       }
     } catch (error) {
       toast.error("Error saving slot");
@@ -261,15 +268,20 @@ function SlotScreen() {
     }
     if (slot) {
       setEditingSlot(slot);
-      setSlotDate(format(parseISO(slot.slotDate), "yyyy-MM-dd"));
+      // slot.slotDate is already normalised to "YYYY-MM-DD" in fetchSlots
+      setSlotDate(slot.slotDate.substring(0, 10));
       setStartTime(slot.startTime);
       setEndTime(slot.endTime);
       setIsBooked(!slot.isAvailable);
     } else {
       setEditingSlot(null);
       setSlotDate(dateKey);
-      setStartTime(format(new Date(), "HH:mm"));
-      setEndTime(format(addDays(new Date(), 0), "HH:mm"));
+      // Default: current time rounded to next hour
+      const now = new Date();
+      const nextHour = new Date(now);
+      nextHour.setHours(nextHour.getHours() + 1, 0, 0, 0);
+      setStartTime(format(now, "HH:mm"));
+      setEndTime(format(nextHour, "HH:mm"));
       setIsBooked(false);
     }
     setModalOpen(true);

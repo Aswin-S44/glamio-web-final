@@ -194,7 +194,10 @@ function ServicesScreen() {
       setEditingService(service);
       setServiceName(service.name);
       setPrice(service.rate);
-      setCategory({ value: service.category, label: service.category });
+      setCategory({
+        value: service.categoryName || service.category?.name || "",
+        label: service.categoryName || service.category?.name || "",
+      });
       setImage(service.imageUrl);
       setDuration(service.duration || "30");
       setDescription(service.description || "");
@@ -488,7 +491,9 @@ function ServicesScreen() {
             </div>
             <div className="sv-view-body">
               <div className="sv-view-header">
-                <span className="sv-tag">{editingService.category}</span>
+                <span className="sv-tag">
+                  {editingService.categoryName || editingService.category?.name}
+                </span>
                 <h2>{editingService.name}</h2>
                 <div className="sv-view-meta">
                   <span>

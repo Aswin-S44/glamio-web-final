@@ -134,7 +134,7 @@ function BookingSummaryScreen() {
       const res = await fetch(`${BASE_URL}/customer/booking`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json", 
+          "Content-Type": "application/json",
           Authorization: token,
         },
         body: JSON.stringify({

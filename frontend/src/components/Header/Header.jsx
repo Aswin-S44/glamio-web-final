@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import logoImage from "../Media/Images/Orucom wide.png"
 import {
   Search,
   Menu,
@@ -19,9 +20,8 @@ import {
   Tag,
   Star,
   User,
-  Settings,
   HelpCircle,
-  Calendar,
+  Calendar, Settings
 } from "lucide-react";
 import "./Header.css";
 
@@ -29,6 +29,10 @@ function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+  const displayName = user?.name || user?.username || "User";
+  const displayImage = user?.picture || user?.profileImage || "";
+  const shopProfile = user?.shop || user?.shopProfile;
+  const userBadge = shopProfile ? "Business" : "Customer";
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -82,13 +86,6 @@ function Header() {
     },
   ];
 
-  const quickActions = [
-    { icon: <Calendar size={16} />, label: "Bookings", path: "/bookings" },
-    { icon: <Heart size={16} />, label: "Wishlist", path: "/wishlist" },
-    { icon: <Clock size={16} />, label: "History", path: "/history" },
-    { icon: <Settings size={16} />, label: "Settings", path: "/settings" },
-  ];
-
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     const handleClickOutside = (e) => {
@@ -134,11 +131,9 @@ function Header() {
         <div className="header-container">
           <div className="header-left" onClick={() => navigate("/")}>
             <div className="logo-icon">
-              <Sparkles size={20} />
+             <img src={logoImage}/>
             </div>
-            <span className="logo-text">
-              GLAM<span>IO</span>
-            </span>
+            
           </div>
 
           <div className="header-center" ref={searchRef}>
@@ -246,82 +241,65 @@ function Header() {
               {isAuthenticated ? (
                 <div className="dd-wrapper">
                   <div
-                    className={`profile-pill ${
-                      activeDropdown === "profile" ? "active" : ""
-                    }`}
+                    className={`profile-pill ${activeDropdown === "profile" ? "active" : ""}`}
                     onClick={() => toggleDropdown("profile")}
                   >
                     <div className="avatar">
-                      {user?.name?.charAt(0) || <User size={16} />}
+                      {displayImage
+                        ? <img src={displayImage} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                        : displayName.charAt(0) || <User size={16} />}
                     </div>
                     <div className="user-info">
-                      <span className="user-name">
-                        {user?.name?.split(" ")[0] || "User"}
-                      </span>
-                      <span className="user-badge">
-                        {user?.shop ? "Business" : "Customer"}
-                      </span>
+                      <span className="user-name">{displayName.split(" ")[0] || "User"}</span>
+                      <span className="user-badge">{userBadge}</span>
                     </div>
-                    <ChevronDown
-                      size={16}
-                      className={`chevron ${
-                        activeDropdown === "profile" ? "rotate" : ""
-                      }`}
-                    />
+                    <ChevronDown size={16} className={`chevron ${activeDropdown === "profile" ? "rotate" : ""}`} />
                   </div>
 
                   {activeDropdown === "profile" && (
                     <div className="dd-menu profile-menu">
-                      <div className="dd-user-info">
-                        <div className="user-details">
-                          <div className="user-avatar-large">
-                            {user?.name?.charAt(0) || "U"}
-                          </div>
-                          <div className="user-meta">
-                            <h4>{user?.name || "User"}</h4>
-                            <p>{user?.email || "user@example.com"}</p>
-                          </div>
+                      {/* User header */}
+                      <div className="pm-header">
+                        <div className="pm-avatar">
+                          {displayImage
+                            ? <img src={displayImage} alt={displayName} />
+                            : displayName.charAt(0) || "U"}
+                        </div>
+                        <div className="pm-info">
+                          <h4>{displayName}</h4>
+                          <p>{user?.email || ""}</p>
+                          <span className="pm-role">{userBadge}</span>
                         </div>
                       </div>
 
-                      <div className="quick-actions">
-                        {quickActions.map((action, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() => navigate(action.path)}
-                          >
-                            {action.icon}
-                            <span>{action.label}</span>
-                          </button>
-                        ))}
-                      </div>
+                      {/* Nav links */}
+                      <div className="pm-links">
+                        <button onClick={() => { navigate("/my-bookings"); setActiveDropdown(null); }}>
+                          <Calendar size={15} /> My Bookings
+                        </button>
 
-                      <div className="dd-divider"></div>
-
-                      <div className="dd-links">
-                        {user?.shop && (
-                          <button
-                            onClick={() => {
-                              if (user?.shop?.isOnboarded) {
-                                navigate("/shop/dashboard");
-                              } else {
-                                navigate("/shop/onboard");
-                              }
-                            }}
-                          >
-                            <LayoutDashboard size={16} />
-                            <span>Business Dashboard</span>
+                        {shopProfile && (
+                          <button onClick={() => {
+                            setActiveDropdown(null);
+                            const shop = shopProfile;
+                            if (shop.isOnboarded) navigate("/shop/dashboard");
+                            else if (shop.isProfileCompleted) navigate("/shop/onboard");
+                            else navigate("/shop/edit-profile");
+                          }}>
+                            <LayoutDashboard size={15} /> Business Dashboard
                           </button>
                         )}
 
-                        <button onClick={() => navigate("/help")}>
-                          <HelpCircle size={16} />
-                          <span>Help & Support</span>
+                        <button onClick={() => { navigate("/help"); setActiveDropdown(null); }}>
+                          <HelpCircle size={15} /> Help & Support
                         </button>
+                      </div>
 
-                        <button className="logout" onClick={logout}>
-                          <LogOut size={16} />
-                          <span>Sign Out</span>
+                      <div className="pm-divider" />
+
+                      <div className="pm-footer">
+                        <button className="pm-logout" onClick={logout}>
+                          <LogOut size={15} /> Sign Out
                         </button>
                       </div>
                     </div>
@@ -363,10 +341,7 @@ function Header() {
       <aside className={`side-panel ${isSidebarOpen ? "open" : ""}`}>
         <div className="side-header">
           <div className="side-logo">
-            <Sparkles size={24} />
-            <span className="logo-text">
-              GLAM<span>IO</span>
-            </span>
+            <img src={logoImage} style={{width:"60%"}}/>
           </div>
           <button onClick={() => setIsSidebarOpen(false)}>
             <X size={24} />
@@ -375,9 +350,11 @@ function Header() {
 
         {isAuthenticated && (
           <div className="side-profile">
-            <div className="side-avatar">{user?.name?.charAt(0) || "U"}</div>
+            <div className="side-avatar">
+              {displayImage ? <img src={displayImage} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : displayName.charAt(0) || "U"}
+            </div>
             <div className="side-user-info">
-              <h4>{user?.name || "User"}</h4>
+              <h4>{displayName}</h4>
               <p>{user?.email || "user@example.com"}</p>
             </div>
           </div>
@@ -432,15 +409,18 @@ function Header() {
         <div className="side-footer">
           {isAuthenticated ? (
             <>
-              {user?.shop && (
+              {shopProfile && (
                 <button
                   className="side-btn business"
                   onClick={() => {
                     setIsSidebarOpen(false);
-                    if (user?.shop?.isOnboarded) {
+                    const shop = shopProfile;
+                    if (shop?.isOnboarded) {
                       navigate("/shop/dashboard");
-                    } else {
+                    } else if (shop?.isProfileCompleted) {
                       navigate("/shop/onboard");
+                    } else {
+                      navigate("/shop/edit-profile");
                     }
                   }}
                 >

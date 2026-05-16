@@ -1,503 +1,194 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import "./Banner.css";
-import {
-  Search,
-  MapPin,
-  Star,
-  Heart,
-  Clock,
-  Award,
-  Users,
-  Shield,
-  ChevronRight,
-  Scissors,
-  SprayCan as Spray,
-  Droplets,
-  Gem,
-  Brush,
-  Eye,
-  Coffee,
-  Wifi,
-  Car,
-  CreditCard,
-  Filter,
-  TrendingUp,
-  X,
-  SlidersHorizontal,
-  DollarSign,
-  ThumbsUp,
-  Clock as ClockIcon,
-} from "lucide-react";
-import ParlorListings from "../ParlorListings/ParlorListings";
-import { BASE_URL } from "../../constants/urls";
+import { ArrowRight, Star, Sparkles, MapPin, CheckCircle } from "lucide-react";
+import img from '../../components/Media/Images/modern-beauty-salon-interior.webp'
 
 function Banner() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("New York");
-  const [activeTab, setActiveTab] = useState("nearby");
-  const [trendingParlors, setTrendingParlors] = useState([]);
-  const [showFilterModal, setShowFilterModal] = useState(false);
-  const [shops, setShops] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const rightRef  = useRef(null);
+  const sectionRef = useRef(null);
 
-  const [filters, setFilters] = useState({
-    priceRange: [],
-    rating: null,
-    openNow: false,
-    amenities: [],
-    sortBy: "relevance",
-  });
-
-  const locations = ["New York", "Los Angeles", "Chicago", "Miami", "Houston"];
-
-  const popularSearches = [
-    "Hair Salon",
-    "Nail Studio",
-    "Spa",
-    "Makeup Artist",
-    "Barber Shop",
-    "Waxing Center",
-  ];
-
+  /* 3-D tilt on mouse-move */
   useEffect(() => {
-    fetchShops();
+    const card = rightRef.current;
+    if (!card) return;
+
+    const handleMove = (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width  - 0.5;
+      const y = (e.clientY - rect.top)  / rect.height - 0.5;
+      card.style.transform = `perspective(900px) rotateY(${x * 16}deg) rotateX(${-y * 10}deg) translateZ(0)`;
+    };
+    const handleLeave = () => {
+      card.style.transform = `perspective(900px) rotateY(-8deg) rotateX(3deg) translateZ(0)`;
+    };
+
+    card.addEventListener("mousemove", handleMove);
+    card.addEventListener("mouseleave", handleLeave);
+    return () => {
+      card.removeEventListener("mousemove", handleMove);
+      card.removeEventListener("mouseleave", handleLeave);
+    };
   }, []);
 
-  const fetchShops = async () => {
-    try {
-      const response = await fetch(`${BASE_URL}/customer/shops`);
-      const data = await response.json();
-      setShops(data.shops || []);
-      setTrendingParlors(
-        (data.shops || []).slice(0, 3).map((shop) => ({
-          id: shop.shop.id,
-          name: shop.shop.parlourName,
-          rating: shop.shop.totalRating || 4.5,
-          location: shop.shop.address,
-          image:
-            shop.user.profileImage ||
-            "https://images.unsplash.com/photo-1522338242992-e1a54906a5da?w=400&auto=format",
-          price: "$$",
-          tags: ["Hair", "Nails", "Makeup"],
-          open: true,
-          waitTime: "15 min",
-        }))
-      );
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching shops:", error);
-      setLoading(false);
-    }
-  };
-
-  const handleFilterChange = (filterType, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterType]: value,
-    }));
-  };
-
-  const applyFilters = () => {
-    setShowFilterModal(false);
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      priceRange: [],
-      rating: null,
-      openNow: false,
-      amenities: [],
-      sortBy: "relevance",
-    });
-  };
-
-  const FilterModal = () => (
-    <div className={`filter-modal ${showFilterModal ? "active" : ""}`}>
-      <div
-        className="filter-modal-overlay"
-        onClick={() => setShowFilterModal(false)}
-      ></div>
-      <div className="filter-modal-content">
-        <div className="filter-modal-header">
-          <h3>Filter & Sort</h3>
-          <button
-            className="close-modal"
-            onClick={() => setShowFilterModal(false)}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="filter-modal-body">
-          <div className="filter-section">
-            <h4>Sort By</h4>
-            <div className="sort-options">
-              {[
-                "relevance",
-                "rating",
-                "popularity",
-                "price_low",
-                "price_high",
-              ].map((option) => (
-                <button
-                  key={option}
-                  className={`sort-option ${
-                    filters.sortBy === option ? "active" : ""
-                  }`}
-                  onClick={() => handleFilterChange("sortBy", option)}
-                >
-                  {option === "relevance" && "Relevance"}
-                  {option === "rating" && "Top Rated"}
-                  {option === "popularity" && "Most Popular"}
-                  {option === "price_low" && "Price: Low to High"}
-                  {option === "price_high" && "Price: High to Low"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h4>Price Range</h4>
-            <div className="price-options">
-              {["$", "$$", "$$$", "$$$$"].map((price) => (
-                <button
-                  key={price}
-                  className={`price-option ${
-                    filters.priceRange.includes(price) ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    const newRange = filters.priceRange.includes(price)
-                      ? filters.priceRange.filter((p) => p !== price)
-                      : [...filters.priceRange, price];
-                    handleFilterChange("priceRange", newRange);
-                  }}
-                >
-                  {price}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h4>Rating</h4>
-            <div className="rating-options">
-              {[4.5, 4.0, 3.5, 3.0].map((rating) => (
-                <button
-                  key={rating}
-                  className={`rating-option ${
-                    filters.rating === rating ? "active" : ""
-                  }`}
-                  onClick={() =>
-                    handleFilterChange(
-                      "rating",
-                      filters.rating === rating ? null : rating
-                    )
-                  }
-                >
-                  <Star size={16} fill="#FFD700" color="#FFD700" />
-                  <span>{rating}+</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <h4>Amenities</h4>
-            <div className="amenities-options">
-              {[
-                { icon: Wifi, label: "Free WiFi" },
-                { icon: Coffee, label: "Coffee" },
-                { icon: Car, label: "Parking" },
-                { icon: CreditCard, label: "Card Payment" },
-              ].map((amenity) => (
-                <button
-                  key={amenity.label}
-                  className={`amenity-option ${
-                    filters.amenities.includes(amenity.label) ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    const newAmenities = filters.amenities.includes(
-                      amenity.label
-                    )
-                      ? filters.amenities.filter((a) => a !== amenity.label)
-                      : [...filters.amenities, amenity.label];
-                    handleFilterChange("amenities", newAmenities);
-                  }}
-                >
-                  <amenity.icon size={16} />
-                  <span>{amenity.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="filter-section">
-            <label className="open-now-toggle">
-              <input
-                type="checkbox"
-                checked={filters.openNow}
-                onChange={(e) =>
-                  handleFilterChange("openNow", e.target.checked)
-                }
-              />
-              <span>Open Now</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="filter-modal-footer">
-          <button className="clear-filters-btn" onClick={clearFilters}>
-            Clear All
-          </button>
-          <button className="apply-filters-btn" onClick={applyFilters}>
-            Apply Filters
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  /* Scroll-triggered entrance (GSAP-style via CSS classes) */
+  useEffect(() => {
+    const els = sectionRef.current?.querySelectorAll("[data-anim]");
+    if (!els) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("anim-in");
+            obs.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, []);
 
   return (
-    <section className="marketplace-banner">
-      <div className="marketplace-bg">
-        <div className="pattern-grid"></div>
-        <div className="gradient-spot spot-1"></div>
-        <div className="gradient-spot spot-2"></div>
-      </div>
+    <section className="h-hero" ref={sectionRef}>
+      {/* ── Background ── */}
+      <div className="h-bg-blob h-bg-blob-1" />
+      <div className="h-bg-blob h-bg-blob-2" />
+      <div className="h-bg-blob h-bg-blob-3" />
+      <div className="h-grid-overlay" />
 
-      <div className="marketplace-container">
-        <div className="hero-section">
-          <div className="hero-badge">
-            <span>Find Your Perfect Salon • {shops.length}+ Parlors</span>
+      <span className="h-deco h-deco-1" aria-hidden="true">✦</span>
+      <span className="h-deco h-deco-2" aria-hidden="true">✦</span>
+      <span className="h-deco h-deco-3" aria-hidden="true">+</span>
+      <span className="h-deco h-deco-4" aria-hidden="true">✦</span>
+      <span className="h-deco h-deco-5" aria-hidden="true">✦</span>
+
+      <div className="h-grid">
+        {/* ════ LEFT ════ */}
+        <div className="h-left">
+          <div className="h-eyebrow" data-anim="fade-up" style={{ "--d": "0s" }}>
+            <Sparkles size={12} />
+            <span>Premium Beauty Platform · Est. 2024</span>
           </div>
 
-          <h1 className="hero-title">
-            Discover & Book
-            <span className="title-highlight"> Top-Rated Beauty Parlors </span>
-            Near You
+          <h1 className="h-headline">
+            {/* <span className="h-word h-word-1" data-anim="fade-up" style={{ "--d": ".12s" }}>YOUR</span> */}
+            <span className="h-word h-word-2 h-word--row" data-anim="fade-up" style={{ "--d": ".22s" }}>
+              BEAUTY
+              <span className="h-toggle-pill">
+                <ArrowRight size={14} />
+                <span className="h-toggle-dot" />
+              </span>
+            </span>
+            <span className="h-word h-word-3" data-anim="fade-up" style={{ "--d": ".32s" }}>
+              AWAITS<em className="h-em">.</em>
+            </span>
           </h1>
 
-          <p className="hero-subtitle">
-            Compare prices, read reviews, and book appointments instantly at the
-            best salons in your area
-          </p>
-
-          <div className="hero-search">
-            <div className="search-wrapper">
-              <div className="search-icon">
-                <Search size={20} />
-              </div>
-              <input
-                type="text"
-                placeholder="Search for services, parlors, or treatments..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div className="search-location">
-                <MapPin size={18} />
-                <select
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
-                >
-                  {locations.map((loc) => (
-                    <option key={loc}>{loc}</option>
-                  ))}
-                </select>
-              </div>
-              <button className="search-btn">Search</button>
+          <div className="h-desc-row" data-anim="fade-up" style={{ "--d": ".44s" }}>
+            <div className="h-avatar-stack">
+              <img src="https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=100&h=100&auto=format&fit=crop&q=80" alt="client" className="h-avatar" />
+              <img src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=100&h=100&auto=format&fit=crop&q=80" alt="client" className="h-avatar" />
+              <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&auto=format&fit=crop&q=80" alt="client" className="h-avatar" />
             </div>
+            <p className="h-desc">
+              Discover curated salons for your unique beauty journey.
+              Book instantly, <em>glow always.</em>
+            </p>
+          </div>
 
-            <div className="popular-searches">
-              <span>Popular:</span>
-              {popularSearches.map((term, index) => (
-                <button key={index} className="search-tag">
-                  {term}
-                </button>
-              ))}
+          <div className="h-actions" data-anim="fade-up" style={{ "--d": ".54s" }}>
+            <a href="/shops" className="h-btn h-btn--dark">
+              Book Now <ArrowRight size={16} />
+            </a>
+            <a href="#featured-salons" className="h-btn h-btn--outline">
+              Explore Salons
+            </a>
+          </div>
+
+          <div className="h-stats" data-anim="fade-up" style={{ "--d": ".64s" }}>
+            <div className="h-stat">
+              <strong>50K+</strong>
+              <span>Happy Clients</span>
             </div>
+            <div className="h-stat-sep" />
+            <div className="h-stat">
+              <strong>4.9★</strong>
+              <span>Avg Rating</span>
+            </div>
+            <div className="h-stat-sep" />
+            <div className="h-stat">
+              <strong>2</strong>
+              <span>Locations</span>
+            </div>
+          </div>
+
+          <div className="h-trust-row" data-anim="fade-up" style={{ "--d": ".74s" }}>
+            <div className="h-trust-item"><CheckCircle size={13} /><span>Verified Salons</span></div>
+            <div className="h-trust-item"><CheckCircle size={13} /><span>Free Cancellation</span></div>
+            <div className="h-trust-item"><CheckCircle size={13} /><span>Instant Booking</span></div>
           </div>
         </div>
 
-        <div className="stats-section">
-          <div className="stat-item">
-            <div className="stat-icon">
-              <Users size={24} />
-            </div>
-            <div className="stat-content">
-              <h3>50K+</h3>
-              <p>Happy Customers</p>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">
-              <Award size={24} />
-            </div>
-            <div className="stat-content">
-              <h3>{shops.length}+</h3>
-              <p>Verified Parlors</p>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">
-              <Star size={24} />
-            </div>
-            <div className="stat-content">
-              <h3>4.8</h3>
-              <p>Average Rating</p>
-            </div>
-          </div>
-          <div className="stat-item">
-            <div className="stat-icon">
-              <Clock size={24} />
-            </div>
-            <div className="stat-content">
-              <h3>24/7</h3>
-              <p>Booking Available</p>
-            </div>
-          </div>
-        </div>
+        {/* ════ RIGHT — 3-D image card ════ */}
+        <div className="h-right" data-anim="fade-right" style={{ "--d": ".18s" }}>
+          {/* 3-D card wrapper (tilt target) */}
+          <div className="h-img-3d-wrap" ref={rightRef}>
+            {/* Depth layers behind the oval */}
+            <div className="h-depth-layer h-depth-layer-1" />
+            <div className="h-depth-layer h-depth-layer-2" />
 
-        <div className="main-content">
-          <div className="content-left">
-            {/* <div className="quick-filters">
-              <h3>Quick Filters</h3>
-              <div className="filter-tabs">
-                <button
-                  className={`filter-tab ${
-                    activeTab === "nearby" ? "active" : ""
-                  }`}
-                  onClick={() => setActiveTab("nearby")}
-                >
-                  <MapPin size={16} />
-                  Nearby
-                </button>
-                <button
-                  className={`filter-tab ${
-                    activeTab === "trending" ? "active" : ""
-                  }`}
-                  onClick={() => setActiveTab("trending")}
-                >
-                  <TrendingUp size={16} />
-                  Trending
-                </button>
-                <button
-                  className={`filter-tab ${
-                    activeTab === "topRated" ? "active" : ""
-                  }`}
-                  onClick={() => setActiveTab("topRated")}
-                >
-                  <Star size={16} />
-                  Top Rated
-                </button>
+            <div className="h-img-area">
+              <div className="h-oval">
+                <img
+                  src={img}
+                  alt="Orucom Salon"
+                />
+                <div className="h-oval-overlay" />
               </div>
-            </div> */}
 
-            <div className="trending-section">
-              <div className="section-header">
-                <h3>Trending Now 🔥</h3>
-                <button className="view-all">
-                  View All <ChevronRight size={16} />
-                </button>
-              </div>
-              <div className="trending-list">
-                {trendingParlors.map((parlor, index) => (
-                  <div key={parlor.id} className="trending-item">
-                    <div className="trending-rank">#{index + 1}</div>
-                    <div className="trending-info">
-                      <h4>{parlor.name}</h4>
-                      <div className="trending-meta">
-                        <span>{parlor.location}</span>
-                        <span className="trending-rating">
-                          <Star size={12} fill="#FFD700" color="#FFD700" />
-                          {parlor.rating}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+              {/* Rotating badge */}
+              <a href="/shops" className="h-spin-badge" aria-label="Book now">
+                <svg viewBox="0 0 130 130" className="h-spin-svg">
+                  <defs>
+                    <path id="hSpinPath" d="M 65,65 m -48,0 a 48,48 0 1,1 96,0 a 48,48 0 1,1 -96,0" fill="none" />
+                  </defs>
+                  <text><textPath href="#hSpinPath">ORUCOM BEAUTY · BOOK NOW · ORUCOM BEAUTY · BOOK NOW ·</textPath></text>
+                </svg>
+                <div className="h-spin-center"><ArrowRight size={18} /></div>
+              </a>
 
-            <div className="amenities-filter">
-              <h3>Amenities</h3>
-              <div className="amenities-grid">
-                <div className="amenity-item">
-                  <Wifi size={16} />
-                  <span>Free WiFi</span>
-                </div>
-                <div className="amenity-item">
-                  <Coffee size={16} />
-                  <span>Coffee</span>
-                </div>
-                <div className="amenity-item">
-                  <Car size={16} />
-                  <span>Parking</span>
-                </div>
-                <div className="amenity-item">
-                  <CreditCard size={16} />
-                  <span>Card Payment</span>
+              {/* Floating rating card */}
+              <div className="h-float-card h-float-card--top">
+                <div className="h-float-icon"><Star size={14} fill="#FFD700" color="#FFD700" /></div>
+                <div className="h-float-body">
+                  <strong>4.9</strong>
+                  <span>Top Rated</span>
                 </div>
               </div>
+
+              {/* Floating open card */}
+              <div className="h-float-card h-float-card--mid">
+                <span className="h-pulse-dot" />
+                <span>Open Now</span>
+              </div>
+
+              <div className="h-img-tag h-img-tag--1">💇 Hair</div>
+              <div className="h-img-tag h-img-tag--2">💅 Nails</div>
             </div>
           </div>
 
-          <ParlorListings
-            featuredParlors={shops.map((shop) => ({
-              id: shop.shop.id,
-              name: shop.shop.parlourName,
-              rating: shop.shop.totalRating || 4.5,
-              reviews: Math.floor(Math.random() * 1000) + 100,
-              image:
-                shop.user.profileImage ||
-                "https://images.unsplash.com/photo-1522338242992-e1a54906a5da?w=400&auto=format",
-              location: shop.shop.address,
-              price: "$$",
-              tags: ["Hair", "Nails", "Makeup"],
-              open: true,
-              waitTime: "15 min",
-              about: shop.shop.about,
-            }))}
-            loading={loading}
-            onFilterClick={() => setShowFilterModal(true)}
-          />
-        </div>
-
-        <div className="category-strip">
-          <div className="category-item">
-            <Scissors size={24} />
-            <span>Hair</span>
+          <div className="h-open-strip">
+            <span className="h-open-line" />
+            <span className="h-open-label">OFFICIALLY OPEN NOW!</span>
+            <span className="h-open-line" />
           </div>
-          <div className="category-item">
-            <Spray size={24} />
-            <span>Makeup</span>
+          <div className="h-location">
+            <MapPin size={13} />
+            <span>MANJERI &amp; KONDOTTY, KERALA</span>
           </div>
-          <div className="category-item">
-            <Droplets size={24} />
-            <span>Skin</span>
-          </div>
-          <div className="category-item">
-            <Gem size={24} />
-            <span>Nails</span>
-          </div>
-          <div className="category-item">
-            <Brush size={24} />
-            <span>Bridal</span>
-          </div>
-          <div className="category-item">
-            <Eye size={24} />
-            <span>Lashes</span>
-          </div>
-        </div>
-
-        <div className="trust-badge">
-          <Shield size={20} />
-          <span>
-            All parlors are verified • 100% secure booking • Free cancellation
-          </span>
         </div>
       </div>
-
-      <FilterModal />
     </section>
   );
 }

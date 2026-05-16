@@ -231,3 +231,12 @@
   .sv-form-grid { flex-direction: column; align-items: center; }
   .sv-form-sidebar { width: 100%; display: flex; flex-direction: column; align-items: center; }
 }
+@media (max-width: 640px) {
+  .sv-screen { padding: 0.75rem; }
+  .sv-header { gap: 10px; }
+  .sv-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+}
+
+@media (max-width: 400px) {
+  .sv-grid { grid-template-columns: 1fr; }
+}

@@ -123,3 +123,21 @@
   padding: 50px;
   color: #b2bec3;
 }
+@media (max-width: 768px) {
+  .appointment-container { padding: 16px; }
+  .appointment-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px;
+  }
+  .right { align-items: flex-start; flex-direction: row; flex-wrap: wrap; gap: 10px; }
+  .info h4 { font-size: 15px; }
+}
+
+@media (max-width: 480px) {
+  .appointment-container { padding: 12px; }
+  .info h4 { font-size: 14px; }
+  .time-pill { font-size: 11px; padding: 4px 10px; }
+  .right { flex-direction: column; }
+}

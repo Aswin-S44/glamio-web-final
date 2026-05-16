@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import "./NotificationScreen.css";
+import { apiRequest } from "../../utils/api.util";
 
 const initialNotifications = [
   {
@@ -32,7 +33,44 @@ function NotificationScreen() {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [view, setView] = useState("all");
 
-  const markAsRead = (id) => {
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const data = await apiRequest("/notifications");
+        const mapped = Array.isArray(data?.data)
+          ? data.data.map((notification) => ({
+              id: notification.id,
+              name:
+                notification.fromUser?.username ||
+                notification.fromUser?.email ||
+                "Customer",
+              time: notification.createdAt
+                ? new Date(notification.createdAt).toLocaleDateString("en-IN")
+                : "",
+              read: Boolean(notification.isRead),
+            }))
+          : [];
+
+        if (mapped.length > 0) {
+          setNotifications(mapped);
+        }
+      } catch (error) {
+        // Fall back to demo notifications when the API is unavailable.
+      }
+    };
+
+    fetchNotifications();
+  }, []);
+
+  const markAsRead = async (id) => {
+    try {
+      await apiRequest(`/notifications/notifications/${id}/read`, {
+        method: "PATCH",
+      });
+    } catch (error) {
+      // Keep the UI responsive even if marking as read fails.
+    }
+
     setNotifications((prev) =>
       prev.map((item) =>
         item.id === id ? { ...item, read: true } : item
@@ -48,13 +86,15 @@ function NotificationScreen() {
     );
   };
 
-  const filteredNotifications = notifications.filter((item) => {
-    if (view === "unread") return !item.read;
-    if (view === "read") return item.read;
-    return true;
-  });
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const filteredNotifications = useMemo(
+    () =>
+      notifications.filter((item) => {
+        if (view === "unread") return !item.read;
+        if (view === "read") return item.read;
+        return true;
+      }),
+    [notifications, view]
+  );
 
   return (
     <div className="notification-wrapper">

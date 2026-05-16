@@ -416,3 +416,18 @@
   .control-panel { flex-direction: column; }
   .side-drawer { max-width: 100%; }
 }
+@media (max-width: 640px) {
+  .admin-requests-container { padding: 12px; }
+  .header-text h1 { font-size: 22px; }
+  .request-card { padding: 16px; }
+  .filter-tabs { flex-wrap: wrap; gap: 6px; padding: 6px; }
+  .filter-tab { padding: 6px 14px; font-size: 12px; }
+  .sort-controls { flex-wrap: wrap; gap: 8px; }
+  .sort-select { width: 100%; }
+}
+
+@media (max-width: 480px) {
+  .header-text h1 { font-size: 18px; }
+  .stat-pill { padding: 8px 14px; }
+  .stat-pill .value { font-size: 16px; }
+}

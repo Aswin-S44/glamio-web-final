@@ -15,13 +15,18 @@ import MyProfileScreen from "./screens/MyProfileScreen/MyProfileScreen";
 import { Provider } from "react-redux";
 import store from "./store/Store";
 import OnboardScreen from "./screens/OnboardScreen/OnboardScreen";
-
 import EditProfileScreen from "./screens/EditProfileScreen/EditProfileScreen";
 import { useAuth } from "./context/AuthContext";
 import ServicesListingScreen from "./screens/ServicesListingScreen/ServicesListingScreen";
 import NearByShops from "./screens/NearByShopsList/NearByShops";
+import ShopsScreen from "./screens/ShopsScreen/ShopsScreen";
+import SupportScreen from "./screens/SupportScreen/SupportScreen";
+import MyBookingsScreen from "./screens/MyBookingsScreen/MyBookingsScreen";
+import AdminLogin from "./screens/admin/AdminLogin/AdminLogin";
+import AdminDashboard from "./screens/admin/AdminDashboard/AdminDashboard";
+
 function App() {
-  const { user, shop } = useAuth();
+  useAuth();
 
   return (
     <>
@@ -51,6 +56,13 @@ function App() {
               element={<SelectSlotScreen />}
             />
             <Route path="/nearby" element={<NearByShops />} />
+            <Route path="/shops" element={<ShopsScreen />} />
+            <Route path="/contact" element={<SupportScreen />} />
+            <Route path="/support" element={<SupportScreen />} />
+            <Route path="/help" element={<SupportScreen />} />
+            <Route path="/my-bookings" element={<MyBookingsScreen />} />
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
           </Routes>
         </BrowserRouter>
       </Provider>

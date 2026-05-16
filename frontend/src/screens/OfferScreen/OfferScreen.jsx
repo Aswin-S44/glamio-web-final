@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import Upload from "antd/es/upload";
 import Swal from "sweetalert2";
 import {
   Plus,
@@ -88,7 +87,7 @@ function OfferScreen() {
       const data = await res.json();
       if (data.offers) {
         setOffers(data.offers);
-        setPagination(data.pagination);
+        if (data.pagination) setPagination(data.pagination);
       }
     } catch (error) {
       console.error(error);
@@ -184,13 +183,15 @@ function OfferScreen() {
 
   const openModal = (offer = null) => {
     if (offer) {
+      const matchedService =
+        allServices.find((service) => service.id === offer.service?.id) || null;
+
       setEditingOffer(offer);
-      setCategoryId(offer.categoryId);
-      setServiceId(offer.serviceId);
+      setCategoryId(matchedService?.categoryId || "");
+      setServiceId(offer.service?.id || "");
       setRegularPrice(offer.regularPrice);
       setOfferPrice(offer.offerPrice);
-      const serviceObj = allServices.find((s) => s.id === offer.serviceId);
-      setImage(serviceObj?.imageUrl || null);
+      setImage(offer.service?.imageUrl || matchedService?.imageUrl || null);
     } else {
       setEditingOffer(null);
       setCategoryId("");
@@ -264,9 +265,10 @@ function OfferScreen() {
                   </div>
                   <div className="of-body">
                     <span className="of-category-tag">
-                      {offer.categoryName}
+                      {allServices.find((service) => service.id === offer.service?.id)
+                        ?.categoryName || "General"}
                     </span>
-                    <h3>{offer.serviceName}</h3>
+                    <h3>{offer.serviceName || offer.service?.name}</h3>
                     <div className="of-pricing-row">
                       <span className="of-old-price">
                         ${offer.regularPrice}

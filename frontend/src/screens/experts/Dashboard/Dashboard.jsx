@@ -40,6 +40,7 @@ import AppointmentScreen from "../../AppointmentScreen/AppointmentScreen";
 import OfferScreen from "../../OfferScreen/OfferScreen";
 import NotificationScreen from "../../Notifications/NotificationScreen";
 import { BASE_URL } from "../../../constants/urls";
+import logoImg from "../../../components/Media/Images/Logo.png"
 
 function Dashboard() {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -52,6 +53,29 @@ function Dashboard() {
 
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  /* ── Approval guard: redirect un-approved shops ── */
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) { navigate("/signin"); return; }
+
+    (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/auth/profile`, {
+          headers: { Authorization: token },
+        });
+        if (!res.ok) { navigate("/signin"); return; }
+        const profile = await res.json();
+        const shop = profile.shop;
+        if (!shop) { navigate("/"); return; }
+        if (!shop.isOnboarded) {
+          navigate(shop.isProfileCompleted ? "/shop/onboard" : "/shop/edit-profile");
+        }
+      } catch {
+        navigate("/signin");
+      }
+    })();
+  }, [navigate]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -303,16 +327,18 @@ function Dashboard() {
                       <div>
                         <h4 className="glam-name">{item.customer.username}</h4>
                         <p className="glam-subtext">
-                          {item.expert.name} • {item.slot.time}
+                          {item.expert.name} • {item.slot.startTime?.slice(0, 5)}
                         </p>
                       </div>
                     </div>
                     <div
                       className={`glam-status-dot ${
-                        item.appointment.status?.toLowerCase() || "confirmed"
+                        item.status?.toLowerCase() || "pending"
                       }`}
                     >
-                      {item.appointment.status || "Confirmed"}
+                      {item.status
+                        ? item.status.charAt(0).toUpperCase() + item.status.slice(1)
+                        : "Pending"}
                     </div>
                   </div>
                 ))
@@ -337,10 +363,7 @@ function Dashboard() {
 
       <aside className={`glam-sidebar ${isMobileOpen ? "is-open" : ""}`}>
         <div className="glam-logo-section">
-          <div className="glam-logo-box">
-            <Scissors size={22} />
-          </div>
-          <span className="glam-logo-text">GLAMIO</span>
+          <img src={logoImg}  style={{width:"100%"}} />
         </div>
 
         <nav className="glam-nav">
@@ -363,7 +386,7 @@ function Dashboard() {
         </nav>
 
         <div className="glam-sidebar-footer">
-          <button className="glam-logout-trigger" onClick={handleLogout}>
+          <button className="glam-logout-trigger" onClick={handleLogout}  style={{width:"100%"}}>
             <LogOut size={20} />
             <span>Sign Out</span>
           </button>
@@ -373,19 +396,12 @@ function Dashboard() {
       <main className="glam-main">
         <header className="glam-header">
           <div className="glam-header-left">
-            {/* <button
+            <button
               className="glam-menu-toggle"
               onClick={() => setIsMobileOpen(true)}
             >
-              <Menu />
+              <Menu size={22} />
             </button>
-            <div className="glam-search">
-              <Search size={18} />
-              <input
-                type="text"
-                placeholder="Search appointments or services..."
-              />
-            </div> */}
           </div>
 
           <div className="glam-header-right">
@@ -437,7 +453,7 @@ function Dashboard() {
         <section className="glam-content">
           {activeTab === "home" && (
             <div className="glam-welcome">
-              <h1 className="glam-title">Glamio Dashboard</h1>
+              <h1 className="glam-title">Orucom Dashboard</h1>
               <p className="glam-subtitle">
                 Curating your shop's performance and growth today.
               </p>

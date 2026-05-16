@@ -1,330 +1,209 @@
-/* Footer.css */
-.footer {
-  background: linear-gradient(135deg, #0a0a0a 0%, #141414 100%);
-  color: var(--light);
-  padding: 80px 0 30px;
-  font-family: 'Poppins', sans-serif;
+/* ================================================================
+   GLAMIO — FOOTER  (No newsletter, no locations)
+================================================================ */
+
+.gf {
+  background: linear-gradient(160deg, #160B26 0%, #1A0D30 50%, #0D0D1A 100%);
+  color: rgba(255,255,255,0.7);
+  font-family: 'DM Sans', sans-serif;
   position: relative;
-  border-top: 1px solid rgba(212, 17, 114, 0.15);
+  overflow: hidden;
 }
 
-.footer::before {
+/* Ambient glow */
+.gf::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary), #ff6b9d, var(--primary));
+  top: -80px; right: -80px;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(212,17,114,0.08), transparent 65%);
+  border-radius: 50%; pointer-events: none;
+}
+.gf::after {
+  content: '';
+  position: absolute;
+  bottom: -60px; left: -60px;
+  width: 380px; height: 380px;
+  background: radial-gradient(circle, rgba(168,14,90,0.06), transparent 65%);
+  border-radius: 50%; pointer-events: none;
 }
 
-.footer-container {
-  width: 90%;
-  max-width: 1200px;
+/* ─── Top accent ──────────────────────────────── */
+.gf__accent {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--primary), var(--primary-lighter), var(--primary), transparent);
+}
+
+/* ─── Container ───────────────────────────────── */
+.gf__container {
+  width: 90%; max-width: 1240px;
   margin: 0 auto;
-  position: relative;
-  z-index: 2;
+  padding: 72px 0 40px;
+  position: relative; z-index: 2;
 }
 
-.footer-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 40px;
+/* ─── 4-column grid ───────────────────────────── */
+.gf__grid {
+  display: grid;
+  grid-template-columns: 1.6fr 0.85fr 1fr 1fr;
+  gap: 52px;
+  padding-bottom: 56px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
-.footer-col {
-  flex: 1;
-  min-width: 250px;
+/* ─── Brand ───────────────────────────────────── */
+.gf__logo {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+}
+.gf__logo-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; flex-shrink: 0;
+}
+.gf__logo-text {
+  font-size: 20px; font-weight: 700;
+  color: white; letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.gf__logo-text em { color: var(--primary-lighter); font-style: normal; }
+
+.gf__brand-desc {
+  font-size: 13.5px; color: rgba(255,255,255,0.45);
+  line-height: 1.85; margin-bottom: 22px; max-width: 290px;
 }
 
-.footer-logo {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: 2px;
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  display: inline-block;
+.gf__trust {
+  display: flex; flex-direction: column; gap: 9px;
+  margin-bottom: 24px;
+}
+.gf__trust-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12.5px; color: rgba(255,255,255,0.48); font-weight: 500;
 }
 
-.footer-logo span {
-  background: linear-gradient(135deg, var(--primary), #ff9eb5);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  font-weight: 800;
-}
-
-.footer-about p {
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.8;
-  margin-bottom: 25px;
-  font-size: 14px;
-}
-
-.social-links {
-  display: flex;
-  gap: 12px;
-}
-
-.social-links a {
-  width: 40px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.gf__social { display: flex; gap: 9px; }
+.gf__social-link {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 50%;
-  color: var(--light);
-  transition: var(--transition);
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.55); text-decoration: none;
+  transition: all 0.25s ease;
+}
+.gf__social-link:hover {
+  background: var(--primary); border-color: var(--primary);
+  color: white; transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(212,17,114,0.3);
 }
 
-.social-links a:hover {
-  background: var(--primary);
-  border-color: var(--primary);
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(212, 17, 114, 0.3);
+/* ─── Column ──────────────────────────────────── */
+.gf__col { display: flex; flex-direction: column; }
+
+.gf__col-title {
+  font-size: 12px; font-weight: 700;
+  color: white; letter-spacing: 2px;
+  text-transform: uppercase; margin-bottom: 20px;
+  font-family: 'DM Sans', sans-serif !important;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 
-.footer-col h4 {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 30px;
-  position: relative;
-  color: var(--light);
-  letter-spacing: 0.5px;
+.gf__links {
+  list-style: none; padding: 0;
+  display: flex; flex-direction: column; gap: 10px;
 }
-
-.footer-col h4::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -12px;
-  width: 45px;
-  height: 3px;
-  background: linear-gradient(90deg, var(--primary), transparent);
-  border-radius: 2px;
+.gf__link {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13.5px; color: rgba(255,255,255,0.48);
+  text-decoration: none; transition: all 0.22s ease;
 }
-
-.footer-col ul {
-  list-style: none;
-  padding: 0;
+.gf__link svg { opacity: 0; flex-shrink: 0; transition: opacity 0.2s; }
+.gf__link:hover {
+  color: var(--primary-lighter);
+  padding-left: 4px;
 }
+.gf__link:hover svg { opacity: 1; }
 
-.footer-col ul li {
+/* ─── App buttons ─────────────────────────────── */
+.gf__apps { margin-top: 28px; }
+.gf__apps-label {
+  font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase; letter-spacing: 1.5px;
   margin-bottom: 12px;
 }
+.gf__app-btn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; color: white;
+  text-decoration: none; transition: all 0.25s ease;
+  margin-bottom: 8px; width: fit-content;
+}
+.gf__app-btn:hover {
+  background: rgba(212,17,114,0.12);
+  border-color: rgba(212,17,114,0.3);
+  transform: translateY(-2px);
+}
+.gf__app-btn div { display: flex; flex-direction: column; line-height: 1.2; }
+.gf__app-btn span { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.55; }
+.gf__app-btn strong { font-size: 13px; font-weight: 600; }
 
-.footer-col ul li a {
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  transition: var(--transition);
-  font-size: 14px;
-  display: inline-block;
-  position: relative;
+/* ─── Bottom bar ──────────────────────────────── */
+.gf__bottom {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding-top: 32px; gap: 16px; flex-wrap: wrap;
+}
+.gf__copy {
+  font-size: 12.5px; color: rgba(255,255,255,0.3);
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.gf__copy span {
+  color: rgba(255,255,255,0.2);
+  border-left: 1px solid rgba(255,255,255,0.1);
+  padding-left: 10px;
+}
+.gf__legal { display: flex; gap: 20px; }
+.gf__legal a {
+  font-size: 12.5px; color: rgba(255,255,255,0.3);
+  text-decoration: none; transition: color 0.2s ease;
+}
+.gf__legal a:hover { color: var(--primary-lighter); }
+
+.gf__top-btn {
+  width: 38px; height: 38px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer; transition: all 0.25s ease; flex-shrink: 0;
+}
+.gf__top-btn:hover {
+  background: var(--primary); border-color: var(--primary);
+  color: white; transform: translateY(-3px);
 }
 
-.footer-col ul li a::before {
-  content: '→';
-  position: absolute;
-  left: -20px;
-  opacity: 0;
-  transition: var(--transition);
-  color: var(--primary);
+/* ─── Responsive ──────────────────────────────── */
+@media (max-width: 1100px) {
+  .gf__grid { grid-template-columns: 1.4fr 0.8fr 1fr; gap: 36px; }
+  .gf__brand { grid-column: 1 / -1; }
+  .gf__grid .gf__brand { grid-column: auto; }
+  .gf__grid { grid-template-columns: repeat(2, 1fr); }
+  .gf__brand { grid-column: 1 / -1; }
 }
-
-.footer-col ul li a:hover {
-  color: var(--primary);
-  padding-left: 20px;
-}
-
-.footer-col ul li a:hover::before {
-  opacity: 1;
-  left: 0;
-}
-
-.contact-info p {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  transition: var(--transition);
-}
-
-.contact-info p:hover {
-  color: var(--light);
-  transform: translateX(5px);
-}
-
-.contact-info p::before {
-  content: '📍';
-  font-size: 14px;
-  opacity: 0.8;
-}
-
-.contact-info p:nth-child(2)::before {
-  content: '📞';
-}
-
-.contact-info p:nth-child(3)::before {
-  content: '✉️';
-}
-
-.footer-app p {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  margin-bottom: 25px;
-  line-height: 1.6;
-}
-
-.app-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.app-btn {
-  display: flex;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(10px);
-  color: var(--light);
-  padding: 12px 24px;
-  border-radius: 14px;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: var(--transition);
-  width: fit-content;
-  gap: 12px;
-}
-
-.app-btn:hover {
-  border-color: var(--primary);
-  background: rgba(212, 17, 114, 0.1);
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px -8px rgba(212, 17, 114, 0.2);
-}
-
-.app-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.app-icon svg {
-  width: 26px;
-  height: 26px;
-}
-
-.app-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.app-text span {
-  font-size: 9px;
-  text-transform: uppercase;
-  opacity: 0.7;
-  letter-spacing: 0.5px;
-}
-
-.app-text strong {
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-.footer-bottom {
-  margin-top: 70px;
-  padding-top: 30px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  text-align: center;
-  position: relative;
-}
-
-.footer-bottom p {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 13px;
-  letter-spacing: 0.3px;
-}
-
-.footer-bottom p::before {
-  content: '✨';
-  margin-right: 8px;
-  opacity: 0.7;
-}
-
-@media (max-width: 992px) {
-  .footer {
-    padding: 60px 0 25px;
-  }
-  
-  .footer-col {
-    flex: 1 1 40%;
-  }
-}
-
-@media (max-width: 768px) {
-  .footer-row {
-    gap: 35px;
-  }
-  
-  .footer-col {
-    flex: 1 1 45%;
-  }
-}
-
-@media (max-width: 600px) {
-  .footer {
-    padding: 50px 0 20px;
-  }
-  
-  .footer-col {
-    flex: 1 1 100%;
-    text-align: center;
-  }
-
-  .footer-col h4::after {
-    left: 50%;
-    transform: translateX(-50%);
-    width: 50px;
-  }
-
-  .social-links {
-    justify-content: center;
-  }
-
-  .app-buttons {
-    align-items: center;
-  }
-  
-  .app-btn {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .footer-bottom {
-    margin-top: 50px;
-  }
-  
-  .contact-info p {
-    justify-content: center;
-  }
-  
-  .footer-col ul li a::before {
-    display: none;
-  }
-  
-  .footer-col ul li a:hover {
-    padding-left: 0;
-  }
+@media (max-width: 680px) {
+  .gf__grid { grid-template-columns: 1fr; gap: 32px; }
+  .gf__brand { grid-column: 1; }
+  .gf__bottom { flex-direction: column; text-align: center; }
+  .gf__legal { justify-content: center; }
+  .gf__copy { justify-content: center; flex-direction: column; gap: 4px; }
+  .gf__copy span { border-left: none; padding-left: 0; }
+  .gf__app-btn { width: 100%; }
 }

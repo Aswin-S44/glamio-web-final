@@ -8,7 +8,21 @@ import {
   DEFAULT_NO_IMAGE,
 } from "../../../constants/urls";
 import "./ParlorDetailsScreen.css";
-import Breadcrumb from "../../../components/Breadcrumb/Breadcrumb";
+import {
+  MapPin,
+  Star,
+  Clock,
+  Phone,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Heart,
+  Award,
+  CheckCircle,
+  ArrowRight,
+  X,
+  Loader2,
+} from "lucide-react";
 
 const ParlorDetailsScreen = () => {
   const { id } = useParams();
@@ -22,17 +36,31 @@ const ParlorDetailsScreen = () => {
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [hasMoreReviews, setHasMoreReviews] = useState(true);
   const [page, setPage] = useState(1);
+  const [currentImgIdx, setCurrentImgIdx] = useState(0);
+  const [error, setError] = useState("");
   const observer = useRef();
 
   const fetchParlourDetails = useCallback(async () => {
     try {
       setLoading(true);
+      setError("");
       const res = await fetch(`${BASE_URL}/customer/shop/${id}`);
-      if (!res.ok) throw new Error("Shop fetch failed");
+
+      if (!res.ok) {
+        throw new Error("Salon details could not be loaded.");
+      }
+
       const data = await res.json();
+      if (!data?.shop) {
+        throw new Error("Salon not found.");
+      }
+
       setParlour(data);
     } catch (err) {
-      console.error(err);
+      setParlour(null);
+      setImages([]);
+      setReviews([]);
+      setError(err.message || "Unable to load salon details.");
     } finally {
       setLoading(false);
     }
@@ -40,27 +68,34 @@ const ParlorDetailsScreen = () => {
 
   const fetchReviewsAndImages = useCallback(
     async (placeId, isInitial = false) => {
-      if (!placeId || isLoadingReviews || (!hasMoreReviews && !isInitial))
+      if (!placeId || isLoadingReviews || (!hasMoreReviews && !isInitial)) {
         return;
+      }
 
       setIsLoadingReviews(true);
       try {
         const res = await fetch(
           `${BASE_URL}/customer/reviews/${placeId}?page=${isInitial ? 1 : page}`
         );
-        if (!res.ok) throw new Error("Reviews fetch failed");
-        const data = await res.json();
 
-        if (isInitial) {
-          setImages(data?.images?.length > 0 ? data.images : []);
-          setReviews(data?.reviews || []);
-        } else {
-          setReviews((prev) => [...prev, ...(data?.reviews || [])]);
+        if (!res.ok) {
+          throw new Error("Failed to load reviews");
         }
 
-        setHasMoreReviews(data?.reviews && data.reviews.length === 10);
-      } catch (err) {
-        console.error(err);
+        const data = await res.json();
+        if (isInitial) {
+          setImages(Array.isArray(data?.images) ? data.images : []);
+          setReviews(Array.isArray(data?.reviews) ? data.reviews : []);
+        } else {
+          setReviews((prev) => [...prev, ...(Array.isArray(data?.reviews) ? data.reviews : [])]);
+        }
+
+        setHasMoreReviews(Array.isArray(data?.reviews) && data.reviews.length === 10);
+      } catch {
+        if (isInitial) {
+          setImages([]);
+          setReviews([]);
+        }
       } finally {
         setIsLoadingReviews(false);
       }
@@ -75,16 +110,19 @@ const ParlorDetailsScreen = () => {
   useEffect(() => {
     if (parlour?.shop?.placeId) {
       fetchReviewsAndImages(parlour.shop.placeId, true);
+    } else {
+      setImages([]);
+      setReviews([]);
     }
-  }, [parlour?.shop?.placeId]);
+  }, [parlour?.shop?.placeId, fetchReviewsAndImages]);
 
-  const lastReviewElementRef = useCallback(
+  const lastReviewRef = useCallback(
     (node) => {
       if (isLoadingReviews) return;
       if (observer.current) observer.current.disconnect();
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMoreReviews) {
-          setPage((prevPage) => prevPage + 1);
+          setPage((prev) => prev + 1);
         }
       });
       if (node) observer.current.observe(node);
@@ -96,294 +134,424 @@ const ParlorDetailsScreen = () => {
     if (page > 1 && parlour?.shop?.placeId) {
       fetchReviewsAndImages(parlour.shop.placeId);
     }
-  }, [page]);
-
-  const formatOpeningHours = (hours) => {
-    if (!hours || Object.keys(hours).length === 0) {
-      return "10:00 AM - 08:30 PM";
-    }
-    return hours;
-  };
+  }, [page, parlour?.shop?.placeId, fetchReviewsAndImages]);
 
   const getServicePrice = (serviceId, regularPrice) => {
-    const offer = parlour?.offers?.find((o) => o.serviceId === serviceId);
+    const offer = parlour?.offers?.find((item) => item.serviceId === serviceId);
     return offer ? (
-      <div className="price-container">
-        <span className="offer-price">₹{offer.offerPrice}</span>
-        <span className="regular-price-strike">₹{regularPrice}</span>
+      <div className="pd-price-wrap">
+        <span className="pd-offer-price">Rs {offer.offerPrice}</span>
+        <span className="pd-strike">Rs {regularPrice}</span>
       </div>
     ) : (
-      <span className="offer-price">₹{regularPrice}</span>
+      <span className="pd-price">Rs {regularPrice}</span>
     );
   };
 
-  const calculateAverageRating = () => {
+  const avgRating = (() => {
     if (!reviews || reviews.length === 0) {
-      return parlour?.shop?.totalRating || "4.5";
+      return parlour?.shop?.totalRating || 0;
     }
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-    return (sum / reviews.length).toFixed(1);
-  };
 
-  const getTotalReviews = () => {
-    return reviews?.length || 0;
-  };
+    return (
+      reviews.reduce((acc, review) => acc + Number(review.rating || 0), 0) /
+      reviews.length
+    ).toFixed(1);
+  })();
 
   if (loading) {
     return (
-      <div className="loader-wrapper">
-        <div className="spinner"></div>
+      <div className="pd-loader">
+        <Header />
+        <div className="pd-loader-inner">
+          <div className="pd-spinner">
+            <Loader2 size={36} className="pd-spin" />
+          </div>
+          <p>Loading salon details...</p>
+        </div>
       </div>
     );
   }
 
-  const shop = parlour?.shop;
-  const services = parlour?.services || [];
-  const offers = parlour?.offers || [];
-  const displayImages =
-    images.length > 0 ? images : [shop?.shopImage || DEFAULT_NO_IMAGE];
+  if (!parlour) {
+    return (
+      <div className="pd-loader">
+        <Header />
+        <div className="pd-loader-inner">
+          <p>{error || "Salon details are unavailable right now."}</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
-  const averageRating = calculateAverageRating();
-  const totalReviews = getTotalReviews();
+  const shop = parlour.shop;
+  const services = parlour.services || [];
+  const offers = parlour.offers || [];
+  const displayImages =
+    images.length > 0 ? images : [shop?.shopImage || shop?.user?.profileImage || DEFAULT_NO_IMAGE];
 
   return (
-    <>
+    <div className="pd-page">
       <Header />
 
-      <div className="parlor-details-container">
-        <section className="hero-grid">
-          <div className="main-gallery">
-            <div
-              className="featured-image"
-              onClick={() => setSelectedImg(displayImages[0])}
-            >
-              <img src={displayImages[0]} alt={shop?.parlourName} />
-            </div>
-            {displayImages.length > 1 && (
-              <div className="thumbnail-strip">
-                {displayImages.slice(1, 5).map((img, i) => (
-                  <div
-                    key={i}
-                    className="thumb"
-                    onClick={() => setSelectedImg(img)}
-                  >
-                    <img src={img} alt={`${shop?.parlourName} view ${i + 1}`} />
-                  </div>
-                ))}
-              </div>
-            )}
+      <section className="pd-gallery">
+        <div
+          className="pd-gallery-main"
+          onClick={() => setSelectedImg(displayImages[currentImgIdx])}
+        >
+          <img
+            src={displayImages[currentImgIdx]}
+            alt={shop?.parlourName}
+            className="pd-gallery-hero-img"
+            onError={(e) => {
+              e.target.src = DEFAULT_NO_IMAGE;
+            }}
+          />
+          <div className="pd-gallery-overlay">
+            <button className="pd-gallery-zoom">View Full Gallery</button>
           </div>
+          {displayImages.length > 1 && (
+            <>
+              <button
+                className="pd-gallery-nav left"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImgIdx(
+                    (index) => (index - 1 + displayImages.length) % displayImages.length
+                  );
+                }}
+              >
+                <ChevronLeft size={22} />
+              </button>
+              <button
+                className="pd-gallery-nav right"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentImgIdx((index) => (index + 1) % displayImages.length);
+                }}
+              >
+                <ChevronRight size={22} />
+              </button>
+            </>
+          )}
+        </div>
 
-          <div className="info-panel">
-            <div className="badge-row">
-              <span className="category-badge">
-                {services.length > 0
-                  ? `${services.length}+ Services`
-                  : "Beauty Parlor"}
-              </span>
+        {displayImages.length > 1 && (
+          <div className="pd-thumbs">
+            {displayImages.slice(0, 5).map((img, i) => (
+              <div
+                key={i}
+                className={`pd-thumb ${currentImgIdx === i ? "active" : ""}`}
+                onClick={() => setCurrentImgIdx(i)}
+              >
+                <img
+                  src={img}
+                  alt={`view ${i + 1}`}
+                  onError={(e) => {
+                    e.target.src = DEFAULT_NO_IMAGE;
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="pd-info-section">
+        <div className="pd-info-container">
+          <div className="pd-info-left">
+            <div className="pd-badges-row">
+              {services.length > 0 && (
+                <span className="pd-badge services">{services.length}+ Services</span>
+              )}
               {offers.length > 0 && (
-                <span className="offer-badge">
+                <span className="pd-badge offer">
                   {offers.length} Offer{offers.length > 1 ? "s" : ""} Available
                 </span>
               )}
             </div>
-            <h1 className="shop-name">{shop?.parlourName}</h1>
-            <div className="rating-row">
-              <div className="stars">
-                {"★".repeat(Math.round(parseFloat(averageRating) || 0))}
-                {"☆".repeat(5 - Math.round(parseFloat(averageRating) || 0))}
-              </div>
-              <span className="rating-text">{averageRating}</span>
-              <span className="count">
-                ({totalReviews} {totalReviews === 1 ? "Review" : "Reviews"})
-              </span>
-            </div>
-            <p className="address-link">
-              <i className="location-icon">📍</i> {shop?.address}
-            </p>
-            <div className="quick-stats">
-              <div className="stat">
-                <span className="stat-label">Experience</span>
-                <span className="stat-value">Professional</span>
-              </div>
-              <div className="stat">
-                <span className="stat-label">Opening Hours</span>
-                <span className="stat-value">
-                  {formatOpeningHours(shop?.openingHours)}
-                </span>
-              </div>
-            </div>
-            <p className="about-short">
-              {shop?.about?.substring(0, 150)}
-              {shop?.about?.length > 150 ? "..." : ""}
-            </p>
-            <button
-              className="book-now-main"
-              onClick={() => {
-                // setActiveTab("services");
-                // document.getElementById("services-section")?.scrollIntoView({
-                //   behavior: "smooth",
-                // });
-                navigate(`/parlor/${id}/services`);
-              }}
-            >
-              View All Services
-            </button>
-          </div>
-        </section>
 
-        <section className="tabs-navigation" id="services-section">
-          <div className="tabs-track">
-            {["services", "reviews", "about"].map((tab) => (
-              <button
-                key={tab}
-                className={`tab-link ${activeTab === tab ? "active" : ""}`}
-                onClick={() => setActiveTab(tab)}
-              >
-                {tab === "services" && `${services.length} Services`}
-                {tab === "reviews" && `${totalReviews} Reviews`}
-                {tab === "about" && "About"}
-              </button>
-            ))}
-          </div>
-        </section>
+            <h1 className="pd-shop-name">{shop?.parlourName}</h1>
 
-        <div className="tab-content-area">
-          {activeTab === "services" && (
-            <div className="services-grid">
-              {services.length > 0 ? (
-                services.map((service) => (
-                  <div key={service.id} className="service-card">
-                    <div className="service-img-container">
-                      <img
-                        src={service.imageUrl || DEFAULT_NO_IMAGE}
-                        alt={service.name}
-                      />
-                    </div>
-                    <div className="service-info">
-                      <h3>{service.name}</h3>
-                      <p className="duration">⏳ {service.duration} mins</p>
-                      <p className="description">
-                        {service.description?.substring(0, 80)}
-                        {service.description?.length > 80 ? "..." : ""}
-                      </p>
-                      <div className="service-footer">
-                        {getServicePrice(service.id, service.rate)}
-                        <button
-                          className="btn-select"
-                          onClick={() =>
-                            navigate(
-                              `/parlor/${service.shopId}/service/${service.id}`
-                            )
-                          }
-                        >
-                          Book Now
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="no-services">
-                  <p>No services available at the moment.</p>
+            <div className="pd-rating-row">
+              <div className="pd-stars">
+                {Array.from({ length: 5 }, (_, i) => (
+                  <Star
+                    key={i}
+                    size={16}
+                    fill={i < Math.round(+avgRating) ? "#FFD700" : "none"}
+                    color={i < Math.round(+avgRating) ? "#FFD700" : "#CBD5E1"}
+                  />
+                ))}
+              </div>
+              <span className="pd-rating-num">{avgRating}</span>
+              <span className="pd-review-count">({reviews.length} reviews)</span>
+            </div>
+
+            <div className="pd-meta-pills">
+              <div className="pd-meta-pill">
+                <MapPin size={15} />
+                <span>{shop?.address || "Address not available"}</span>
+              </div>
+              {shop?.openingHours && (
+                <div className="pd-meta-pill">
+                  <Clock size={15} />
+                  <span>
+                    {typeof shop.openingHours === "string"
+                      ? shop.openingHours
+                      : "Opening hours available on request"}
+                  </span>
+                </div>
+              )}
+              {shop?.phone && (
+                <div className="pd-meta-pill">
+                  <Phone size={15} />
+                  <span>{shop.phone}</span>
                 </div>
               )}
             </div>
-          )}
 
-          {activeTab === "reviews" && (
-            <div className="reviews-stack">
-              {reviews.length > 0 ? (
-                reviews.map((review, index) => (
-                  <div
-                    key={`${review.author_name}-${index}`}
-                    className="review-item"
-                    ref={
-                      index === reviews.length - 1 ? lastReviewElementRef : null
-                    }
-                  >
+            {shop?.about && (
+              <p className="pd-about-short">
+                {shop.about.substring(0, 160)}
+                {shop.about.length > 160 ? "..." : ""}
+              </p>
+            )}
+          </div>
+
+          <div className="pd-info-right">
+            <div className="pd-booking-card">
+              <div className="pd-booking-card-header">
+                <Sparkles size={20} />
+                <span>Ready to book?</span>
+              </div>
+              <div className="pd-quick-stats">
+                <div className="pd-qs">
+                  <Award size={18} />
+                  <div>
+                    <span className="pd-qs-label">Experience</span>
+                    <span className="pd-qs-val">Professional</span>
+                  </div>
+                </div>
+                <div className="pd-qs">
+                  <CheckCircle size={18} />
+                  <div>
+                    <span className="pd-qs-label">Status</span>
+                    <span className="pd-qs-val">Open Now</span>
+                  </div>
+                </div>
+                <div className="pd-qs">
+                  <Star size={18} fill="#FFD700" color="#FFD700" />
+                  <div>
+                    <span className="pd-qs-label">Rating</span>
+                    <span className="pd-qs-val">{avgRating} / 5.0</span>
+                  </div>
+                </div>
+              </div>
+              <button
+                className="pd-book-btn"
+                onClick={() => navigate(`/parlor/${id}/services`)}
+              >
+                View All Services <ArrowRight size={18} />
+              </button>
+              <button className="pd-wish-btn">
+                <Heart size={16} /> Save to Wishlist
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="pd-tabs-bar">
+        <div className="pd-tabs-inner">
+          {["services", "reviews", "about"].map((tab) => (
+            <button
+              key={tab}
+              className={`pd-tab ${activeTab === tab ? "active" : ""}`}
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab === "services" && `Services (${services.length})`}
+              {tab === "reviews" && `Reviews (${reviews.length})`}
+              {tab === "about" && "About"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pd-tab-content">
+        {activeTab === "services" && (
+          <div className="pd-services-grid">
+            {services.length > 0 ? (
+              services.map((service) => (
+                <div key={service.id} className="pd-service-card">
+                  <div className="pd-service-img-wrap">
                     <img
-                      src={review.profile_photo_url || DEFAULT_AVATAR_IMAGE}
-                      alt={review.author_name}
-                      className="user-avatar"
+                      src={service.imageUrl || DEFAULT_NO_IMAGE}
+                      alt={service.name}
+                      onError={(e) => {
+                        e.target.src = DEFAULT_NO_IMAGE;
+                      }}
                     />
-                    <div className="review-body">
-                      <div className="review-header">
-                        <h4>{review.author_name}</h4>
-                        <span className="review-date">
+                    {offers.find((offer) => offer.serviceId === service.id) && (
+                      <span className="pd-service-offer-badge">Offer</span>
+                    )}
+                  </div>
+                  <div className="pd-service-body">
+                    <h3>{service.name}</h3>
+                    <div className="pd-service-duration">
+                      <Clock size={13} />
+                      <span>{service.duration} mins</span>
+                    </div>
+                    {service.description && (
+                      <p className="pd-service-desc">
+                        {service.description.substring(0, 90)}
+                        {service.description.length > 90 ? "..." : ""}
+                      </p>
+                    )}
+                    <div className="pd-service-foot">
+                      {getServicePrice(service.id, service.rate)}
+                      <button
+                        className="pd-book-service-btn"
+                        onClick={() => navigate(`/parlor/${service.shopId}/service/${service.id}`)}
+                      >
+                        Book Now
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="pd-empty">
+                <Sparkles size={40} />
+                <p>No services available at the moment.</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "reviews" && (
+          <div className="pd-reviews-wrap">
+            {reviews.length > 0 ? (
+              <div className="pd-reviews-list">
+                {reviews.map((review, i) => (
+                  <div
+                    key={i}
+                    className="pd-review-card"
+                    ref={i === reviews.length - 1 ? lastReviewRef : null}
+                  >
+                    <div className="pd-review-avatar">
+                      <img
+                        src={review.profile_photo_url || DEFAULT_AVATAR_IMAGE}
+                        alt={review.author_name}
+                        onError={(e) => {
+                          e.target.src = DEFAULT_AVATAR_IMAGE;
+                        }}
+                      />
+                    </div>
+                    <div className="pd-review-body">
+                      <div className="pd-review-top">
+                        <div>
+                          <h4>{review.author_name}</h4>
+                          <div className="pd-review-stars">
+                            {Array.from({ length: 5 }, (_, si) => (
+                              <Star
+                                key={si}
+                                size={13}
+                                fill={si < review.rating ? "#FFD700" : "none"}
+                                color={si < review.rating ? "#FFD700" : "#CBD5E1"}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        <span className="pd-review-time">
                           {review.relative_time_description}
                         </span>
-                      </div>
-                      <div className="review-stars">
-                        {"★".repeat(review.rating)}
-                        {"☆".repeat(5 - review.rating)}
                       </div>
                       <p>{review.text}</p>
                     </div>
                   </div>
-                ))
-              ) : (
-                <div className="no-reviews">
-                  <p>No reviews yet. Be the first to review!</p>
-                </div>
-              )}
-              {isLoadingReviews && (
-                <div className="mini-spinner-container">
-                  <div className="mini-spinner"></div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {activeTab === "about" && (
-            <div className="about-detailed">
-              <div className="about-text-content">
-                <h3>About Us</h3>
-                <p>{shop?.about || "No description available."}</p>
-                {/* <div className="amenities-grid">
-                  <div className="amenity">
-                    <span className="amenity-icon">✅</span>
-                    AC Salon
+                ))}
+                {isLoadingReviews && (
+                  <div className="pd-review-loading">
+                    <Loader2 size={24} className="pd-spin" />
                   </div>
-                  <div className="amenity">
-                    <span className="amenity-icon">✅</span>
-                    Parking Available
-                  </div>
-                  <div className="amenity">
-                    <span className="amenity-icon">✅</span>
-                    Professional Products
-                  </div>
-                  <div className="amenity">
-                    <span className="amenity-icon">✅</span>
-                    Certified Staff
-                  </div>
-                </div> */}
-              </div>
-              <div className="location-map">
-                <h3>Location</h3>
-                {shop?.address && (
-                  <iframe
-                    title="Shop Location"
-                    src={`https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=${encodeURIComponent(
-                      shop.address
-                    )}`}
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                  />
                 )}
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="pd-empty">
+                <Star size={40} />
+                <p>No reviews available yet for this salon.</p>
+              </div>
+            )}
+          </div>
+        )}
 
-        {selectedImg && (
-          <div className="lightbox" onClick={() => setSelectedImg(null)}>
-            <img src={selectedImg} alt="Enlarged view" />
+        {activeTab === "about" && (
+          <div className="pd-about-wrap">
+            <div className="pd-about-text">
+              <h3>About {shop?.parlourName}</h3>
+              <p>{shop?.about || "No description available for this salon."}</p>
+
+              <div className="pd-amenities">
+                {[
+                  "AC Salon",
+                  "Parking Available",
+                  "Professional Products",
+                  "Certified Staff",
+                  "Online Booking",
+                  "Home Service",
+                ].map((amenity) => (
+                  <div key={amenity} className="pd-amenity">
+                    <CheckCircle size={16} />
+                    <span>{amenity}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="pd-about-map">
+              <h3>Location</h3>
+              {shop?.address ? (
+                <iframe
+                  title="Shop Location"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
+                    shop.address
+                  )}&output=embed`}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              ) : (
+                <p>Address not available.</p>
+              )}
+              {shop?.address && (
+                <a
+                  href={`https://www.google.com/maps/search/${encodeURIComponent(
+                    shop.address
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="pd-directions-link"
+                >
+                  <MapPin size={15} /> Get Directions
+                </a>
+              )}
+            </div>
           </div>
         )}
       </div>
+
+      {selectedImg && (
+        <div className="pd-lightbox" onClick={() => setSelectedImg(null)}>
+          <button className="pd-lightbox-close">
+            <X size={24} />
+          </button>
+          <img src={selectedImg} alt="Enlarged" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
+
       <Footer />
-    </>
+    </div>
   );
 };
 
