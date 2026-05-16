@@ -1,5 +1,5 @@
 {
-  "id": "7ccb4d52-efdc-4fcb-8fa4-24de796e871e",
+  "id": "8735f111-6bbe-4756-9bec-ebda75f08e90",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -909,9 +909,16 @@
         },
         "shop_image": {
           "name": "shop_image",
-          "type": "varchar(256)",
+          "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "gallery_images": {
+          "name": "gallery_images",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'[]'::json"
         }
       },
       "indexes": {},
@@ -1178,7 +1185,7 @@
         },
         "phone": {
           "name": "phone",
-          "type": "varchar(15)",
+          "type": "varchar(20)",
           "primaryKey": false,
           "notNull": false
         },
@@ -1195,6 +1202,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "password_hash": {
+          "name": "password_hash",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": false
         },
         "fcm_token": {
           "name": "fcm_token",
@@ -1252,13 +1265,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "email"
-          ]
-        },
-        "users_phone_unique": {
-          "name": "users_phone_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "phone"
           ]
         }
       },

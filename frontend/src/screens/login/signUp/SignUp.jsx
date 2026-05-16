@@ -17,6 +17,7 @@ function SignUp() {
   const dispatch = useDispatch();
 
   const handleGoogleSignIn = async () => {
+    console.log('000000000000000')
     const res = await dispatch(googleLogin());
     if (googleLogin.fulfilled.match(res)) {
       if (res.payload?.user?.shopProfile?.isProfileCompleted && res.payload?.user?.shopProfile?.isOnboarded) {

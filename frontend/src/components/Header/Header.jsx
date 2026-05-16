@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import logoImage from "../Media/Images/Orucom wide.png"
+import logoImage from "../Media/Images/Orucom wide.png";
 import {
   Search,
   Menu,
@@ -21,7 +21,8 @@ import {
   Star,
   User,
   HelpCircle,
-  Calendar, Settings
+  Calendar,
+  Settings,
 } from "lucide-react";
 import "./Header.css";
 
@@ -127,9 +128,8 @@ function Header() {
         <div className="header-container">
           <div className="header-left" onClick={() => navigate("/")}>
             <div className="logo-icon">
-             <img src={logoImage}/>
+              <img src={logoImage} />
             </div>
-            
           </div>
 
           <div className="header-center" ref={searchRef}>
@@ -237,19 +237,41 @@ function Header() {
               {isAuthenticated ? (
                 <div className="dd-wrapper">
                   <div
-                    className={`profile-pill ${activeDropdown === "profile" ? "active" : ""}`}
+                    className={`profile-pill ${
+                      activeDropdown === "profile" ? "active" : ""
+                    }`}
                     onClick={() => toggleDropdown("profile")}
                   >
                     <div className="avatar">
-                      {user?.picture
-                        ? <img src={user.picture} alt={user.name} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                        : user?.name?.charAt(0) || <User size={16} />}
+                      {user?.picture ? (
+                        <img
+                          src={user.picture}
+                          alt={user.name}
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            borderRadius: "50%",
+                          }}
+                        />
+                      ) : (
+                        user?.name?.charAt(0) || <User size={16} />
+                      )}
                     </div>
                     <div className="user-info">
-                      <span className="user-name">{user?.name?.split(" ")[0] || "User"}</span>
-                      <span className="user-badge">{user?.shop ? "Business" : "Customer"}</span>
+                      <span className="user-name">
+                        {user?.name?.split(" ")[0] || "User"}
+                      </span>
+                      <span className="user-badge">
+                        {user?.shop ? "Business" : "Customer"}
+                      </span>
                     </div>
-                    <ChevronDown size={16} className={`chevron ${activeDropdown === "profile" ? "rotate" : ""}`} />
+                    <ChevronDown
+                      size={16}
+                      className={`chevron ${
+                        activeDropdown === "profile" ? "rotate" : ""
+                      }`}
+                    />
                   </div>
 
                   {activeDropdown === "profile" && (
@@ -257,36 +279,53 @@ function Header() {
                       {/* User header */}
                       <div className="pm-header">
                         <div className="pm-avatar">
-                          {user?.picture
-                            ? <img src={user.picture} alt={user.name} />
-                            : user?.name?.charAt(0) || "U"}
+                          {user?.picture ? (
+                            <img src={user.picture} alt={user.name} />
+                          ) : (
+                            user?.name?.charAt(0) || "U"
+                          )}
                         </div>
                         <div className="pm-info">
                           <h4>{user?.name || "User"}</h4>
                           <p>{user?.email || ""}</p>
-                          <span className="pm-role">{user?.shop ? "Business" : "Customer"}</span>
+                          <span className="pm-role">
+                            {user?.shop ? "Business" : "Customer"}
+                          </span>
                         </div>
                       </div>
 
                       {/* Nav links */}
                       <div className="pm-links">
-                        <button onClick={() => { navigate("/my-bookings"); setActiveDropdown(null); }}>
+                        <button
+                          onClick={() => {
+                            navigate("/my-bookings");
+                            setActiveDropdown(null);
+                          }}
+                        >
                           <Calendar size={15} /> My Bookings
                         </button>
 
                         {user?.shop && (
-                          <button onClick={() => {
-                            setActiveDropdown(null);
-                            const shop = user.shop;
-                            if (shop.isOnboarded) navigate("/shop/dashboard");
-                            else if (shop.isProfileCompleted) navigate("/shop/onboard");
-                            else navigate("/shop/edit-profile");
-                          }}>
+                          <button
+                            onClick={() => {
+                              setActiveDropdown(null);
+                              const shop = user.shop;
+                              if (shop.isOnboarded) navigate("/shop/dashboard");
+                              else if (shop.isProfileCompleted)
+                                navigate("/shop/onboard");
+                              else navigate("/shop/edit-profile");
+                            }}
+                          >
                             <LayoutDashboard size={15} /> Business Dashboard
                           </button>
                         )}
 
-                        <button onClick={() => { navigate("/help"); setActiveDropdown(null); }}>
+                        <button
+                          onClick={() => {
+                            navigate("/help");
+                            setActiveDropdown(null);
+                          }}
+                        >
                           <HelpCircle size={15} /> Help & Support
                         </button>
                       </div>
@@ -303,12 +342,12 @@ function Header() {
                 </div>
               ) : (
                 <div className="auth-buttons">
-                  <button
+                  {/* <button
                     className="btn-login"
                     onClick={() => navigate("/signin")}
                   >
                     Sign In
-                  </button>
+                  </button> */}
                   <button
                     className="btn-signup"
                     onClick={() => navigate("/signup")}
@@ -337,7 +376,7 @@ function Header() {
       <aside className={`side-panel ${isSidebarOpen ? "open" : ""}`}>
         <div className="side-header">
           <div className="side-logo">
-            <img src={logoImage} style={{width:"60%"}}/>
+            <img src={logoImage} style={{ width: "60%" }} />
           </div>
           <button onClick={() => setIsSidebarOpen(false)}>
             <X size={24} />

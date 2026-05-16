@@ -23,7 +23,7 @@ export const getAppointmentsBySHopId = (shopId) => {
         expert: experts,
         slot: slots,
       })
-      .from(appointments)
+      .from(appointmesnts)
       .innerJoin(users, eq(appointments.customerId, users.id))
       .innerJoin(experts, eq(appointments.expertId, experts.id))
       .innerJoin(slots, eq(appointments.slotId, slots.id))

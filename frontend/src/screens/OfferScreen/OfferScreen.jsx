@@ -367,7 +367,7 @@ function OfferScreen() {
                       <option value="">Choose a service...</option>
                       {allServices.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.name} (${s.rate})
+                          {s.name} ({s.rate})
                         </option>
                       ))}
                     </select>

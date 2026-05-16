@@ -1,3 +1,4 @@
+import { createUserService } from "../users/user.service.js";
 import {
   changePasswordService,
   googleSignInService,
@@ -7,13 +8,42 @@ import {
   updateProfileService,
 } from "./auth.service.js";
 
+// export const googleSignIn = async (req, res) => {
+//   try {
+//     const { idToken } = req.body;
+//     const result = await googleSignInService(idToken);
+//     res.status(200).json({ success: true, data: result });
+//   } catch (error) {
+//     res.status(401).json({ success: false, message: error.message || "Invalid Google token" });
+//   }
+// };
+
 export const googleSignIn = async (req, res) => {
   try {
-    const { idToken } = req.body;
+    const { idToken, userType } = req.body;
+
     const result = await googleSignInService(idToken);
-    res.status(200).json({ success: true, data: result });
+
+    if (result && result.user) {
+      let userData = {
+        email: result.user.email ?? "",
+        username: result.user.name ?? "",
+        profileImage: result.user.picture ?? DEFAULT_IMAGE_URL,
+        userType,
+      };
+      await createUserService(userData);
+    }
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
   } catch (error) {
-    res.status(401).json({ success: false, message: error.message || "Invalid Google token" });
+    console.error("DETAILED BACKEND ERROR:", error);
+    res.status(401).json({
+      success: false,
+      message: error.message || "Invalid Google token",
+    });
   }
 };
 

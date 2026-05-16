@@ -11,12 +11,16 @@ import {
 import { shopOwners } from "../../db/schemas/shop-owners.js";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/index.js";
+import { createUser } from "../users/user.controller.js";
 
 const router = express.Router();
 
 router.post("/register", register);
 router.post("/login", login);
+// router.post("/signin/google", googleSignIn);
+
 router.post("/signin/google", googleSignIn);
+router.post("/signup", createUser);
 
 router.get("/me", authMiddleware, (req, res) => {
   const u = req.user;

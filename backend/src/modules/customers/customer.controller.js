@@ -21,7 +21,7 @@ import { notifications } from "../../db/schemas/notifications.js";
 export const getAllShops = async (req, res) => {
   const shops = await getAllShopsService();
   res.json({ shops });
-}; 
+};
 
 export const getShopById = async (req, res) => {
   try {
@@ -65,6 +65,7 @@ export const getSlotsByShopId = async (req, res) => {
 
 export const createBooking = async (req, res) => {
   try {
+    console.log("*****************88", req.body);
     const shopId = Number(req.body.shopId);
     const slotId = Number(req.body.slotId);
     const expertId = Number(req.body.expertId);
@@ -85,6 +86,8 @@ export const createBooking = async (req, res) => {
       rate: bookingRate,
     };
 
+    console.log("dataToUpdate----------------", dataToUpdate);
+
     // const existingBooking = await findExistingBookingService(dataToUpdate);
 
     // if (existingBooking) {
@@ -95,8 +98,10 @@ export const createBooking = async (req, res) => {
     // }
 
     const result = await createBookingService(dataToUpdate);
+    console.log("result------------------", result ? result : "no result");
     res.status(201).send({ appointment: result });
   } catch (error) {
+    console.log("RRR0R-----------------", error);
     res.status(400).json({
       message: error instanceof Error ? error.message : "Unknown error",
     });
@@ -238,7 +243,10 @@ export const getCustomerNotifications = async (req, res) => {
 export const markNotificationRead = async (req, res) => {
   try {
     const id = Number(req.params.id);
-    await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, id));
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ message: e.message });

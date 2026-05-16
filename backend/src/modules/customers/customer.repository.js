@@ -64,7 +64,12 @@ export const getAllExpertsByShopIdDB = async (shopId) => {
 };
 
 export const createBookingDB = (data) => {
-  return db.insert(appointments).values(data);
+  try {
+    console.log("DATA----------------", data);
+    return db.insert(appointments).values(data);
+  } catch (error) {
+    console.log("Error----------------", error);
+  }
 };
 
 export const findBookingDB = (data) => {

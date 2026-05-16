@@ -16,6 +16,9 @@ export const usersTypes = {
   },
 };
 
+export const DEFAULT_NO_IMAGE =
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOt5Z1aROTo80uiniDmCnnG56CJg4Zpu555Q&s";
+
 export const appointmentStatusEnums = {
   PENDING: "pending",
   REJECTED: "rejected",

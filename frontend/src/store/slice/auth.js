@@ -5,7 +5,7 @@ import api from "../../utils/api.util";
 
 export const googleLogin = createAsyncThunk(
   "auth/googleLogin",
-  async (_, { rejectWithValue }) => {
+  async (_, { rejectWithValue }) => { 
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
