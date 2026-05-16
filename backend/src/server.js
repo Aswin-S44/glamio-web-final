@@ -18,11 +18,31 @@ const app = express();
 
 const port = process.env.PORT || 5000;
 
-var corsOptions = {
-  origin:
-    process.env.NODE_ENV === "development"
-      ? process.env.FRONTEND_URL_LOCAL
-      : process.env.FRONTEND_URL_PROD,
+// var corsOptions = {
+//   origin:
+//     process.env.NODE_ENV === "development"
+//       ? process.env.FRONTEND_URL_LOCAL
+//       : process.env.FRONTEND_URL_PROD,
+//   optionsSuccessStatus: 200,
+// };
+
+const allowedOrigins =
+  process.env.NODE_ENV === "development"
+    ? [
+        process.env.FRONTEND_URL_LOCAL,
+        "http://localhost:3000",
+        "http://localhost:8081",
+      ]
+    : [process.env.FRONTEND_URL_PROD, "http://localhost:3000"];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   optionsSuccessStatus: 200,
 };
 
@@ -41,7 +61,7 @@ app.use("/api/v1/slots", slotRouter);
 app.use("/api/v1/appointments", appointmentRouter);
 app.use("/api/v1/shops", shopsRouter);
 app.use("/api/v1/customer", customerRouter);
-app.use("/api/notifications", notificationRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
 
 app.get("/health", (req, res) => {
   res.send("Nodejs server is running....");

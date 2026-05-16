@@ -1,4 +1,4 @@
-export const BASE_URL = "http://localhost:5000/api/v1";
+export const BASE_URL = "http://167.71.234.192:5000/api/v1";
 
 // export const BASE_URL = "https://glamio-web-final.onrender.com/api/v1";
 

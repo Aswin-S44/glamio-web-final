@@ -68,19 +68,24 @@ export const updateSlotById = async (req, res) => {
     const userId = req.user?.id;
 
     if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     const shopId = await getShopIdByUserId(userId);
 
     if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
+      return res.status(401).json({ message: "Shop not found" });
     }
 
     await updateSlotService(Number(req.params.id), shopId, req.body);
-    res.json({ message: "Slots updated successfully" });
+
+    return res.json({
+      message: "Slots updated successfully",
+    });
   } catch (e) {
-    res.status(400).json({ message: e.message });
+    return res.status(400).json({
+      message: e.message,
+    });
   }
 };
 
