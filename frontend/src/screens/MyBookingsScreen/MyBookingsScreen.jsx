@@ -1,131 +1,132 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Calendar, Clock, MapPin, Star, ChevronRight, Sparkles,
-  CheckCircle, XCircle, AlertCircle, Package, ArrowRight
+  Calendar,
+  Clock,
+  MapPin,
+  Star,
+  ChevronRight,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Package,
+  ArrowRight,
 } from "lucide-react";
 import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
-import { BASE_URL } from "../../constants/urls";
+import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 import { useAuth } from "../../context/AuthContext";
+import { normalizeCustomerBooking } from "../../utils/api.util";
 import "./MyBookingsScreen.css";
 
-const DUMMY_BOOKINGS = [
-  {
-    id: 1,
-    status: "confirmed",
-    shopName: "Glamour Studio",
-    shopAddress: "12, MG Road, Bangalore",
-    shopImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=200",
-    expertName: "Priya Sharma",
-    date: "2026-05-05",
-    time: "11:00",
-    services: [{ name: "Hair Smoothing", duration: 90, rate: 1200 }, { name: "Hair Wash", duration: 20, rate: 200 }],
-    total: 1400,
-  },
-  {
-    id: 2,
-    status: "completed",
-    shopName: "The Glow Lab",
-    shopAddress: "8, Koramangala, Bangalore",
-    shopImage: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=200",
-    expertName: "Anjali Rao",
-    date: "2026-04-20",
-    time: "14:00",
-    services: [{ name: "Bridal Makeup", duration: 120, rate: 3500 }],
-    total: 3500,
-  },
-  {
-    id: 3,
-    status: "cancelled",
-    shopName: "Velvet Beauty Lounge",
-    shopAddress: "45, Indiranagar, Bangalore",
-    shopImage: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=200",
-    expertName: "Sunita Verma",
-    date: "2026-04-10",
-    time: "16:30",
-    services: [{ name: "Facial", duration: 60, rate: 800 }],
-    total: 800,
-  },
-];
-
 const STATUS_CONFIG = {
-  pending:   { label: "Pending",   icon: <AlertCircle size={14} />, color: "amber" },
-  accepted:  { label: "Confirmed", icon: <CheckCircle size={14} />, color: "green" },
-  completed: { label: "Completed", icon: <CheckCircle size={14} />, color: "blue"  },
-  rejected:  { label: "Cancelled", icon: <XCircle     size={14} />, color: "red"   },
-  on_hold:   { label: "On Hold",   icon: <AlertCircle size={14} />, color: "amber" },
-  confirmed: { label: "Confirmed", icon: <CheckCircle size={14} />, color: "green" },
-  cancelled: { label: "Cancelled", icon: <XCircle     size={14} />, color: "red"   },
+  pending: { label: "Pending", icon: <AlertCircle size={14} />, color: "amber" },
+  accepted: {
+    label: "Confirmed",
+    icon: <CheckCircle size={14} />,
+    color: "green",
+  },
+  completed: {
+    label: "Completed",
+    icon: <CheckCircle size={14} />,
+    color: "blue",
+  },
+  rejected: {
+    label: "Cancelled",
+    icon: <XCircle size={14} />,
+    color: "red",
+  },
+  on_hold: { label: "On Hold", icon: <AlertCircle size={14} />, color: "amber" },
+  confirmed: {
+    label: "Confirmed",
+    icon: <CheckCircle size={14} />,
+    color: "green",
+  },
+  cancelled: {
+    label: "Cancelled",
+    icon: <XCircle size={14} />,
+    color: "red",
+  },
 };
 
 const TABS = ["All", "Pending", "Confirmed", "Completed", "Cancelled"];
 
 export default function MyBookingsScreen() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("All");
-  const [usingDummy, setUsingDummy] = useState(false);
+  const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     const fetchBookings = async () => {
       if (!token) {
-        setBookings(DUMMY_BOOKINGS);
-        setUsingDummy(true);
+        setBookings([]);
         setLoading(false);
         return;
       }
+
       try {
-        const res = await fetch(`${BASE_URL}/appointments/my`, {
+        setError("");
+        const res = await fetch(`${BASE_URL}/customer/appointments`, {
           headers: { Authorization: token },
         });
-        if (!res.ok) throw new Error("failed");
-        const data = await res.json();
-        const list = data.appointments || [];
-        if (list.length > 0) {
-          setBookings(list);
-        } else {
-          setBookings([]);
+
+        if (!res.ok) {
+          throw new Error("Failed to load your bookings.");
         }
-      } catch {
-        setBookings(DUMMY_BOOKINGS);
-        setUsingDummy(true);
+
+        const data = await res.json();
+        const list = Array.isArray(data?.data) ? data.data : [];
+        setBookings(list.map(normalizeCustomerBooking));
+      } catch (err) {
+        setBookings([]);
+        setError(err.message || "Failed to load your bookings.");
       } finally {
         setLoading(false);
       }
     };
+
     fetchBookings();
   }, [token]);
 
   const STATUS_TAB_MAP = {
     Confirmed: ["accepted", "confirmed"],
     Cancelled: ["rejected", "cancelled"],
-    Pending:   ["pending", "on_hold"],
+    Pending: ["pending", "on_hold"],
     Completed: ["completed"],
   };
 
-  const filtered = bookings.filter((b) => {
+  const filtered = bookings.filter((booking) => {
     if (activeTab === "All") return true;
     const allowed = STATUS_TAB_MAP[activeTab] || [activeTab.toLowerCase()];
-    return allowed.includes(b.status?.toLowerCase());
+    return allowed.includes(booking.status?.toLowerCase());
   });
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("en-IN", { weekday: "short", day: "numeric", month: "long", year: "numeric" });
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("en-IN", {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
   };
 
-  const formatTime = (t) => {
-    if (!t) return "";
-    const [h, m] = t.split(":");
-    const d = new Date();
-    d.setHours(+h, +m);
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true });
+  const formatTime = (time) => {
+    if (!time) return "";
+    const [hours, minutes] = time.split(":");
+    const date = new Date();
+    date.setHours(+hours, +minutes);
+    return date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    });
   };
 
   return (
@@ -134,7 +135,9 @@ export default function MyBookingsScreen() {
 
       <div className="bookings-hero">
         <div className="bookings-hero-inner">
-          <span className="bookings-hero-tag"><Calendar size={14} /> My Bookings</span>
+          <span className="bookings-hero-tag">
+            <Calendar size={14} /> My Bookings
+          </span>
           <h1>Your Appointments</h1>
           <p>Track and manage all your beauty appointments</p>
         </div>
@@ -152,21 +155,14 @@ export default function MyBookingsScreen() {
               <span className="tab-count">
                 {tab === "All"
                   ? bookings.length
-                  : bookings.filter((b) => {
+                  : bookings.filter((booking) => {
                       const allowed = STATUS_TAB_MAP[tab] || [tab.toLowerCase()];
-                      return allowed.includes(b.status?.toLowerCase());
+                      return allowed.includes(booking.status?.toLowerCase());
                     }).length}
               </span>
             </button>
           ))}
         </div>
-
-        {/* {usingDummy && (
-          <div className="demo-notice">
-            <Sparkles size={14} />
-            Demo data — sign in and connect backend to see your real bookings
-          </div>
-        )} */}
 
         {loading ? (
           <div className="bookings-list">
@@ -180,6 +176,24 @@ export default function MyBookingsScreen() {
                 </div>
               </div>
             ))}
+          </div>
+        ) : !isAuthenticated ? (
+          <div className="bookings-empty">
+            <Package size={56} />
+            <h3>Sign in to see your bookings</h3>
+            <p>Your upcoming and past appointments will appear here after login.</p>
+            <button className="btn" onClick={() => navigate("/signin")}>
+              Sign In <ArrowRight size={16} />
+            </button>
+          </div>
+        ) : error ? (
+          <div className="bookings-empty">
+            <Package size={56} />
+            <h3>Unable to load bookings</h3>
+            <p>{error}</p>
+            <button className="btn" onClick={() => window.location.reload()}>
+              Try Again
+            </button>
           </div>
         ) : filtered.length === 0 ? (
           <div className="bookings-empty">
@@ -202,7 +216,9 @@ export default function MyBookingsScreen() {
                 booking={booking}
                 formatDate={formatDate}
                 formatTime={formatTime}
-                onRebook={() => navigate(`/parlour/${booking.shopId || booking.shop?.id || 1}`)}
+                onRebook={() =>
+                  navigate(`/parlour/${booking.shopId || booking.shop?.id}`)
+                }
               />
             ))}
           </div>
@@ -220,23 +236,26 @@ function BookingCard({ booking, formatDate, formatTime, onRebook }) {
   const shopName = booking.shopName || booking.shop?.parlourName || "Salon";
   const shopAddress = booking.shopAddress || booking.shop?.address || "";
   const shopImage =
-    booking.shopImage ||
-    booking.shop?.shopImage ||
-    booking.shop?.profileImage ||
-    "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200";
+    booking.shopImage || booking.shop?.shopImage || booking.shop?.profileImage || DEFAULT_NO_IMAGE;
   const expertName = booking.expertName || booking.expert?.name || "";
   const date = booking.date || booking.slot?.slotDate || "";
   const time = booking.time || booking.slot?.startTime || "";
   const total =
     booking.total ||
     booking.rate ||
-    services.reduce((s, sv) => s + (sv.rate || sv.price || 0), 0);
+    services.reduce((sum, service) => sum + (service.rate || service.price || 0), 0);
 
   return (
     <div className={`booking-card status-${status.color}`}>
       <div className="booking-card-left">
-        <img src={shopImage} alt={shopName} className="booking-shop-img"
-          onError={(e) => { e.target.src = "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=200"; }} />
+        <img
+          src={shopImage}
+          alt={shopName}
+          className="booking-shop-img"
+          onError={(e) => {
+            e.target.src = DEFAULT_NO_IMAGE;
+          }}
+        />
       </div>
 
       <div className="booking-card-center">
@@ -267,8 +286,10 @@ function BookingCard({ booking, formatDate, formatTime, onRebook }) {
         </div>
 
         <div className="booking-services">
-          {services.slice(0, 3).map((s, i) => (
-            <span key={i} className="booking-service-chip">{s.name}</span>
+          {services.slice(0, 3).map((service, i) => (
+            <span key={i} className="booking-service-chip">
+              {service.name}
+            </span>
           ))}
           {services.length > 3 && (
             <span className="booking-service-chip more">+{services.length - 3} more</span>
@@ -279,7 +300,7 @@ function BookingCard({ booking, formatDate, formatTime, onRebook }) {
       <div className="booking-card-right">
         <div className="booking-total">
           <span className="total-label">Total</span>
-          <span className="total-amount">₹{total.toLocaleString()}</span>
+          <span className="total-amount">Rs {Number(total || 0).toLocaleString()}</span>
         </div>
 
         {booking.status === "completed" && (
@@ -287,7 +308,10 @@ function BookingCard({ booking, formatDate, formatTime, onRebook }) {
             Rebook <ChevronRight size={14} />
           </button>
         )}
-        {(booking.status === "accepted" || booking.status === "confirmed" || booking.status === "pending" || booking.status === "on_hold") && (
+        {(booking.status === "accepted" ||
+          booking.status === "confirmed" ||
+          booking.status === "pending" ||
+          booking.status === "on_hold") && (
           <button className="view-btn" onClick={onRebook}>
             View <ChevronRight size={14} />
           </button>

@@ -1,22 +1,20 @@
-import { and, desc, eq, inArray, sum } from "drizzle-orm";
 import {
   BookingService,
   createBookingService,
+  fetchExpertById,
   getAllExpertsByShopIdService,
   getAllServices,
   getAllShopsService,
+  getBookingContextService,
+  getCustomerAppointmentsService,
+  normalizeServiceIds,
   getServiceDetailsByIdService,
   getShopByIdService,
   getSHopReviewsAndImageServices,
+  updateUserService,
 } from "./customer.service.js";
 import { SlotService } from "../slots/slot.service.js";
-import { services } from "../../db/schemas/services.js";
-import { experts } from "../../db/schemas/experts.js";
-import { slots } from "../../db/schemas/slots.js";
-import { shopOwners } from "../../db/schemas/shop-owners.js";
-import { db } from "../../db/index.js";
-import { appointmentStatuses } from "../../constants/constants.js";
-import { notifications } from "../../db/schemas/notifications.js";
+import { updateUserSchema } from "./customer.validation.js";
 
 export const getAllShops = async (req, res) => {
   const shops = await getAllShopsService();
@@ -33,8 +31,25 @@ export const getShopById = async (req, res) => {
 };
 
 export const getExpertsByShopId = async (req, res) => {
-  const experts = await getAllExpertsByShopIdService(Number(req.params.shopId));
-  res.json({ experts });
+  try {
+    const rawServiceIds = req.query.serviceIds ?? req.query.serviceId;
+    const serviceIds =
+      typeof rawServiceIds === "string" && rawServiceIds.length
+        ? rawServiceIds.split(",")
+        : Array.isArray(rawServiceIds)
+        ? rawServiceIds
+        : [];
+
+    const experts = await getAllExpertsByShopIdService(
+      Number(req.params.shopId),
+      serviceIds
+    );
+    res.json({ experts });
+  } catch (error) {
+    res.status(400).json({
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 };
 
 export const getSlotsByShopId = async (req, res) => {
@@ -70,11 +85,15 @@ export const createBooking = async (req, res) => {
     const slotId = Number(req.body.slotId);
     const expertId = Number(req.body.expertId);
     const customerId = Number(req.user?.id);
-    const appointmentStatus = appointmentStatuses.PENDING;
-    const selectedServices = req.body.serviceIds;
-    const bookingRate = await BookingService.calculateTotalRate(
-      selectedServices
+    const selectedServices = BookingService.normalizeServiceIds(
+      req.body.serviceIds
     );
+    const bookingContext = await getBookingContextService({
+      shopId,
+      slotId,
+      expertId,
+      serviceIds: selectedServices,
+    });
 
     const dataToUpdate = {
       statusId: 1,
@@ -82,8 +101,8 @@ export const createBooking = async (req, res) => {
       expertId,
       slotId,
       shopId,
-      serviceIds: selectedServices,
-      rate: bookingRate,
+      serviceIds: bookingContext.serviceIds,
+      rate: bookingContext.totalRate,
     };
 
     console.log("dataToUpdate----------------", dataToUpdate);
@@ -129,8 +148,8 @@ export const getShopReviewsAndImages = async (req, res) => {
 
 export const getAllShopsServices = async (req, res) => {
   try {
-    let limit = 20;
-    let offset = 0;
+    let limit = 1;
+    let offset = 10;
     const result = await getAllServices(limit, offset);
 
     res.status(200).json(result);
@@ -144,7 +163,7 @@ export const getAllShopsServices = async (req, res) => {
 export const getOrderSummary = async (req, res) => {
   try {
     const { shopId, slotId, expertId } = req.params;
-    const rawServiceId = req.query.serviceId;
+    const rawServiceId = req.query.serviceId ?? req.query.serviceIds;
 
     if (
       rawServiceId === undefined ||
@@ -154,60 +173,28 @@ export const getOrderSummary = async (req, res) => {
       return;
     }
 
-    const serviceIds = (
+    const serviceIds = normalizeServiceIds(
       Array.isArray(rawServiceId) ? rawServiceId : rawServiceId.split(",")
-    )
-      .map(Number)
-      .filter((id) => !isNaN(id));
+    );
 
     if (!serviceIds.length) {
       res.status(400).json({ message: "Invalid serviceId" });
       return;
     }
 
-    const [shop] = await db
-      .select()
-      .from(shopOwners)
-      .where(eq(shopOwners.id, Number(shopId)));
-
-    const [slot] = await db
-      .select()
-      .from(slots)
-      .where(
-        and(eq(slots.id, Number(slotId)), eq(slots.shopId, Number(shopId)))
-      );
-
-    const [expert] = await db
-      .select()
-      .from(experts)
-      .where(
-        and(
-          eq(experts.id, Number(expertId)),
-          eq(experts.shopId, Number(shopId))
-        )
-      );
-
-    const selectedServices = await db
-      .select()
-      .from(services)
-      .where(
-        and(
-          eq(services.shopId, Number(shopId)),
-          inArray(services.id, serviceIds)
-        )
-      );
-
-    const [total] = await db
-      .select({ totalRate: sum(services.rate) })
-      .from(services)
-      .where(inArray(services.id, serviceIds));
+    const bookingContext = await getBookingContextService({
+      shopId: Number(shopId),
+      slotId: Number(slotId),
+      expertId: Number(expertId),
+      serviceIds,
+    });
 
     res.status(200).json({
-      shop,
-      slot,
-      expert,
-      services: selectedServices,
-      totalRate: Number(total?.totalRate ?? 0),
+      shop: bookingContext.shop,
+      slot: bookingContext.slot,
+      expert: bookingContext.expert,
+      services: bookingContext.services,
+      totalRate: bookingContext.totalRate,
     });
   } catch (error) {
     res.status(400).json({
@@ -225,30 +212,67 @@ export const getServiceDetailsById = async (req, res) => {
   }
 };
 
-export const getCustomerNotifications = async (req, res) => {
+export const updateUserController = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const list = await db
-      .select()
-      .from(notifications)
-      .where(eq(notifications.toId, userId))
-      .orderBy(desc(notifications.createdAt))
-      .limit(50);
-    res.json({ notifications: list });
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+    const userId = Number(req.user?.id);
+
+    const validatedData = updateUserSchema.parse(req.body);
+
+    const updatedUser = await updateUserService(userId, validatedData);
+
+    return res.status(200).json({
+      success: true,
+      message: "User updated successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-export const markNotificationRead = async (req, res) => {
+export const getCustomerAppointments = async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    await db
-      .update(notifications)
-      .set({ isRead: true })
-      .where(eq(notifications.id, id));
-    res.json({ success: true });
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Unauthorized",
+      });
+    }
+
+    const appointments = await getCustomerAppointmentsService(userId);
+
+    return res.json({
+      message: "Appointments fetched successfully",
+      data: appointments,
+    });
   } catch (e) {
-    res.status(500).json({ message: e.message });
+    return res.status(400).json({
+      message: e.message,
+    });
+  }
+};
+
+export const getExpertDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const expertId = parseInt(id);
+
+    if (isNaN(expertId)) {
+      return res.status(400).json({ message: "Invalid expert ID" });
+    }
+
+    const data = await fetchExpertById(expertId);
+
+    if (!data) {
+      return res.status(404).json({ message: "Expert not found" });
+    }
+
+    return res.status(200).json(data);
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
   }
 };

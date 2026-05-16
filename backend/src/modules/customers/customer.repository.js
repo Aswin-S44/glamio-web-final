@@ -1,4 +1,4 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 
 import { users } from "../../db/schemas/users.js";
 import { shopOwners } from "../../db/schemas/shop-owners.js";
@@ -7,38 +7,63 @@ import { services } from "../../db/schemas/services.js";
 import { offers } from "../../db/schemas/offers.js";
 import { experts } from "../../db/schemas/experts.js";
 import { appointments } from "../../db/schemas/appointments.js";
+import { appointmentServices } from "../../db/schemas/appointment_services.js";
 import { db } from "../../db/index.js";
+import { category } from "../../db/schemas/category.js";
+import { slots } from "../../db/schemas/slots.js";
+import { appointmentStatus } from "../../db/schemas/appointment_status.js";
 
 export const getAllShopsDB = async () => {
-  // Query FROM shopOwners (source of truth) — avoids missing shops
-  // whose users have the wrong userTypeId.
   const result = await db
     .select({
       user: users,
       shop: shopOwners,
     })
-    .from(shopOwners)
-    .leftJoin(users, eq(shopOwners.userId, users.id))
-    .where(
-      and(
-        eq(shopOwners.isOnboarded, true),
-        eq(shopOwners.isProfileCompleted, true)
-      )
-    );
+    .from(users)
+    .where(eq(users.userTypeId, DEFAULT_SHOP_ID))
+    .leftJoin(shopOwners, eq(shopOwners.userId, users.id));
 
   return result ?? [];
 };
+// export const getShopByIdDB = async (id) => {
+//   const rows = await db
+//     .select({
+//       user: users,
+//       shop: shopOwners,
+//       service: services,
+//       offer: offers,
+//     })
+//     .from(users)
+//     .leftJoin(shopOwners, eq(shopOwners.userId, users.id))
+//     .leftJoin(services, eq(services.shopId, shopOwners.id))
+//     .leftJoin(offers, eq(offers.shopId, shopOwners.id))
+//     .where(eq(shopOwners.id, id));
+
+//   if (!rows.length) return null;
+
+//   const { user, shop } = rows[0];
+
+//   return {
+//     user,
+//     shop,
+//     services: rows.map((r) => r.service).filter(Boolean),
+//     offers: rows.map((r) => r.offer).filter(Boolean),
+//   };
+// };
+
 export const getShopByIdDB = async (id) => {
   const rows = await db
     .select({
       user: users,
       shop: shopOwners,
       service: services,
+      category: category,
       offer: offers,
     })
     .from(users)
     .leftJoin(shopOwners, eq(shopOwners.userId, users.id))
     .leftJoin(services, eq(services.shopId, shopOwners.id))
+    .leftJoin(category, eq(category.id, services.categoryId))
     .leftJoin(offers, eq(offers.shopId, shopOwners.id))
     .where(eq(shopOwners.id, id));
 
@@ -49,7 +74,16 @@ export const getShopByIdDB = async (id) => {
   return {
     user,
     shop,
-    services: rows.map((r) => r.service).filter(Boolean),
+    services: rows
+      .map((r) =>
+        r.service
+          ? {
+              ...r.service,
+              category: r.category,
+            }
+          : null
+      )
+      .filter(Boolean),
     offers: rows.map((r) => r.offer).filter(Boolean),
   };
 };
@@ -64,12 +98,26 @@ export const getAllExpertsByShopIdDB = async (shopId) => {
 };
 
 export const createBookingDB = (data) => {
-  try {
-    console.log("DATA----------------", data);
-    return db.insert(appointments).values(data);
-  } catch (error) {
-    console.log("Error----------------", error);
-  }
+  const { serviceIds, ...appointmentData } = data;
+
+  return db.transaction(async (tx) => {
+    const [appointment] = await tx
+      .insert(appointments)
+      .values({
+        ...appointmentData,
+        serviceIds,
+      })
+      .returning();
+
+    await tx.insert(appointmentServices).values(
+      serviceIds.map((serviceId) => ({
+        appointmentId: appointment.id,
+        serviceId,
+      }))
+    );
+
+    return appointment;
+  });
 };
 
 export const findBookingDB = (data) => {
@@ -91,4 +139,90 @@ export const findBookingDB = (data) => {
 
 export const getServiceDetailsByIdDB = (id) => {
   return db.select().from(services).where(eq(services.id, id)).limit(1);
+};
+
+export const getShopOwnerByIdDB = async (shopId) => {
+  const [shop] = await db
+    .select()
+    .from(shopOwners)
+    .where(eq(shopOwners.id, shopId))
+    .limit(1);
+
+  return shop ?? null;
+};
+
+export const getSlotByIdAndShopIdDB = async (slotId, shopId) => {
+  const [slot] = await db
+    .select()
+    .from(slots)
+    .where(and(eq(slots.id, slotId), eq(slots.shopId, shopId)))
+    .limit(1);
+
+  return slot ?? null;
+};
+
+export const getExpertByIdAndShopIdDB = async (expertId, shopId) => {
+  const [expert] = await db
+    .select()
+    .from(experts)
+    .where(and(eq(experts.id, expertId), eq(experts.shopId, shopId)))
+    .limit(1);
+
+  return expert ?? null;
+};
+
+export const updateUserByIdDB = async (id, data) => {
+  const updatedUser = await db
+    .update(users)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(users.id, id))
+    .returning();
+
+  return updatedUser[0];
+};
+
+export const getCustomerAppointmentsDB = async (customerId) => {
+  return await db
+    .select({
+      appointment: appointments,
+
+      expert: {
+        id: experts.id,
+        name: experts.name,
+        image: experts.image,
+        specialist: experts.specialist,
+        about: experts.about,
+      },
+
+      shop: {
+        id: shopOwners.id,
+        parlourName: shopOwners.parlourName,
+        address: shopOwners.address,
+        shopImage: shopOwners.shopImage,
+        totalRating: shopOwners.totalRating,
+      },
+
+      slot: slots,
+
+      status: appointmentStatus,
+    })
+    .from(appointments)
+
+    .leftJoin(experts, eq(appointments.expertId, experts.id))
+
+    .leftJoin(shopOwners, eq(appointments.shopId, shopOwners.id))
+
+    .leftJoin(slots, eq(appointments.slotId, slots.id))
+
+    .leftJoin(
+      appointmentStatus,
+      eq(appointments.statusId, appointmentStatus.id)
+    )
+
+    .where(eq(appointments.customerId, customerId))
+
+    .orderBy(desc(appointments.createdAt));
 };

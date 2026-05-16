@@ -13,18 +13,18 @@ const ADMIN_KEY = btoa("admin@glamio.com:Admin@123");
 const AUTH_HEADER = `admin ${ADMIN_KEY}`;
 
 const TABS = [
-  { key: "pending",  label: "Pending",  icon: Clock },
+  { key: "pending", label: "Pending", icon: Clock },
   { key: "approved", label: "Approved", icon: CheckCircle },
-  { key: "all",      label: "All Shops", icon: Store },
+  { key: "all", label: "All Shops", icon: Store },
 ];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [tab, setTab]             = useState("pending");
-  const [shops, setShops]         = useState([]);
-  const [loading, setLoading]     = useState(true);
-  const [search, setSearch]       = useState("");
-  const [selected, setSelected]   = useState(null);
+  const [tab, setTab] = useState("pending");
+  const [shops, setShops] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState(null);
   const [actioning, setActioning] = useState(null);
 
   /* ── Auth guard ── */
@@ -59,16 +59,16 @@ export default function AdminDashboard() {
     const q = search.toLowerCase();
     const matchSearch =
       (s.parlourName || "").toLowerCase().includes(q) ||
-      (s.ownerEmail  || "").toLowerCase().includes(q) ||
-      (s.address     || "").toLowerCase().includes(q) ||
-      (s.ownerName   || "").toLowerCase().includes(q);
+      (s.ownerEmail || "").toLowerCase().includes(q) ||
+      (s.address || "").toLowerCase().includes(q) ||
+      (s.ownerName || "").toLowerCase().includes(q);
     if (!matchSearch) return false;
-    if (tab === "pending")  return s.isProfileCompleted && !s.isOnboarded;
+    if (tab === "pending") return s.isProfileCompleted && !s.isOnboarded;
     if (tab === "approved") return s.isOnboarded;
     return true;
   });
 
-  const pendingCount  = shops.filter(s => s.isProfileCompleted && !s.isOnboarded).length;
+  const pendingCount = shops.filter(s => s.isProfileCompleted && !s.isOnboarded).length;
   const approvedCount = shops.filter(s => s.isOnboarded).length;
 
   /* ── Approve ── */
@@ -160,13 +160,13 @@ export default function AdminDashboard() {
         <div className="ad-topbar">
           <div>
             <h1 className="ad-page-title">
-              {tab === "pending"  ? "Pending Approvals" :
-               tab === "approved" ? "Approved Shops"    : "All Shops"}
+              {tab === "pending" ? "Pending Approvals" :
+                tab === "approved" ? "Approved Shops" : "All Shops"}
             </h1>
             <p className="ad-page-sub">
-              {tab === "pending"  ? `${pendingCount} shop${pendingCount !== 1 ? "s" : ""} waiting for review` :
-               tab === "approved" ? `${approvedCount} shop${approvedCount !== 1 ? "s" : ""} live on platform` :
-               `${shops.length} total registered shop${shops.length !== 1 ? "s" : ""}`}
+              {tab === "pending" ? `${pendingCount} shop${pendingCount !== 1 ? "s" : ""} waiting for review` :
+                tab === "approved" ? `${approvedCount} shop${approvedCount !== 1 ? "s" : ""} live on platform` :
+                  `${shops.length} total registered shop${shops.length !== 1 ? "s" : ""}`}
             </p>
           </div>
           <button className="ad-refresh-btn" onClick={fetchShops} disabled={loading}>
@@ -177,10 +177,10 @@ export default function AdminDashboard() {
 
         {/* Stats row */}
         <div className="ad-stats-row">
-          <StatCard color="#f59e0b" bg="#fffbeb" icon={Clock}        label="Pending"       value={pendingCount} />
-          <StatCard color="#10b981" bg="#ecfdf5" icon={CheckCircle}  label="Approved"      value={approvedCount} />
-          <StatCard color="#6366f1" bg="#eef2ff" icon={Store}        label="Total Shops"   value={shops.length} />
-          <StatCard color="#c2185b" bg="#fff0f6" icon={Users}        label="Incomplete"    value={shops.filter(s => !s.isProfileCompleted).length} />
+          <StatCard color="#f59e0b" bg="#fffbeb" icon={Clock} label="Pending" value={pendingCount} />
+          <StatCard color="#10b981" bg="#ecfdf5" icon={CheckCircle} label="Approved" value={approvedCount} />
+          <StatCard color="#6366f1" bg="#eef2ff" icon={Store} label="Total Shops" value={shops.length} />
+          <StatCard color="#c2185b" bg="#fff0f6" icon={Users} label="Incomplete" value={shops.filter(s => !s.isProfileCompleted).length} />
         </div>
 
         {/* Search */}
@@ -256,7 +256,7 @@ function StatCard({ icon: Icon, label, value, color, bg }) {
 
 /* ── Shop card ── */
 function ShopCard({ shop, actioning, onView, onApprove, onReject }) {
-  const isPending  = shop.isProfileCompleted && !shop.isOnboarded;
+  const isPending = shop.isProfileCompleted && !shop.isOnboarded;
   const isApproved = shop.isOnboarded;
   const statusLabel = isApproved ? "Approved" : isPending ? "Pending" : "Incomplete";
   const statusClass = isApproved ? "approved" : isPending ? "pending" : "incomplete";
@@ -319,7 +319,7 @@ function ShopCard({ shop, actioning, onView, onApprove, onReject }) {
 
 /* ── Shop drawer ── */
 function ShopDrawer({ shop, actioning, onClose, onApprove, onReject }) {
-  const isPending  = shop.isProfileCompleted && !shop.isOnboarded;
+  const isPending = shop.isProfileCompleted && !shop.isOnboarded;
   const isApproved = shop.isOnboarded;
   const statusLabel = isApproved ? "Approved" : isPending ? "Pending Approval" : "Incomplete";
   const statusClass = isApproved ? "approved" : isPending ? "pending" : "incomplete";
@@ -358,10 +358,10 @@ function ShopDrawer({ shop, actioning, onClose, onApprove, onReject }) {
           {/* Contact */}
           <div className="ad-drawer-section">
             <p className="ad-drawer-label">Owner Info</p>
-            {shop.ownerName  && <p className="ad-drawer-row"><Users size={13} /> {shop.ownerName}</p>}
-            {shop.ownerEmail && <p className="ad-drawer-row"><Mail  size={13} /> {shop.ownerEmail}</p>}
-            {shop.phone      && <p className="ad-drawer-row"><Phone size={13} /> {shop.phone}</p>}
-            {shop.address    && <p className="ad-drawer-row"><MapPin size={13} /> {shop.address}</p>}
+            {shop.ownerName && <p className="ad-drawer-row"><Users size={13} /> {shop.ownerName}</p>}
+            {shop.ownerEmail && <p className="ad-drawer-row"><Mail size={13} /> {shop.ownerEmail}</p>}
+            {shop.phone && <p className="ad-drawer-row"><Phone size={13} /> {shop.phone}</p>}
+            {shop.address && <p className="ad-drawer-row"><MapPin size={13} /> {shop.address}</p>}
           </div>
 
           {/* Gallery */}

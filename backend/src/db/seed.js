@@ -1,7 +1,12 @@
-import { appointmentStatuses, usersTypes } from "../constants/constants.js";
+import {
+  appointmentStatuses,
+  notificationTypess,
+  usersTypes,
+} from "../constants/constants.js";
 import { db } from "./index.js";
 
 import { appointmentStatus } from "./schemas/appointment_status.js";
+import { notificationTypes } from "./schemas/notification-types.js";
 import { userTypes } from "./schemas/users_types.js";
 
 async function seedDatabase() {
@@ -14,6 +19,10 @@ async function seedDatabase() {
   // Insert appointment statuese
   const appointmentStatueses = Object.values(appointmentStatuses);
   await db.insert(appointmentStatus).values(appointmentStatueses);
+
+  // Insert notification types
+  const notificationTypesss = Object.values(notificationTypess);
+  await db.insert(notificationTypes).values(notificationTypesss);
 
   console.log("Seeding completed ....");
   process.exit(0);

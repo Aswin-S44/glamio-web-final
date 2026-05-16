@@ -2,13 +2,13 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCJHlWzxilAgXfmTqlCsbmJvWnK6cc_zFE",
-  authDomain: "glamio-689aa.firebaseapp.com",
-  projectId: "glamio-689aa",
-  storageBucket: "glamio-689aa.firebasestorage.app",
-  messagingSenderId: "273666754104",
-  appId: "1:273666754104:web:a7f8ef556f791b89ee48cd",
-  measurementId: "G-T0L2C5EX9C",
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_FIREBASE_APP_ID,
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
 
 const app = initializeApp(firebaseConfig);

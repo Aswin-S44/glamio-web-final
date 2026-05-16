@@ -1,35 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../config/firebase";
-import api from "../../utils/api.util";
+import { completeGoogleAuth } from "../../services/auth.service";
 
 export const googleLogin = createAsyncThunk(
   "auth/googleLogin",
-  async (_, { rejectWithValue }) => { 
+  async (userType = "shop", { rejectWithValue }) => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-
       const idToken = await result.user.getIdToken();
-
-      const response = await api.post("/auth/signin/google", {
-        idToken,
-      });
-
-      if (response && response.data.data) {
-        let dataToSignup = {
-          email: response.data.data.user.email,
-          username: response.data.data.user.name,
-          profileImage: response.data.data.user.picture,
-          userType: "shop",
-        };
-
-        const userResponse = await api.post("/auth/signup", dataToSignup);
-
-        if (userResponse && userResponse.data.success) {
-          return userResponse.data;
-        }
-      }
+      return await completeGoogleAuth({ idToken, userType });
     } catch (error) {
       return rejectWithValue(
         error.response?.data?.message || "Google sign-in failed"

@@ -1,7 +1,6 @@
 import { getShopIdByUserId } from "../slots/slot.service.js";
 import {
   getAppointmentByAppointmentId,
-  getAppointmentsByCustomerId,
   getAppointmentsById,
   getAppointmentsBySHopId,
   getStatusIdByName,
@@ -10,11 +9,7 @@ import {
 
 export const getAppointmentService = async (shopId) => {
   return await getAppointmentsBySHopId(shopId);
-};
-
-export const getCustomerAppointmentsService = async (customerId) => {
-  return await getAppointmentsByCustomerId(customerId);
-};
+}; 
 
 export const getAppointmentById = async (id) => {
   const result = await getAppointmentByAppointmentId(id);

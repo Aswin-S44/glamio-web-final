@@ -1,38 +1,31 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import admin from "../../config/firebase.js";
-import { createUserService } from "../users/user.service.js";
-import { db } from "../../db/index.js";
-import { users } from "../../db/schemas/users.js";
-import { eq } from "drizzle-orm";
-import { DEFAULT_CUSTOMER_ID } from "../../constants/constants.js";
-
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export const googleSignInService = async (idToken) => {
-  if (!idToken) throw new Error("ID token is required");
+  if (!idToken) {
+    throw new Error("ID token is required");
+  }
 
   const decodedToken = await admin.auth().verifyIdToken(idToken);
+
   const { uid, email, name, picture } = decodedToken;
 
-  if (!email) throw new Error("Email not found in Google token");
+  if (!email) {
+    throw new Error("Email not found in Google token");
+  }
 
-  const upserted = await createUserService({
-    email,
-    username: name || email.split("@")[0],
-    profileImage: picture,
-    userType: "customer",
+  const token = jwt.sign({ uid, email }, JWT_SECRET, {
+    expiresIn: "30d",
   });
 
   return {
-    token: upserted.token,
+    token,
     user: {
       uid,
       email,
       name,
       picture,
-      shopProfile: upserted.user?.shopProfile ?? null,
-      role: upserted.user?.shopProfile ? "SHOP_OWNER" : "CUSTOMER",
     },
   };
 };

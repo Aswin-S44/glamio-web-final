@@ -48,10 +48,16 @@ export const deleteServiceDB = (id, shopId) => {
 };
 
 export const getServiceByIdDB = (id, shopId) => {
+  const conditions = [eq(services.id, id)];
+
+  if (shopId !== undefined && shopId !== null) {
+    conditions.push(eq(services.shopId, shopId));
+  }
+
   return db
     .select()
     .from(services)
-    .where(and(eq(services.id, id), eq(services.shopId, shopId)))
+    .where(and(...conditions))
     .limit(1);
 };
 
@@ -63,8 +69,31 @@ export const getServicesByIds = async (serviceIds) => {
   return db
     .select({
       id: services.id,
+      name: services.name,
       rate: services.rate,
+      duration: services.duration,
+      shopId: services.shopId,
     })
     .from(services)
     .where(inArray(services.id, serviceIds));
+};
+
+export const getServicesByIdsAndShopId = async (serviceIds, shopId) => {
+  if (!serviceIds.length) {
+    return [];
+  }
+
+  return db
+    .select({
+      id: services.id,
+      name: services.name,
+      rate: services.rate,
+      duration: services.duration,
+      shopId: services.shopId,
+      description: services.description,
+      imageUrl: services.imageUrl,
+      categoryId: services.categoryId,
+    })
+    .from(services)
+    .where(and(eq(services.shopId, shopId), inArray(services.id, serviceIds)));
 };

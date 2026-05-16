@@ -1,18 +1,27 @@
+import { uploadImage } from "../../utils/upload.js";
 import { OfferRepository } from "./offer.repository.js";
 
 export class OfferService {
   static async createOffer(shopId, data) {
-    // Block duplicate offers for the same service (not category)
-    const existing = await OfferRepository.findByService(shopId, data.serviceId);
+    const existing = await OfferRepository.findByCategory(
+      shopId,
+      data.categoryId
+    );
+
     if (existing.length) {
-      throw new Error("An offer already exists for this service");
+      throw new Error("Offer already exists for this category");
     }
 
-    return OfferRepository.create(shopId, data);
+    const imageUrl = data.image ? await uploadImage(data.image) : null;
+
+    return OfferRepository.create(shopId, {
+      ...data,
+      image: imageUrl ?? undefined,
+    });
   }
 
-  static async getOffers(shopId, { page, limit } = {}) {
-    return OfferRepository.findAllByShop(shopId, { page, limit });
+  static getOffers(shopId) {
+    return OfferRepository.findAllByShop(shopId);
   }
 
   static async getOfferById(shopId, offerId) {

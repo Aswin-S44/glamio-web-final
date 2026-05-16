@@ -9,30 +9,6 @@ import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 
-const DUMMY_DATA = {
-  shop: {
-    id: "s1",
-    parlourName: "Glamour Studio",
-    address: "12, MG Road, Bangalore",
-    totalRating: 4.8,
-    profileImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=400",
-  },
-  services: [
-    { id: 1, shopId: "s1", name: "Hair Smoothing", duration: 90, rate: 1200, category: "Hair", description: "Professional keratin treatment for silky, frizz-free hair lasting up to 6 months.", imageUrl: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400" },
-    { id: 2, shopId: "s1", name: "Bridal Makeup", duration: 120, rate: 3500, category: "Makeup", description: "Stunning bridal look with premium products including airbrush foundation and false lashes.", imageUrl: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400" },
-    { id: 3, shopId: "s1", name: "Full Body Waxing", duration: 60, rate: 800, category: "Waxing", description: "Smooth, long-lasting hair removal using premium hot wax suitable for all skin types.", imageUrl: "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400" },
-    { id: 4, shopId: "s1", name: "Facial (Gold)", duration: 75, rate: 1500, category: "Skin", description: "Rejuvenating gold facial with deep cleansing, massage and glow-boosting mask.", imageUrl: "https://images.unsplash.com/photo-1596755389378-c31d21fd1273?w=400" },
-    { id: 5, shopId: "s1", name: "Nail Art & Extension", duration: 45, rate: 600, category: "Nails", description: "Custom nail art, gel polish and acrylic extensions by our skilled nail artists.", imageUrl: "https://images.unsplash.com/photo-1604654894610-df63bc536371?w=400" },
-    { id: 6, shopId: "s1", name: "Eyelash Extension", duration: 60, rate: 900, category: "Lashes", description: "Volume and classic lash extensions applied with precision for a natural-to-dramatic look.", imageUrl: "https://images.unsplash.com/photo-1583241800706-a895a67f2428?w=400" },
-    { id: 7, shopId: "s1", name: "Hair Colouring", duration: 90, rate: 1800, category: "Hair", description: "Global colour, highlights, ombre and balayage techniques using professional salon-grade colour.", imageUrl: "https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?w=400" },
-    { id: 8, shopId: "s1", name: "Eyebrow Threading", duration: 15, rate: 80, category: "Brows", description: "Precise eyebrow shaping and threading for perfectly defined brows every time.", imageUrl: "https://images.unsplash.com/photo-1583241800706-a895a67f2428?w=400" },
-  ],
-  offers: [
-    { serviceId: 1, offerPrice: 999 },
-    { serviceId: 4, offerPrice: 1199 },
-  ],
-};
-
 const SORT_OPTIONS = [
   { value: "popular", label: "Popular" },
   { value: "price_low", label: "Price: Low → High" },
@@ -54,34 +30,47 @@ const ServicesListingScreen = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10000 });
   const [sortBy, setSortBy] = useState("popular");
-  const [usingDummy, setUsingDummy] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchParlourAndServices = async () => {
       try {
         setLoading(true);
+        setError("");
         const res = await fetch(`${BASE_URL}/customer/shop/${id}`);
         if (!res.ok) throw new Error("Failed");
         const data = await res.json();
 
-        const svcList = data.services || [];
+        const svcList = Array.isArray(data.services)
+          ? data.services.map((service) => ({
+              ...service,
+              category:
+                typeof service.category === "object"
+                  ? service.category?.name || ""
+                  : service.category || "",
+            }))
+          : [];
+
+        const offersList = Array.isArray(data.offers)
+          ? Array.from(
+              new Map(data.offers.map((offer) => [offer.id, offer])).values()
+            )
+          : [];
+
+        setParlour(data.shop || null);
+        setServices(svcList);
+        setOffers(offersList);
         if (svcList.length > 0) {
-          setParlour(data.shop);
-          setServices(svcList);
-          setOffers(data.offers || []);
           const prices = svcList.map((s) => s.rate);
           setPriceRange({ min: Math.min(...prices), max: Math.max(...prices) });
         } else {
-          setParlour(DUMMY_DATA.shop);
-          setServices(DUMMY_DATA.services);
-          setOffers(DUMMY_DATA.offers);
-          setUsingDummy(true);
+          setPriceRange({ min: 0, max: 10000 });
         }
       } catch {
-        setParlour(DUMMY_DATA.shop);
-        setServices(DUMMY_DATA.services);
-        setOffers(DUMMY_DATA.offers);
-        setUsingDummy(true);
+        setParlour(null);
+        setServices([]);
+        setOffers([]);
+        setError("We couldn't load services for this salon right now.");
       } finally {
         setLoading(false);
       }
@@ -165,6 +154,17 @@ const ServicesListingScreen = () => {
         </div>
 
         <div className="sl-main">
+          {error && (
+            <div className="sl-empty">
+              <Scissors size={56} />
+              <h3>Unable to load services</h3>
+              <p>{error}</p>
+              <button className="btn" onClick={() => window.location.reload()}>
+                Try Again
+              </button>
+            </div>
+          )}
+
           {/* Toolbar */}
           <div className="sl-toolbar">
             <div className="sl-toolbar-left">
@@ -198,7 +198,7 @@ const ServicesListingScreen = () => {
           </div>
 
           {/* Category chips */}
-          <div className="sl-categories">
+          {!error && <div className="sl-categories">
             {categories.map((cat) => (
               <button
                 key={cat}
@@ -208,10 +208,10 @@ const ServicesListingScreen = () => {
                 {cat === "all" ? "All" : cat}
               </button>
             ))}
-          </div>
+          </div>}
 
           {/* Filter panel */}
-          {showFilters && (
+          {!error && showFilters && (
             <div className="sl-filter-panel">
               <div className="sl-filter-group">
                 <label>Price Range</label>
@@ -255,7 +255,7 @@ const ServicesListingScreen = () => {
           )}
 
           {/* Services Grid */}
-          {filteredServices.length > 0 ? (
+          {!error && filteredServices.length > 0 ? (
             <div className="sl-grid">
               {filteredServices.map((service) => {
                 const isSelected = !!selectedServices.find((s) => s.id === service.id);
@@ -332,11 +332,15 @@ const ServicesListingScreen = () => {
                 );
               })}
             </div>
-          ) : (
+          ) : !error ? (
             <div className="sl-empty">
               <Scissors size={56} />
               <h3>No services found</h3>
-              <p>Try adjusting your filters or search term</p>
+              <p>
+                {services.length === 0
+                  ? "This salon has not published any services yet."
+                  : "Try adjusting your filters or search term"}
+              </p>
               <button
                 className="btn"
                 onClick={() => { setActiveCategory("all"); setSearchTerm(""); }}
@@ -344,7 +348,7 @@ const ServicesListingScreen = () => {
                 Clear Filters
               </button>
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Sticky Bottom Bar */}

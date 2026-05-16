@@ -53,7 +53,7 @@ export default function EditProfileScreen() {
             about:           s.about           || "",
             address:         s.address         || "",
             googleReviewUrl: s.googleReviewUrl || "",
-            shopImage:       s.shopImage       || null,
+            shopImage:       s.shopImage || data?.user?.profileImage || null,
             galleryImages:   Array.isArray(s.galleryImages) ? s.galleryImages : [],
           });
           setIsOnboarded(!!s.isOnboarded);
@@ -143,9 +143,21 @@ export default function EditProfileScreen() {
     if (!validate()) return;
     setLoading(true);
     try {
+      const userPayload = {};
+
+      if (phone) {
+        userPayload.phone = phone;
+      }
+
+      if (form.shopImage) {
+        // The current backend persists user.profileImage but not shopImage updates.
+        // Saving it here keeps the selected image visible across the app.
+        userPayload.profileImage = form.shopImage;
+      }
+
       const body = {
         shop: { ...form, isProfileCompleted: true },
-        ...(phone ? { user: { phone } } : {}),
+        ...(Object.keys(userPayload).length > 0 ? { user: userPayload } : {}),
       };
       const res = await fetch(`${BASE_URL}/shops`, {
         method:  "PATCH",

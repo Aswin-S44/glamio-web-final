@@ -167,7 +167,7 @@ export default function SupportScreen() {
                 </div>
                 <div>
                   <span className="contact-label">Email Us</span>
-                  <a href="mailto:support@glamio.in" className="contact-value">support@glamio.in</a>
+                  <a href="mailto:support@orucom.in" className="contact-value">support@orucom.in</a>
                 </div>
               </div>
               <div className="contact-item">

@@ -4,10 +4,8 @@ import vid from "../../../components/Media/Video/New1.mp4";
 import GoogleImg from "../../../components/Media/Images/google.png";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { Sparkles } from "lucide-react";
-import { auth } from "../../../config/firebase";
-import { googleSignInApi } from "../../../services/auth.service";
 import { googleLogin } from "../../../store/slice/auth";
+import { useAuth } from "../../../context/AuthContext";
 import imgLogo from "../../../components/Media/Images/Logo.png";
 
 
@@ -15,14 +13,18 @@ function SignUp() {
   const [mode, setMode] = useState(null);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { setAuthenticatedUser } = useAuth();
 
   const handleGoogleSignIn = async () => {
     console.log('000000000000000')
     const res = await dispatch(googleLogin());
     if (googleLogin.fulfilled.match(res)) {
-      if (res.payload?.user?.shopProfile?.isProfileCompleted && res.payload?.user?.shopProfile?.isOnboarded) {
+      setAuthenticatedUser(res.payload);
+
+      const shop = res.payload?.user?.shopProfile || res.payload?.user?.shop;
+      if (shop?.isProfileCompleted && shop?.isOnboarded) {
         navigate("/shop/dashboard");
-      } else if (res.payload?.user?.shopProfile?.isProfileCompleted && !res.payload?.user?.shopProfile?.isOnboarded) {
+      } else if (shop?.isProfileCompleted && !shop?.isOnboarded) {
         navigate("/shop/onboard");
       } else {
         navigate("/shop/edit-profile");
@@ -37,7 +39,7 @@ function SignUp() {
 
       <div className="su-content">
         <div className="su-topbar" onClick={() => navigate("/")}>
-            <img src={imgLogo} style={{width:"12%"}}/>
+          <img src={imgLogo} style={{ width: "12%" }} />
         </div>
 
         {/* Default split view */}

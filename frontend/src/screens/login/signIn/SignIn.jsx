@@ -4,14 +4,16 @@ import GoogleImg from "../../../components/Media/Images/google.png";
 import { useNavigate } from "react-router-dom";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../../../config/firebase";
-import { googleSignInApi } from "../../../services/auth.service";
-import { Sparkles, Star, Shield, Clock, Lock } from "lucide-react";
+import { completeGoogleAuth } from "../../../services/auth.service";
+import { useAuth } from "../../../context/AuthContext";
+import { Star, Shield, Clock, Lock } from "lucide-react";
 import Swal from "sweetalert2";
 import img from "../../../components/Media/Images/model-with-smokey-eyes-golden-circle-earrings.webp";
 import imgLogo from "../../../components/Media/Images/Logo.png";
 
 function SignIn() {
   const navigate = useNavigate();
+  const { setAuthenticatedUser } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const handleGoogleSignIn = async () => {
@@ -24,13 +26,15 @@ function SignIn() {
       const idToken = await result.user.getIdToken();
 
       // Step 2: Sign in — backend upserts user and returns token + full profile
-      const signInData = await googleSignInApi(idToken);
-      const { token, user } = signInData.data;
-
-      localStorage.setItem("token", token);
+      const authData = await completeGoogleAuth({
+        idToken,
+        userType: "customer",
+      });
+      const { user } = authData;
+      setAuthenticatedUser(authData);
 
       // Step 3: Navigate based on shop profile state
-      const shop = user?.shopProfile;
+      const shop = user?.shopProfile || user?.shop;
       if (shop) {
         if (shop.isProfileCompleted && shop.isOnboarded) {
           navigate("/shop/dashboard");

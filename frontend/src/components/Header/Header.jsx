@@ -30,6 +30,10 @@ function Header() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
+  const displayName = user?.name || user?.username || "User";
+  const displayImage = user?.picture || user?.profileImage || "";
+  const shopProfile = user?.shop || user?.shopProfile;
+  const userBadge = shopProfile ? "Business" : "Customer";
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -243,28 +247,13 @@ function Header() {
                     onClick={() => toggleDropdown("profile")}
                   >
                     <div className="avatar">
-                      {user?.picture ? (
-                        <img
-                          src={user.picture}
-                          alt={user.name}
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            objectFit: "cover",
-                            borderRadius: "50%",
-                          }}
-                        />
-                      ) : (
-                        user?.name?.charAt(0) || <User size={16} />
-                      )}
+                      {displayImage
+                        ? <img src={displayImage} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                        : displayName.charAt(0) || <User size={16} />}
                     </div>
                     <div className="user-info">
-                      <span className="user-name">
-                        {user?.name?.split(" ")[0] || "User"}
-                      </span>
-                      <span className="user-badge">
-                        {user?.shop ? "Business" : "Customer"}
-                      </span>
+                      <span className="user-name">{displayName.split(" ")[0] || "User"}</span>
+                      <span className="user-badge">{userBadge}</span>
                     </div>
                     <ChevronDown
                       size={16}
@@ -279,18 +268,14 @@ function Header() {
                       {/* User header */}
                       <div className="pm-header">
                         <div className="pm-avatar">
-                          {user?.picture ? (
-                            <img src={user.picture} alt={user.name} />
-                          ) : (
-                            user?.name?.charAt(0) || "U"
-                          )}
+                          {displayImage
+                            ? <img src={displayImage} alt={displayName} />
+                            : displayName.charAt(0) || "U"}
                         </div>
                         <div className="pm-info">
-                          <h4>{user?.name || "User"}</h4>
+                          <h4>{displayName}</h4>
                           <p>{user?.email || ""}</p>
-                          <span className="pm-role">
-                            {user?.shop ? "Business" : "Customer"}
-                          </span>
+                          <span className="pm-role">{userBadge}</span>
                         </div>
                       </div>
 
@@ -305,17 +290,14 @@ function Header() {
                           <Calendar size={15} /> My Bookings
                         </button>
 
-                        {user?.shop && (
-                          <button
-                            onClick={() => {
-                              setActiveDropdown(null);
-                              const shop = user.shop;
-                              if (shop.isOnboarded) navigate("/shop/dashboard");
-                              else if (shop.isProfileCompleted)
-                                navigate("/shop/onboard");
-                              else navigate("/shop/edit-profile");
-                            }}
-                          >
+                        {shopProfile && (
+                          <button onClick={() => {
+                            setActiveDropdown(null);
+                            const shop = shopProfile;
+                            if (shop.isOnboarded) navigate("/shop/dashboard");
+                            else if (shop.isProfileCompleted) navigate("/shop/onboard");
+                            else navigate("/shop/edit-profile");
+                          }}>
                             <LayoutDashboard size={15} /> Business Dashboard
                           </button>
                         )}
@@ -385,9 +367,11 @@ function Header() {
 
         {isAuthenticated && (
           <div className="side-profile">
-            <div className="side-avatar">{user?.name?.charAt(0) || "U"}</div>
+            <div className="side-avatar">
+              {displayImage ? <img src={displayImage} alt={displayName} style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} /> : displayName.charAt(0) || "U"}
+            </div>
             <div className="side-user-info">
-              <h4>{user?.name || "User"}</h4>
+              <h4>{displayName}</h4>
               <p>{user?.email || "user@example.com"}</p>
             </div>
           </div>
@@ -442,12 +426,12 @@ function Header() {
         <div className="side-footer">
           {isAuthenticated ? (
             <>
-              {user?.shop && (
+              {shopProfile && (
                 <button
                   className="side-btn business"
                   onClick={() => {
                     setIsSidebarOpen(false);
-                    const shop = user?.shop;
+                    const shop = shopProfile;
                     if (shop?.isOnboarded) {
                       navigate("/shop/dashboard");
                     } else if (shop?.isProfileCompleted) {

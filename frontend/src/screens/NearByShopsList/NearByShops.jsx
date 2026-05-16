@@ -6,36 +6,23 @@ import {
   InfoWindow,
 } from "@react-google-maps/api";
 import {
-  Search, MapPin, Star, Loader2, Navigation,
-  X, Heart, Phone, Clock, ChevronLeft, ChevronRight,
-  Scissors, ArrowRight, AlertTriangle,
+  Search,
+  MapPin,
+  Star,
+  Loader2,
+  Navigation,
+  X,
+  Clock,
+  ChevronLeft,
+  ChevronRight,
+  Scissors,
+  ArrowRight,
+  AlertTriangle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import "./NearByShops.css";
 import Header from "../../components/Header/Header";
-import { BASE_URL } from "../../constants/urls";
-
-/* ── dummy data ── */
-const DUMMY = [
-  {
-    shop: { id: 1, parlourName: "Glamour Studio", address: "12, MG Road, Bangalore",
-      latitude: "12.9716", longitude: "77.5946", totalRating: 4.8 },
-    user: { profileImage: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=300" },
-    distance: 0.8,
-  },
-  {
-    shop: { id: 2, parlourName: "Velvet Beauty Lounge", address: "45, Indiranagar, Bangalore",
-      latitude: "12.9784", longitude: "77.6408", totalRating: 4.6 },
-    user: { profileImage: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=300" },
-    distance: 1.4,
-  },
-  {
-    shop: { id: 3, parlourName: "The Glow Lab", address: "8, Koramangala, Bangalore",
-      latitude: "12.9352", longitude: "77.6245", totalRating: 4.9 },
-    user: { profileImage: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=300" },
-    distance: 2.1,
-  },
-];
+import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 
 const haversine = (lat1, lon1, lat2, lon2) => {
   const R = 6371;
@@ -52,52 +39,60 @@ const haversine = (lat1, lon1, lat2, lon2) => {
 export default function NearByShops() {
   const navigate = useNavigate();
 
-  const [userLoc,    setUserLoc]    = useState(null);
-  const [shops,      setShops]      = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [selected,   setSelected]   = useState(null);
-  const [permErr,    setPermErr]    = useState(false);
-  const [query,      setQuery]      = useState("");
-  const [panelOpen,  setPanelOpen]  = useState(true);
+  const [userLoc, setUserLoc] = useState(null);
+  const [shops, setShops] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [permErr, setPermErr] = useState(false);
+  const [query, setQuery] = useState("");
+  const [panelOpen, setPanelOpen] = useState(true);
+  const [fetchError, setFetchError] = useState("");
 
-  const mapRef      = useRef(null);
-  const scrollRef   = useRef(null);
+  const mapRef = useRef(null);
+  const scrollRef = useRef(null);
 
-  /* ── Google Maps ── */
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
-    googleMapsApiKey:
-      process.env.REACT_APP_GOOGLE_MAPS_API_KEY ||
-      "AIzaSyBOKng2fU2So-ep_9fPWQq3cq5lKVtq5BY",
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
   });
 
-  /* ── Fetch shops ── */
   useEffect(() => {
     (async () => {
       try {
-        const res  = await fetch(`${BASE_URL}/customer/shops`);
+        setFetchError("");
+        const res = await fetch(`${BASE_URL}/customer/shops`);
+
+        if (!res.ok) {
+          throw new Error("Failed to load nearby shops");
+        }
+
         const data = await res.json();
         const list = data.shops || [];
-        setShops(list.length > 0 ? list : DUMMY);
-      } catch {
-        setShops(DUMMY);
+        setShops(Array.isArray(list) ? list : []);
+      } catch (err) {
+        setShops([]);
+        setFetchError(err.message || "Failed to load nearby shops");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  /* ── Geolocation ── */
   useEffect(() => {
-    if (!navigator.geolocation) { setPermErr(true); return; }
+    if (!navigator.geolocation) {
+      setPermErr(true);
+      return;
+    }
+
     const id = navigator.geolocation.watchPosition(
       ({ coords: { latitude, longitude } }) => {
         setUserLoc({ lat: latitude, lng: longitude });
-        setShops(prev =>
-          prev.map(item => ({
+        setShops((prev) =>
+          prev.map((item) => ({
             ...item,
             distance: haversine(
-              latitude, longitude,
+              latitude,
+              longitude,
               parseFloat(item.shop.latitude),
               parseFloat(item.shop.longitude)
             ),
@@ -107,22 +102,27 @@ export default function NearByShops() {
       () => setPermErr(true),
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 }
     );
+
     return () => navigator.geolocation.clearWatch(id);
   }, []);
 
-  /* ── Filtered + sorted ── */
   const displayed = useMemo(() => {
     const q = query.trim().toLowerCase();
     return [...shops]
-      .filter(item =>
-        !q ||
-        item.shop.parlourName.toLowerCase().includes(q) ||
-        item.shop.address.toLowerCase().includes(q)
+      .filter(
+        (item) =>
+          Number.isFinite(parseFloat(item.shop?.latitude)) &&
+          Number.isFinite(parseFloat(item.shop?.longitude))
+      )
+      .filter(
+        (item) =>
+          !q ||
+          item.shop.parlourName.toLowerCase().includes(q) ||
+          item.shop.address.toLowerCase().includes(q)
       )
       .sort((a, b) => (a.distance ?? Infinity) - (b.distance ?? Infinity));
   }, [shops, query]);
 
-  /* ── Actions ── */
   const focusShop = (item) => {
     if (mapRef.current) {
       mapRef.current.panTo({
@@ -144,7 +144,6 @@ export default function NearByShops() {
     window.open(`https://www.google.com/maps/dir/${origin}/${dest}`, "_blank");
   };
 
-  /* ── Permission error screen ── */
   if (permErr) {
     return (
       <div className="nb-error">
@@ -158,7 +157,6 @@ export default function NearByShops() {
     );
   }
 
-  /* ── Loading screen ── */
   const showLoading = !isLoaded || !userLoc;
 
   return (
@@ -170,16 +168,15 @@ export default function NearByShops() {
           <div className="nb-loading-ring">
             <Loader2 size={32} className="nb-spin" />
           </div>
-          <p>{!isLoaded ? "Loading maps…" : "Getting your location…"}</p>
+          <p>{!isLoaded ? "Loading maps..." : "Getting your location..."}</p>
         </div>
       ) : (
         <div className="nb-map-wrap">
-          {/* ── Full-screen map ── */}
           <GoogleMap
             mapContainerClassName="nb-map"
             center={userLoc}
             zoom={14}
-            onLoad={m => (mapRef.current = m)}
+            onLoad={(map) => (mapRef.current = map)}
             options={{
               disableDefaultUI: true,
               zoomControl: true,
@@ -187,11 +184,14 @@ export default function NearByShops() {
                 position: window.google?.maps?.ControlPosition?.RIGHT_BOTTOM,
               },
               styles: [
-                { featureType: "poi", elementType: "labels", stylers: [{ visibility: "off" }] },
+                {
+                  featureType: "poi",
+                  elementType: "labels",
+                  stylers: [{ visibility: "off" }],
+                },
               ],
             }}
           >
-            {/* User dot */}
             <Marker
               position={userLoc}
               icon={{
@@ -200,8 +200,7 @@ export default function NearByShops() {
               }}
             />
 
-            {/* Shop markers */}
-            {displayed.map(item => (
+            {displayed.map((item) => (
               <Marker
                 key={item.shop.id}
                 position={{
@@ -218,7 +217,6 @@ export default function NearByShops() {
               />
             ))}
 
-            {/* Info window */}
             {selected && (
               <InfoWindow
                 position={{
@@ -229,10 +227,7 @@ export default function NearByShops() {
               >
                 <div className="nb-infowin">
                   <img
-                    src={
-                      selected.user?.profileImage ||
-                      "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=80"
-                    }
+                    src={selected.user?.profileImage || DEFAULT_NO_IMAGE}
                     alt={selected.shop.parlourName}
                     className="nb-infowin-img"
                   />
@@ -241,9 +236,9 @@ export default function NearByShops() {
                     <p>{selected.shop.address?.slice(0, 48)}</p>
                     <div className="nb-infowin-meta">
                       <Star size={12} fill="#FFD700" color="#FFD700" />
-                      <span>{selected.shop.totalRating || 4.5}</span>
-                      {selected.distance && (
-                        <span className="nb-infowin-dist">· {selected.distance} km</span>
+                      <span>{selected.shop.totalRating || 0}</span>
+                      {selected.distance != null && (
+                        <span className="nb-infowin-dist">. {selected.distance} km</span>
                       )}
                     </div>
                     <button
@@ -258,15 +253,14 @@ export default function NearByShops() {
             )}
           </GoogleMap>
 
-          {/* ── Search bar (floating, top) ── */}
           <div className="nb-search-wrap">
             <div className={`nb-search ${query ? "has-value" : ""}`}>
               <Search size={17} className="nb-search-icon" />
               <input
                 type="text"
-                placeholder="Search parlours or areas…"
+                placeholder="Search parlours or areas..."
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={(e) => setQuery(e.target.value)}
               />
               {query && (
                 <button className="nb-clear" onClick={() => setQuery("")}>
@@ -276,7 +270,6 @@ export default function NearByShops() {
             </div>
           </div>
 
-          {/* ── Locate-me FAB ── */}
           <button
             className="nb-locate-fab"
             onClick={() => {
@@ -290,10 +283,8 @@ export default function NearByShops() {
             <Navigation size={20} />
           </button>
 
-          {/* ── Bottom panel ── */}
           <div className={`nb-panel ${panelOpen ? "open" : "closed"}`}>
-            {/* handle + header row */}
-            <div className="nb-panel-head" onClick={() => setPanelOpen(p => !p)}>
+            <div className="nb-panel-head" onClick={() => setPanelOpen((open) => !open)}>
               <div className="nb-handle" />
               <div className="nb-panel-title">
                 <Scissors size={15} />
@@ -301,17 +292,26 @@ export default function NearByShops() {
                 <span className="nb-count">{displayed.length}</span>
               </div>
               <button className="nb-toggle-icon">
-                {panelOpen ? <ChevronRight size={18} style={{ transform: "rotate(90deg)" }} />
-                           : <ChevronLeft size={18} style={{ transform: "rotate(90deg)" }} />}
+                {panelOpen ? (
+                  <ChevronRight size={18} style={{ transform: "rotate(90deg)" }} />
+                ) : (
+                  <ChevronLeft size={18} style={{ transform: "rotate(90deg)" }} />
+                )}
               </button>
             </div>
 
-            {/* card strip */}
             {panelOpen && (
               <div className="nb-cards-area">
                 {loading ? (
                   <div className="nb-scroll">
-                    {[1, 2, 3].map(i => <SkeletonCard key={i} />)}
+                    {[1, 2, 3].map((i) => (
+                      <SkeletonCard key={i} />
+                    ))}
+                  </div>
+                ) : fetchError ? (
+                  <div className="nb-no-results">
+                    <AlertTriangle size={32} />
+                    <p>{fetchError}</p>
                   </div>
                 ) : displayed.length === 0 ? (
                   <div className="nb-no-results">
@@ -321,12 +321,15 @@ export default function NearByShops() {
                 ) : (
                   <>
                     {displayed.length > 2 && (
-                      <button className="nb-scroll-btn nb-scroll-left" onClick={() => scrollCards(-1)}>
+                      <button
+                        className="nb-scroll-btn nb-scroll-left"
+                        onClick={() => scrollCards(-1)}
+                      >
                         <ChevronLeft size={20} />
                       </button>
                     )}
                     <div className="nb-scroll" ref={scrollRef}>
-                      {displayed.map(item => (
+                      {displayed.map((item) => (
                         <ShopCard
                           key={item.shop.id}
                           item={item}
@@ -338,7 +341,10 @@ export default function NearByShops() {
                       ))}
                     </div>
                     {displayed.length > 2 && (
-                      <button className="nb-scroll-btn nb-scroll-right" onClick={() => scrollCards(1)}>
+                      <button
+                        className="nb-scroll-btn nb-scroll-right"
+                        onClick={() => scrollCards(1)}
+                      >
                         <ChevronRight size={20} />
                       </button>
                     )}
@@ -353,19 +359,23 @@ export default function NearByShops() {
   );
 }
 
-/* ── Shop card ── */
 function ShopCard({ item, active, onClick, onView, onDirections }) {
-  const img   = item.user?.profileImage || "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=300";
-  const name  = item.shop.parlourName;
-  const addr  = item.shop.address;
-  const rating= item.shop.totalRating || 4.5;
-  const dist  = item.distance;
+  const img = item.user?.profileImage || DEFAULT_NO_IMAGE;
+  const name = item.shop.parlourName;
+  const addr = item.shop.address;
+  const rating = item.shop.totalRating || 0;
+  const dist = item.distance;
 
   return (
     <div className={`nb-card ${active ? "nb-card-active" : ""}`} onClick={onClick}>
       <div className="nb-card-img-wrap">
-        <img src={img} alt={name}
-          onError={e => { e.target.src = "https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?w=300"; }} />
+        <img
+          src={img}
+          alt={name}
+          onError={(e) => {
+            e.target.src = DEFAULT_NO_IMAGE;
+          }}
+        />
         <span className="nb-card-rating">
           <Star size={11} fill="#FFD700" color="#FFD700" /> {rating}
         </span>
@@ -376,7 +386,10 @@ function ShopCard({ item, active, onClick, onView, onDirections }) {
 
         <div className="nb-card-addr">
           <MapPin size={11} />
-          <span>{addr?.slice(0, 60)}{addr?.length > 60 ? "…" : ""}</span>
+          <span>
+            {addr?.slice(0, 60)}
+            {addr?.length > 60 ? "..." : ""}
+          </span>
         </div>
 
         <div className="nb-card-meta">
@@ -391,10 +404,22 @@ function ShopCard({ item, active, onClick, onView, onDirections }) {
         </div>
 
         <div className="nb-card-actions">
-          <button className="nb-btn-dir" onClick={e => { e.stopPropagation(); onDirections(); }}>
+          <button
+            className="nb-btn-dir"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDirections();
+            }}
+          >
             <Navigation size={13} /> Directions
           </button>
-          <button className="nb-btn-view" onClick={e => { e.stopPropagation(); onView(); }}>
+          <button
+            className="nb-btn-view"
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+            }}
+          >
             Book Now <ArrowRight size={13} />
           </button>
         </div>
@@ -403,7 +428,6 @@ function ShopCard({ item, active, onClick, onView, onDirections }) {
   );
 }
 
-/* ── Skeleton card ── */
 function SkeletonCard() {
   return (
     <div className="nb-card nb-card-skeleton">

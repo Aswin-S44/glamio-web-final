@@ -183,13 +183,15 @@ function OfferScreen() {
 
   const openModal = (offer = null) => {
     if (offer) {
+      const matchedService =
+        allServices.find((service) => service.id === offer.service?.id) || null;
+
       setEditingOffer(offer);
-      setCategoryId(offer.categoryId);
-      setServiceId(offer.serviceId);
+      setCategoryId(matchedService?.categoryId || "");
+      setServiceId(offer.service?.id || "");
       setRegularPrice(offer.regularPrice);
       setOfferPrice(offer.offerPrice);
-      const serviceObj = allServices.find((s) => s.id === offer.serviceId);
-      setImage(serviceObj?.imageUrl || null);
+      setImage(offer.service?.imageUrl || matchedService?.imageUrl || null);
     } else {
       setEditingOffer(null);
       setCategoryId("");
@@ -263,7 +265,8 @@ function OfferScreen() {
                   </div>
                   <div className="of-body">
                     <span className="of-category-tag">
-                      {offer.categoryName || "General"}
+                      {allServices.find((service) => service.id === offer.service?.id)
+                        ?.categoryName || "General"}
                     </span>
                     <h3>{offer.serviceName || offer.service?.name}</h3>
                     <div className="of-pricing-row">

@@ -11,7 +11,8 @@ import {
 import { useNavigate } from "react-router-dom";
 import "./MyProfileScreen.css";
 import Footer from "../../components/Footer/Footer";
-import { BASE_URL } from "../../constants/urls";
+import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
+import { apiRequest } from "../../utils/api.util";
 
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
@@ -21,74 +22,97 @@ const fileToBase64 = (file) =>
     reader.onerror = reject;
   });
 
-const dummyData = {
+const EMPTY_PROFILE = {
   user: {
-    username: "Style Lounge Family Salon ",
-    email: "Style Lounge Family Salon .salon@gmail.com",
-    phone: "+91 98765 43210",
-    profileImage: "https://i.pravatar.cc/150?img=32",
-    experience: "8+ Years",
+    username: "",
+    email: "",
+    phone: "",
+    profileImage: "",
+    experience: "",
   },
   shop: {
-    parlourName: "Kerala Classic Salon",
-    about:
-      "Kerala Classic Salon is a premium unisex salon offering modern grooming with a traditional touch.",
-    address: "MG Road, Kochi, Kerala – 682016",
-    totalRating: 4.7,
-    totalCustomers: 3200,
-    openingHours: "9:00 AM – 9:00 PM",
-    amenities: ["AC", "Parking", "Free WiFi", "Card Payment"],
-    services: [
-      "Haircut",
-      "Hair Spa",
-      "Facial",
-      "Beard Styling",
-      "Bridal Makeup",
-      "Keratin Treatment",
-    ],
+    parlourName: "",
+    about: "",
+    address: "",
+    totalRating: 0,
+    totalCustomers: 0,
+    openingHours: "",
+    amenities: [],
+    services: [],
     gallery: [],
-    lat: 9.9312,
-    lng: 76.2673,
-    googleReviewUrl: "https://maps.google.com",
+    lat: "",
+    lng: "",
+    googleReviewUrl: "",
   },
 };
 
-const dummyGallery = [
-  "https://images.unsplash.com/photo-1600334129128-685c5582fd35",
-  "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9",
-  "https://images.unsplash.com/photo-1582095133179-bfd08e2fc6b3",
-  "https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1",
-  "https://images.unsplash.com/photo-1515377905703-c4788e51af15",
-  "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519",
-];
+const formatOpeningHours = (value) => {
+  if (!value) {
+    return "";
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (typeof value === "object") {
+    return Object.entries(value)
+      .map(([day, hours]) => `${day}: ${hours}`)
+      .join(", ");
+  }
+
+  return "";
+};
 
 const MyProfileScreen = () => {
   const [previewImg, setPreviewImg] = useState(null);
-  const [formData, setFormData] = useState(dummyData);
+  const [formData, setFormData] = useState(EMPTY_PROFILE);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  const images =
-    formData.shop.gallery.length > 0 ? formData.shop.gallery : dummyGallery;
+  const images = Array.isArray(formData.shop.gallery) ? formData.shop.gallery : [];
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/shops`, {
-          headers: { Authorization: token },
-        });
+        setError("");
+        const [profileData, servicesData] = await Promise.all([
+          apiRequest("/shops", {
+            headers: { Authorization: token },
+          }),
+          apiRequest("/services?limit=100", {
+            headers: { Authorization: token },
+          }).catch(() => ({ services: [] })),
+        ]);
 
-        if (res.ok) {
-          const data = await res.json();
-          setFormData({
-            user: { ...dummyData.user, ...data.user },
-            shop: { ...dummyData.shop, ...data.shop },
-          });
-        }
+        const serviceNames = Array.isArray(servicesData?.services)
+          ? servicesData.services.map((service) => service.name).filter(Boolean)
+          : [];
+
+        setFormData({
+          user: {
+            ...EMPTY_PROFILE.user,
+            ...profileData.user,
+          },
+          shop: {
+            ...EMPTY_PROFILE.shop,
+            ...profileData.shop,
+            services: serviceNames,
+            gallery: Array.isArray(profileData.shop?.gallery)
+              ? profileData.shop.gallery
+              : [],
+            lat: profileData.shop?.latitude ?? "",
+            lng: profileData.shop?.longitude ?? "",
+            openingHours: formatOpeningHours(profileData.shop?.openingHours),
+          },
+        });
       } catch (err) {
         console.error(err);
+        setError("Unable to load profile details.");
       }
     };
+
     fetchProfile();
   }, [token]);
 
@@ -106,7 +130,18 @@ const MyProfileScreen = () => {
         "Content-Type": "application/json",
         Authorization: token,
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({
+        user: {
+          username: formData.user.username,
+          phone: formData.user.phone,
+          profileImage: formData.user.profileImage,
+        },
+        shop: {
+          ...formData.shop,
+          latitude: formData.shop.lat,
+          longitude: formData.shop.lng,
+        },
+      }),
     });
     alert("Profile updated");
   };
@@ -114,7 +149,12 @@ const MyProfileScreen = () => {
   return (
     <>
       <div className="container profileNew my-4">
-        {/* HEADER */}
+        {error && (
+          <div className="alert alert-warning" role="alert">
+            {error}
+          </div>
+        )}
+
         <div className="d-flex align-items-center justify-content-between mb-4 dash-header">
           <div className="d-flex align-items-center">
             <ChevronLeft
@@ -122,14 +162,9 @@ const MyProfileScreen = () => {
               onClick={() => navigate(-1)}
               size={28}
             />
-            {/* <button className="btn btn-icon me-3" >
-      Go Back
-    </button> */}
             <h4 className="mb-0 new-head-dash">
               Dashboard{" "}
-              <span className="text-muted fw-normal font-sheriff">
-                / Profile
-              </span>
+              <span className="text-muted fw-normal font-sheriff">/ Profile</span>
             </h4>
           </div>
           <button
@@ -141,37 +176,39 @@ const MyProfileScreen = () => {
           </button>
         </div>
 
-        {/* PROFILE SUMMARY */}
         <div className="profile-card-modern mb-4">
           <div className="profile-header">
             <img
-              src={formData.user.profileImage}
+              src={formData.user.profileImage || DEFAULT_NO_IMAGE}
               alt="profile"
               className="profile-avatar"
             />
 
             <div className="profile-main">
-              <h5 className="profile-name">{formData.user.username}</h5>
-              <p className="profile-parlour">{formData.shop.parlourName}</p>
+              <h5 className="profile-name">{formData.user.username || "Shop Owner"}</h5>
+              <p className="profile-parlour">{formData.shop.parlourName || "Unnamed Shop"}</p>
 
               <div className="profile-meta">
                 <span className="rating-badge">
                   <Star size={14} fill="currentColor" />
-                  {formData.shop.totalRating}
+                  {formData.shop.totalRating || 0}
                 </span>
-                <span className="dot">•</span>
-                <span className="experience">{formData.user.experience}</span>
+                {formData.user.experience && (
+                  <>
+                    <span className="dot">•</span>
+                    <span className="experience">{formData.user.experience}</span>
+                  </>
+                )}
               </div>
             </div>
 
             <div className="profile-stats">
-              <strong>{formData.shop.totalCustomers}+</strong>
+              <strong>{formData.shop.totalCustomers || 0}+</strong>
               <span>Happy Customers</span>
             </div>
           </div>
         </div>
 
-        {/* DETAILS */}
         <div className="row g-4 mb-4">
           <div className="col-md-6">
             <div className="card info-card h-100">
@@ -180,31 +217,35 @@ const MyProfileScreen = () => {
 
                 <div className="info-row">
                   <Mail size={16} />
-                  <span>{formData.user.email}</span>
+                  <span>{formData.user.email || "Not provided"}</span>
                 </div>
 
                 <div className="info-row">
                   <Phone size={16} />
-                  <span>{formData.user.phone}</span>
+                  <span>{formData.user.phone || "Not provided"}</span>
                 </div>
 
                 <div className="info-row">
                   <MapPin size={16} />
-                  <span>{formData.shop.address}</span>
+                  <span>{formData.shop.address || "Address not set"}</span>
                 </div>
 
                 <div className="info-row">
                   <Clock size={16} />
-                  <span>{formData.shop.openingHours}</span>
+                  <span>{formData.shop.openingHours || "Opening hours not set"}</span>
                 </div>
 
                 <h6 className="card-title-accent mt-4">Amenities</h6>
                 <div className="chip-group">
-                  {formData.shop.amenities.map((a, i) => (
-                    <span key={i} className="chip">
-                      {a}
-                    </span>
-                  ))}
+                  {formData.shop.amenities.length > 0 ? (
+                    formData.shop.amenities.map((amenity, i) => (
+                      <span key={i} className="chip">
+                        {amenity}
+                      </span>
+                    ))
+                  ) : (
+                    <span>No amenities added yet.</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -214,69 +255,78 @@ const MyProfileScreen = () => {
             <div className="card info-card h-100">
               <div className="card-body profile-card">
                 <h6 className="card-title-accent">About</h6>
-                <p className="about-text">{formData.shop.about}</p>
+                <p className="about-text">
+                  {formData.shop.about || "No shop description added yet."}
+                </p>
 
                 <h6 className="card-title-accent mt-4">Services</h6>
                 <div className="chip-group">
-                  {formData.shop.services.map((s, i) => (
-                    <span key={i} className="chip service">
-                      {s}
-                    </span>
-                  ))}
+                  {formData.shop.services.length > 0 ? (
+                    formData.shop.services.map((service, i) => (
+                      <span key={i} className="chip service">
+                        {service}
+                      </span>
+                    ))
+                  ) : (
+                    <span>No services added yet.</span>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* GALLERY */}
-        <>
-          <div className="card mb-4">
-            <div className="card-body">
-              {/* <h6 className="mb-3">Gallery</h6> */}
-
-              <div className="row g-3">
-                {images.map((img, i) => (
+        <div className="card mb-4">
+          <div className="card-body">
+            <div className="row g-3">
+              {images.length > 0 ? (
+                images.map((img, i) => (
                   <div className="col-6 col-md-4 col-lg-3" key={i}>
-                    <div
-                      className="gallery-box"
-                      onClick={() => setPreviewImg(img)}
-                    >
-                      <img src={img} />
+                    <div className="gallery-box" onClick={() => setPreviewImg(img)}>
+                      <img src={img} alt={`Gallery ${i + 1}`} />
                     </div>
                   </div>
-                ))}
-              </div>
+                ))
+              ) : (
+                <p className="mb-0">No gallery images uploaded yet.</p>
+              )}
             </div>
           </div>
-
-          {previewImg && (
-            <div className="image-modal" onClick={() => setPreviewImg(null)}>
-              <span className="close-btn">&times;</span>
-              <img src={previewImg} className="modal-img" />
-            </div>
-          )}
-        </>
-
-        {/* MAP */}
-        <div className="card">
-          <iframe
-            height="300"
-            className="w-100 border-0"
-            loading="lazy"
-            src={`https://www.google.com/maps?q=${formData.shop.lat},${formData.shop.lng}&z=15&output=embed`}
-          />
-          <a
-            href={formData.shop.googleReviewUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="map-link"
-          >
-            <Globe size={16} /> View on Google Maps
-          </a>
         </div>
 
-        {/* EDIT OFFCANVAS */}
+        {previewImg && (
+          <div className="image-modal" onClick={() => setPreviewImg(null)}>
+            <span className="close-btn">&times;</span>
+            <img src={previewImg} className="modal-img" alt="Preview" />
+          </div>
+        )}
+
+        <div className="card">
+          {formData.shop.lat && formData.shop.lng ? (
+            <>
+              <iframe
+                height="300"
+                className="w-100 border-0"
+                loading="lazy"
+                title="Shop location"
+                src={`https://www.google.com/maps?q=${formData.shop.lat},${formData.shop.lng}&z=15&output=embed`}
+              />
+              {formData.shop.googleReviewUrl && (
+                <a
+                  href={formData.shop.googleReviewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="map-link"
+                >
+                  <Globe size={16} /> View on Google Maps
+                </a>
+              )}
+            </>
+          ) : (
+            <div className="p-4">Location has not been configured yet.</div>
+          )}
+        </div>
+
         <div
           className="ep-offcanvas offcanvas offcanvas-end offcanvas-xl"
           tabIndex="-1"
@@ -287,18 +337,15 @@ const MyProfileScreen = () => {
             <button className="btn-close" data-bs-dismiss="offcanvas"></button>
           </div>
 
-          <div
-            className="ep-body offcanvas-body profile-modal"
-            id="editProfileBody"
-          >
-            {/* PROFILE IMAGE */}
+          <div className="ep-body offcanvas-body profile-modal" id="editProfileBody">
             <div className="ep-section">
               <h6 className="ep-section-title">Profile Image</h6>
 
               <div className="ep-profile-wrap">
                 <img
-                  src={formData.user.profileImage}
+                  src={formData.user.profileImage || DEFAULT_NO_IMAGE}
                   className="ep-profile-img"
+                  alt="Profile"
                 />
 
                 <div className="ep-profile-upload">
@@ -313,14 +360,11 @@ const MyProfileScreen = () => {
                       handleChange("user", "profileImage", base64);
                     }}
                   />
-                  <span className="ep-hint">
-                    JPG / PNG • Square recommended
-                  </span>
+                  <span className="ep-hint">JPG / PNG • Square recommended</span>
                 </div>
               </div>
             </div>
 
-            {/* USER INFO */}
             <div className="ep-section">
               <h6 className="ep-section-title">User Information</h6>
 
@@ -329,32 +373,25 @@ const MyProfileScreen = () => {
                   className="ep-input"
                   placeholder="Username"
                   value={formData.user.username}
-                  onChange={(e) =>
-                    handleChange("user", "username", e.target.value)
-                  }
+                  onChange={(e) => handleChange("user", "username", e.target.value)}
                 />
 
                 <input
                   className="ep-input"
                   placeholder="Email"
                   value={formData.user.email}
-                  onChange={(e) =>
-                    handleChange("user", "email", e.target.value)
-                  }
+                  onChange={(e) => handleChange("user", "email", e.target.value)}
                 />
 
                 <input
                   className="ep-input"
                   placeholder="Phone"
                   value={formData.user.phone}
-                  onChange={(e) =>
-                    handleChange("user", "phone", e.target.value)
-                  }
+                  onChange={(e) => handleChange("user", "phone", e.target.value)}
                 />
               </div>
             </div>
 
-            {/* SHOP INFO */}
             <div className="ep-section">
               <h6 className="ep-section-title">Shop Details</h6>
 
@@ -362,9 +399,7 @@ const MyProfileScreen = () => {
                 className="ep-input"
                 placeholder="Parlour Name"
                 value={formData.shop.parlourName}
-                onChange={(e) =>
-                  handleChange("shop", "parlourName", e.target.value)
-                }
+                onChange={(e) => handleChange("shop", "parlourName", e.target.value)}
               />
 
               <textarea
@@ -376,7 +411,6 @@ const MyProfileScreen = () => {
               />
             </div>
 
-            {/* GALLERY */}
             <div className="ep-section">
               <h6 className="ep-section-title">Gallery Images</h6>
 
@@ -387,24 +421,18 @@ const MyProfileScreen = () => {
                 className="ep-input"
                 onChange={async (e) => {
                   const files = Array.from(e.target.files);
-                  const images = await Promise.all(
-                    files.map((f) => fileToBase64(f))
-                  );
-                  handleChange("shop", "gallery", [
-                    ...formData.shop.gallery,
-                    ...images,
-                  ]);
+                  const nextImages = await Promise.all(files.map((file) => fileToBase64(file)));
+                  handleChange("shop", "gallery", [...images, ...nextImages]);
                 }}
               />
 
               <div className="ep-gallery">
-                {formData.shop.gallery.map((img, i) => (
-                  <img key={i} src={img} className="ep-gallery-img" />
+                {images.map((img, i) => (
+                  <img key={i} src={img} className="ep-gallery-img" alt={`Gallery ${i + 1}`} />
                 ))}
               </div>
             </div>
 
-            {/* MAP */}
             <div className="ep-section">
               <h6 className="ep-section-title">Location</h6>
 
@@ -424,13 +452,15 @@ const MyProfileScreen = () => {
                 />
               </div>
 
-              <iframe
-                className="ep-map"
-                src={`https://www.google.com/maps?q=${formData.shop.lat},${formData.shop.lng}&z=15&output=embed`}
-              />
+              {formData.shop.lat && formData.shop.lng && (
+                <iframe
+                  className="ep-map"
+                  title="Edit location preview"
+                  src={`https://www.google.com/maps?q=${formData.shop.lat},${formData.shop.lng}&z=15&output=embed`}
+                />
+              )}
             </div>
 
-            {/* SAVE */}
             <div className="ep-save">
               <button className="ep-cancel-btn" data-bs-dismiss="offcanvas">
                 Cancel

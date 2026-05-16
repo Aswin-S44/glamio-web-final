@@ -153,10 +153,14 @@ function UserRequests() {
         "error"
       );
     }
-    updateStatusOnServer(selected.appointment.id, 2, rejectReason);
+
     setShowRejectModal(false);
     setRejectReason("");
-    Swal.fire("Rejected", "The request has been declined.", "info");
+    Swal.fire(
+      "Not Available Yet",
+      "The backend currently exposes approve only. Reject is still unsupported.",
+      "info"
+    );
   };
 
   const updateStatusOnServer = (id, statusId, reason = "") => {

@@ -15,6 +15,13 @@
       "when": 1778939135883,
       "tag": "0001_lazy_robin_chapel",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1778870785605,
+      "tag": "0001_premium_paladin",
+      "breakpoints": true
     }
   ]
 }

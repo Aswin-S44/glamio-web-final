@@ -19,15 +19,11 @@ export class SlotRepository {
   }
 
   static create(shopId, data) {
-    const { slotDate, startTime, endTime, maxCapacity, isAvailable } = data;
     const insertData = {
+      ...data,
       shopId,
-      slotDate,
-      startTime,
-      endTime,
-      maxCapacity: maxCapacity ?? 1,
-      isAvailable: isAvailable ?? true,
-      bookedCount: isAvailable === false ? 1 : 0,
+      bookedCount: 0,
+      isAvailable: true,
       isRecurring: false,
       createdAt: new Date(),
       updatedAt: new Date(),
