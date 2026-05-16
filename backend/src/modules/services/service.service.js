@@ -98,7 +98,7 @@ export const getServicesCountService = (shopId, search, categoryName) => {
 };
 
 export const getServiceByIdService = async (id) => {
-  const result = await getServiceByIdDB(id, shopId);
+  const result = await getServiceByIdDB(id);
   if (!result.length) throw new Error("Service not found");
   return result[0];
 };

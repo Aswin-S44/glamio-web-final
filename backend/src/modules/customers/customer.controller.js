@@ -1,4 +1,3 @@
-import { and, eq, inArray, sum } from "drizzle-orm";
 import {
   BookingService,
   createBookingService,
@@ -6,19 +5,15 @@ import {
   getAllExpertsByShopIdService,
   getAllServices,
   getAllShopsService,
+  getBookingContextService,
   getCustomerAppointmentsService,
+  normalizeServiceIds,
   getServiceDetailsByIdService,
   getShopByIdService,
   getSHopReviewsAndImageServices,
   updateUserService,
 } from "./customer.service.js";
 import { SlotService } from "../slots/slot.service.js";
-import { services } from "../../db/schemas/services.js";
-import { experts } from "../../db/schemas/experts.js";
-import { slots } from "../../db/schemas/slots.js";
-import { shopOwners } from "../../db/schemas/shop-owners.js";
-import { db } from "../../db/index.js";
-import { appointmentStatuses } from "../../constants/constants.js";
 import { updateUserSchema } from "./customer.validation.js";
 
 export const getAllShops = async (req, res) => {
@@ -36,8 +31,25 @@ export const getShopById = async (req, res) => {
 };
 
 export const getExpertsByShopId = async (req, res) => {
-  const experts = await getAllExpertsByShopIdService(Number(req.params.shopId));
-  res.json({ experts });
+  try {
+    const rawServiceIds = req.query.serviceIds ?? req.query.serviceId;
+    const serviceIds =
+      typeof rawServiceIds === "string" && rawServiceIds.length
+        ? rawServiceIds.split(",")
+        : Array.isArray(rawServiceIds)
+        ? rawServiceIds
+        : [];
+
+    const experts = await getAllExpertsByShopIdService(
+      Number(req.params.shopId),
+      serviceIds
+    );
+    res.json({ experts });
+  } catch (error) {
+    res.status(400).json({
+      message: error instanceof Error ? error.message : "Unknown error",
+    });
+  }
 };
 
 export const getSlotsByShopId = async (req, res) => {
@@ -72,11 +84,15 @@ export const createBooking = async (req, res) => {
     const slotId = Number(req.body.slotId);
     const expertId = Number(req.body.expertId);
     const customerId = Number(req.user?.id);
-    const appointmentStatus = appointmentStatuses.PENDING;
-    const selectedServices = req.body.serviceIds;
-    const bookingRate = await BookingService.calculateTotalRate(
-      selectedServices
+    const selectedServices = BookingService.normalizeServiceIds(
+      req.body.serviceIds
     );
+    const bookingContext = await getBookingContextService({
+      shopId,
+      slotId,
+      expertId,
+      serviceIds: selectedServices,
+    });
 
     const dataToUpdate = {
       statusId: 1,
@@ -84,8 +100,8 @@ export const createBooking = async (req, res) => {
       expertId,
       slotId,
       shopId,
-      serviceIds: selectedServices,
-      rate: bookingRate,
+      serviceIds: bookingContext.serviceIds,
+      rate: bookingContext.totalRate,
     };
 
     // const existingBooking = await findExistingBookingService(dataToUpdate);
@@ -142,7 +158,7 @@ export const getAllShopsServices = async (req, res) => {
 export const getOrderSummary = async (req, res) => {
   try {
     const { shopId, slotId, expertId } = req.params;
-    const rawServiceId = req.query.serviceId;
+    const rawServiceId = req.query.serviceId ?? req.query.serviceIds;
 
     if (
       rawServiceId === undefined ||
@@ -152,60 +168,28 @@ export const getOrderSummary = async (req, res) => {
       return;
     }
 
-    const serviceIds = (
+    const serviceIds = normalizeServiceIds(
       Array.isArray(rawServiceId) ? rawServiceId : rawServiceId.split(",")
-    )
-      .map(Number)
-      .filter((id) => !isNaN(id));
+    );
 
     if (!serviceIds.length) {
       res.status(400).json({ message: "Invalid serviceId" });
       return;
     }
 
-    const [shop] = await db
-      .select()
-      .from(shopOwners)
-      .where(eq(shopOwners.id, Number(shopId)));
-
-    const [slot] = await db
-      .select()
-      .from(slots)
-      .where(
-        and(eq(slots.id, Number(slotId)), eq(slots.shopId, Number(shopId)))
-      );
-
-    const [expert] = await db
-      .select()
-      .from(experts)
-      .where(
-        and(
-          eq(experts.id, Number(expertId)),
-          eq(experts.shopId, Number(shopId))
-        )
-      );
-
-    const selectedServices = await db
-      .select()
-      .from(services)
-      .where(
-        and(
-          eq(services.shopId, Number(shopId)),
-          inArray(services.id, serviceIds)
-        )
-      );
-
-    const [total] = await db
-      .select({ totalRate: sum(services.rate) })
-      .from(services)
-      .where(inArray(services.id, serviceIds));
+    const bookingContext = await getBookingContextService({
+      shopId: Number(shopId),
+      slotId: Number(slotId),
+      expertId: Number(expertId),
+      serviceIds,
+    });
 
     res.status(200).json({
-      shop,
-      slot,
-      expert,
-      services: selectedServices,
-      totalRate: Number(total?.totalRate ?? 0),
+      shop: bookingContext.shop,
+      slot: bookingContext.slot,
+      expert: bookingContext.expert,
+      services: bookingContext.services,
+      totalRate: bookingContext.totalRate,
     });
   } catch (error) {
     res.status(400).json({

@@ -7,6 +7,7 @@ import { services } from "../../db/schemas/services.js";
 import { offers } from "../../db/schemas/offers.js";
 import { experts } from "../../db/schemas/experts.js";
 import { appointments } from "../../db/schemas/appointments.js";
+import { appointmentServices } from "../../db/schemas/appointment_services.js";
 import { db } from "../../db/index.js";
 import { category } from "../../db/schemas/category.js";
 import { slots } from "../../db/schemas/slots.js";
@@ -97,7 +98,26 @@ export const getAllExpertsByShopIdDB = async (shopId) => {
 };
 
 export const createBookingDB = (data) => {
-  return db.insert(appointments).values(data);
+  const { serviceIds, ...appointmentData } = data;
+
+  return db.transaction(async (tx) => {
+    const [appointment] = await tx
+      .insert(appointments)
+      .values({
+        ...appointmentData,
+        serviceIds,
+      })
+      .returning();
+
+    await tx.insert(appointmentServices).values(
+      serviceIds.map((serviceId) => ({
+        appointmentId: appointment.id,
+        serviceId,
+      }))
+    );
+
+    return appointment;
+  });
 };
 
 export const findBookingDB = (data) => {
@@ -119,6 +139,36 @@ export const findBookingDB = (data) => {
 
 export const getServiceDetailsByIdDB = (id) => {
   return db.select().from(services).where(eq(services.id, id)).limit(1);
+};
+
+export const getShopOwnerByIdDB = async (shopId) => {
+  const [shop] = await db
+    .select()
+    .from(shopOwners)
+    .where(eq(shopOwners.id, shopId))
+    .limit(1);
+
+  return shop ?? null;
+};
+
+export const getSlotByIdAndShopIdDB = async (slotId, shopId) => {
+  const [slot] = await db
+    .select()
+    .from(slots)
+    .where(and(eq(slots.id, slotId), eq(slots.shopId, shopId)))
+    .limit(1);
+
+  return slot ?? null;
+};
+
+export const getExpertByIdAndShopIdDB = async (expertId, shopId) => {
+  const [expert] = await db
+    .select()
+    .from(experts)
+    .where(and(eq(experts.id, expertId), eq(experts.shopId, shopId)))
+    .limit(1);
+
+  return expert ?? null;
 };
 
 export const updateUserByIdDB = async (id, data) => {

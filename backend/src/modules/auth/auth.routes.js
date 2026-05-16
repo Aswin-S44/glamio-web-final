@@ -26,7 +26,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
     const [shop] = await db
       .select()
       .from(shopOwners)
-    .where(eq(shopOwners.userId, user.id))
+      .where(eq(shopOwners.userId, user.id))
       .limit(1);
 
     return res.json({
@@ -37,7 +37,7 @@ router.get("/profile", authMiddleware, async (req, res) => {
       isActive: user.isActive,
       emailVerified: user.emailVerified,
       profileImage: user.profileImage,
-      role: shop ? "SHOP_OWNER" : "CUSTOMER",
+      role: shop ? "SHOP_OWNER" : "CUSTOMER", //????
       shop: shop || null,
     });
   } catch (error) {
