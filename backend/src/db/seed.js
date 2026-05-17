@@ -12,7 +12,7 @@ import { userTypes } from "./schemas/users_types.js";
 async function seedDatabase() {
   console.log("Seeding datas...");
 
-  // Insert user types
+  // Insert user types 
   const values = Object.values(usersTypes);
   await db.insert(userTypes).values(values);
 

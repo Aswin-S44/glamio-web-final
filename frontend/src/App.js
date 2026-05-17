@@ -16,7 +16,6 @@ import { Provider } from "react-redux";
 import store from "./store/Store";
 import OnboardScreen from "./screens/OnboardScreen/OnboardScreen";
 import EditProfileScreen from "./screens/EditProfileScreen/EditProfileScreen";
-import { useAuth } from "./context/AuthContext";
 import ServicesListingScreen from "./screens/ServicesListingScreen/ServicesListingScreen";
 import NearByShops from "./screens/NearByShopsList/NearByShops";
 import ShopsScreen from "./screens/ShopsScreen/ShopsScreen";
@@ -26,8 +25,6 @@ import AdminLogin from "./screens/admin/AdminLogin/AdminLogin";
 import AdminDashboard from "./screens/admin/AdminDashboard/AdminDashboard";
 
 function App() {
-  useAuth();
-
   return (
     <>
       <Provider store={store}>

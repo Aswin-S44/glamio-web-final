@@ -13,6 +13,9 @@ import {
   getShopReviewsAndImages,
   getSlotsByShopId,
   updateUserController,
+  getCustomerNotifications,
+  markNotificationRead,
+  deleteNotification,
 } from "./customer.controller.js";
 
 const router = Router();
@@ -26,6 +29,9 @@ router.get("/reviews/:placeId", getShopReviewsAndImages);
 router.get("/services", getAllShopsServices);
 router.get("/order/summary/:shopId/:slotId/:expertId", getOrderSummary);
 router.get("/service/:id", getServiceDetailsById);
+router.get("/notifications", authMiddleware, getCustomerNotifications);
+router.patch("/notifications/:id/read", authMiddleware, markNotificationRead);
+router.delete("/notifications/:id", authMiddleware, deleteNotification);
 
 router.get("/appointments", authMiddleware, getCustomerAppointments);
 router.patch("/profile", authMiddleware, updateUserController);

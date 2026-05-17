@@ -1,5 +1,6 @@
 import {
   createNotificationRepo,
+  deleteNotificationDB,
   findNotificationById,
   getNotificationsDB,
   markNotificationAsReadDB,
@@ -25,4 +26,18 @@ export const markNotificationAsReadService = async (notificationId, userId) => {
   }
 
   await markNotificationAsReadDB(notificationId);
+};
+
+export const deleteNotificationService = async (notificationId, userId) => {
+  const notification = await findNotificationById(notificationId);
+
+  if (!notification.length) {
+    throw new Error("Notification not found");
+  }
+
+  if (notification[0].toId !== userId) {
+    throw new Error("Unauthorized");
+  }
+
+  await deleteNotificationDB(notificationId, userId);
 };

@@ -78,6 +78,8 @@ export const getLatLngFromAddress = async (name, address) => {
       address
     )}&key=${apiKey}`;
 
+    console.log("apiUrl--------------", apiUrl);
+
     const res = await fetch(apiUrl);
     const data = await res.json();
 

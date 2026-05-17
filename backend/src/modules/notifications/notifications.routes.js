@@ -11,6 +11,6 @@ const router = express.Router();
 router.post("/", authMiddleware, sendNotification);
 router.get("/", authMiddleware, getNotifications);
 
-router.patch("/notifications/:id/read", authMiddleware, markNotificationAsRead);
+router.patch("/:id/read", authMiddleware, markNotificationAsRead);
 
 export default router;

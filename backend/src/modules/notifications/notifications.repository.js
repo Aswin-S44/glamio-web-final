@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "../../db/index.js"; // Explicitly add /index.js
 import { notificationTypes } from "../../db/schemas/notification-types.js";
 import { notifications } from "../../db/schemas/notifications.js";
@@ -69,4 +69,10 @@ export const markNotificationAsReadDB = async (id) => {
 
 export const findNotificationById = async (id) => {
   return await db.select().from(notifications).where(eq(notifications.id, id));
+};
+
+export const deleteNotificationDB = async (id, userId) => {
+  return await db
+    .delete(notifications)
+    .where(and(eq(notifications.id, id), eq(notifications.toId, userId)));
 };

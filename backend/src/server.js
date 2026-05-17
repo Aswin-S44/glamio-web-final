@@ -11,6 +11,7 @@ import appointmentRouter from "./modules/appointments/appointment.routes.js";
 import shopsRouter from "./modules/shops/shop.routes.js";
 import customerRouter from "./modules/customers/customer.routes.js";
 import notificationRoutes from "./modules/notifications/notifications.routes.js";
+import adminRouter from "./modules/admin/admin.routes.js";
 
 dotenv.config();
 
@@ -62,6 +63,8 @@ app.use("/api/v1/appointments", appointmentRouter);
 app.use("/api/v1/shops", shopsRouter);
 app.use("/api/v1/customer", customerRouter);
 app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/v1/admin", adminRouter);
 
 app.get("/health", (req, res) => {
   res.send("Nodejs server is running....");

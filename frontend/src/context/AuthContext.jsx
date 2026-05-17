@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }) => {
   const setAuthenticatedUser = useCallback((authData) => {
     console.log("authData-------------", authData);
     if (authData?.data?.token) {
-      localStorage.setItem("token", authData.token);
+      localStorage.setItem("token", authData.data.token);
     }
 
     setUser(normalizeAuthUser(authData?.user ?? authData));

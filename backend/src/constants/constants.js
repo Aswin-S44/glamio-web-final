@@ -64,3 +64,5 @@ export const notificationTypess = {
     name: "completed",
   },
 };
+
+

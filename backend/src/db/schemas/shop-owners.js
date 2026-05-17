@@ -3,7 +3,6 @@ import {
   boolean,
   integer,
   pgTable,
-  timestamp,
   varchar,
   decimal,
   json,
@@ -36,11 +35,11 @@ export const shopOwners = pgTable("shop_owners", {
 
   placeId: varchar("place_id", { length: 100 }),
 
-  totalRating: decimal("total_rating", { precision: 3, scale: 1 })
-    .notNull()
-    .default("0"),
+  totalRating: integer("total_rating").notNull().default(0),
 
   isProfileCompleted: boolean("is_profile_completed").default(false),
 
-  shopImage: varchar("shop_image", { length: 256 }),
+  shopImage: text("shop_image"),
+
+  galleryImages: json("gallery_images").default([]),
 });

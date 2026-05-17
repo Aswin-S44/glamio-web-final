@@ -1,3 +1,4 @@
+import { eq } from "drizzle-orm";
 import { DEFAULT_NO_IMAGE } from "../../constants/constants.js";
 import { db } from "../../db/index.js";
 import { shopOwners } from "../../db/schemas/shop-owners.js";
@@ -22,13 +23,13 @@ export const updateShopProfile = async (id, data) => {
     throw new Error("User not found!");
   }
 
-  let parlourName = shop?.parlourName;
-  let locationUrl = shop?.googleReviewUrl;
+  let parlourName = data?.shop?.parlourName ?? shop?.parlourName;
+  let locationUrl = data?.shop?.parlourName ?? shop?.googleReviewUrl;
 
-  if (!shop) {
-    parlourName = data?.shop?.parlourName;
-    locationUrl = data?.shop?.parlourName;
-  }
+  // if (!shop) {
+  //   parlourName = data?.shop?.parlourName;
+  //   locationUrl = data?.shop?.parlourName;
+  // }
 
   const { coordinates, placeId, totalRating } = await getLatLngFromAddress(
     parlourName,
@@ -40,7 +41,7 @@ export const updateShopProfile = async (id, data) => {
   console.log("total rating-------------", totalRating);
 
   const newShop = data?.shop;
-
+  console.log("SHOP------------", shop ? shop : "no shop");
   if (shop) {
     // For updates, you might want to handle image updates differently
     // Only upload new images if they're base64 strings
@@ -71,7 +72,15 @@ export const updateShopProfile = async (id, data) => {
       }
     }
 
-    await updateShopDB(id, updatedShopData);
+    console.log("updatedShopData-------------", updatedShopData);
+    console.log("id-----------", id);
+
+    //  await updateShopDB(id, updatedShopData);
+
+    await db
+      .update(shopOwners)
+      .set(updatedShopData)
+      .where(eq(shopOwners.id, id));
   } else {
     // Upload images to Cloudinary before saving to database
     let shopImageUrl = DEFAULT_NO_IMAGE;

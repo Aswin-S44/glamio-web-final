@@ -47,9 +47,7 @@ export const normalizeServiceIds = (serviceIds = []) => {
 
   return [
     ...new Set(
-      serviceIds
-        .map(Number)
-        .filter((id) => Number.isInteger(id) && id > 0)
+      serviceIds.map(Number).filter((id) => Number.isInteger(id) && id > 0)
     ),
   ];
 };
@@ -88,24 +86,39 @@ export const getAllExpertsByShopIdService = async (shopId, serviceIds = []) => {
     );
 
     if (selectedServices.length !== normalizedServiceIds.length) {
-      throw new Error("One or more selected services are invalid for this shop");
+      throw new Error(
+        "One or more selected services are invalid for this shop"
+      );
     }
   }
 
   const expertsList = await getExpertsByShopId(shopId);
   const expertsWithServices = await attachServiceIdsToExperts(expertsList);
-
+  console.log("expertsWithServices----------", expertsWithServices);
   const activeExperts = expertsWithServices.filter((expert) => expert.isActive);
-
+  console.log("activeExperts-------------", activeExperts);
   if (!normalizedServiceIds.length) {
     return activeExperts;
   }
 
-  return activeExperts.filter((expert) =>
+  console.log("normalizedServiceIds----------", normalizedServiceIds);
+  console.log("expertsList----------", expertsList);
+
+  const matchedExperts = activeExperts.filter((expert) =>
     normalizedServiceIds.every((serviceId) =>
       expert.serviceIds.includes(serviceId)
     )
   );
+
+  if (matchedExperts?.length === 0) {
+    return activeExperts;
+  } else {
+    return activeExperts.filter((expert) =>
+      normalizedServiceIds.every((serviceId) =>
+        expert.serviceIds.includes(serviceId)
+      )
+    );
+  }
 };
 
 export class BookingService {
@@ -233,11 +246,13 @@ export const getBookingContextService = async ({
     expertWithServices.serviceIds.includes(serviceId)
   );
 
-  if (!canPerformAllServices) {
-    throw new Error(
-      "Selected expert is not assigned to all requested services"
-    );
-  }
+  // Commenting this as of now for the intital releasing, will do the logic in the next phase
+
+  // if (!canPerformAllServices) {
+  //   throw new Error(
+  //     "Selected expert is not assigned to all requested services"
+  //   );
+  // }
 
   return {
     shop,
