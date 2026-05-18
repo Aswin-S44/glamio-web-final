@@ -128,7 +128,7 @@ function BookingSummaryScreen() {
 
   const submitAppointment = async (e) => {
     e.preventDefault();
-    setConfirming(true);
+    setConfirming(true); 
 
     try {
       const res = await fetch(`${BASE_URL}/customer/booking`, {

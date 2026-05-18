@@ -24,6 +24,15 @@ CREATE TABLE "appointments" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "banners" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"title" varchar(255) NOT NULL,
+	"offer_description" text NOT NULL,
+	"image" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "category" (
 	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "category_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
 	"name" varchar(256) NOT NULL
@@ -75,6 +84,19 @@ CREATE TABLE "notifications" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "offer_banner" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"title" varchar(255) NOT NULL,
+	"offer" text NOT NULL,
+	"from_date" timestamp NOT NULL,
+	"to_date" timestamp NOT NULL,
+	"button_text" varchar(100) NOT NULL,
+	"image" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	"shop_owner_id" bigint NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "offers" (
 	"id" bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY (sequence name "offers_id_seq" INCREMENT BY 1 MINVALUE 1 MAXVALUE 9223372036854775807 START WITH 1 CACHE 1),
 	"category_id" bigint NOT NULL,
@@ -111,9 +133,10 @@ CREATE TABLE "shop_owners" (
 	"opening_hours" json NOT NULL,
 	"parlour_name" varchar(256) NOT NULL,
 	"place_id" varchar(100),
-	"total_rating" numeric(3, 1) DEFAULT '0' NOT NULL,
+	"total_rating" integer DEFAULT 0 NOT NULL,
 	"is_profile_completed" boolean DEFAULT false,
-	"shop_image" varchar(256)
+	"shop_image" text,
+	"gallery_images" json DEFAULT '[]'::json
 );
 --> statement-breakpoint
 CREATE TABLE "shop_statistics" (
@@ -179,6 +202,7 @@ ALTER TABLE "notifications" ADD CONSTRAINT "notifications_notification_type_id_n
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_from_id_users_id_fk" FOREIGN KEY ("from_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_to_id_users_id_fk" FOREIGN KEY ("to_id") REFERENCES "public"."users"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "notifications" ADD CONSTRAINT "notifications_shop_id_shop_owners_id_fk" FOREIGN KEY ("shop_id") REFERENCES "public"."shop_owners"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "offer_banner" ADD CONSTRAINT "offer_banner_shop_owner_id_shop_owners_id_fk" FOREIGN KEY ("shop_owner_id") REFERENCES "public"."shop_owners"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "offers" ADD CONSTRAINT "offers_category_id_category_id_fk" FOREIGN KEY ("category_id") REFERENCES "public"."category"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "offers" ADD CONSTRAINT "offers_service_id_services_id_fk" FOREIGN KEY ("service_id") REFERENCES "public"."services"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "offers" ADD CONSTRAINT "offers_shop_id_shop_owners_id_fk" FOREIGN KEY ("shop_id") REFERENCES "public"."shop_owners"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint

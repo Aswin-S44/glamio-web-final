@@ -16,9 +16,22 @@ const pool = new Pool({
   connectionString: dbUrl,
   ssl: isProduction
     ? {
-      rejectUnauthorized: false,
-    }
+        rejectUnauthorized: false,
+      }
     : false,
 });
+
+// Test DB connection
+pool
+  .connect()
+  .then((client) => {
+    console.log("✅ PostgreSQL connected successfully");
+
+    client.release(); // release the client back to pool
+  })
+  .catch((err) => {
+    console.error("❌ PostgreSQL connection failed");
+    console.error(err);
+  });
 
 export const db = drizzle(pool);

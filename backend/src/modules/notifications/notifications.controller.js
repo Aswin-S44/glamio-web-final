@@ -7,7 +7,7 @@ import {
 export const sendNotification = async (req, res) => {
   try {
     const fromId = req.user?.id;
-    console.log("BODY--------------", req.body);
+
     const { notificationTypeId, toId, message, shopId } = req.body;
     if (!fromId) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -43,8 +43,6 @@ export const getNotifications = async (req, res) => {
     }
 
     const notifications = await getNotificationsService(userId);
-
-    console.log("notifications--------------", notifications);
 
     return res.json({
       message: "Notifications fetched successfully",

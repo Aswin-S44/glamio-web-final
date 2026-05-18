@@ -88,7 +88,7 @@ export const getSlotsByShopId = async (req, res) => {
 
 export const createBooking = async (req, res) => {
   try {
-    console.log("*****************88", req.body);
+    console.log("222222222222");
     const shopId = Number(req.body.shopId);
     const slotId = Number(req.body.slotId);
     const expertId = Number(req.body.expertId);
@@ -113,8 +113,6 @@ export const createBooking = async (req, res) => {
       rate: bookingContext.totalRate,
     };
 
-    console.log("dataToUpdate----------------", dataToUpdate);
-
     // const existingBooking = await findExistingBookingService(dataToUpdate);
 
     // if (existingBooking) {
@@ -123,12 +121,11 @@ export const createBooking = async (req, res) => {
     //   });
     //   return;
     // }
-
+    console.log("11111111111");
     const result = await createBookingService(dataToUpdate);
-    console.log("result------------------", result ? result : "no result");
+
     res.status(201).send({ appointment: result });
   } catch (error) {
-    console.log("RRR0R-----------------", error);
     res.status(400).json({
       message: error instanceof Error ? error.message : "Unknown error",
     });
@@ -244,20 +241,19 @@ export const updateUserController = async (req, res) => {
 export const getCustomerAppointments = async (req, res) => {
   try {
     const userId = req.user?.id;
-
+    console.log("****************");
     if (!userId) {
       return res.status(401).json({
         message: "Unauthorized",
       });
     }
-
     const appointments = await getCustomerAppointmentsService(userId);
-
     return res.json({
       message: "Appointments fetched successfully",
       data: appointments,
     });
   } catch (e) {
+    console.log("----------------");
     return res.status(400).json({
       message: e.message,
     });
@@ -282,8 +278,8 @@ export const getExpertDetails = async (req, res) => {
     return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ message: error.message });
-
-  }}
+  }
+};
 
 export const getCustomerNotifications = async (req, res) => {
   try {
@@ -303,7 +299,10 @@ export const getCustomerNotifications = async (req, res) => {
 export const markNotificationRead = async (req, res) => {
   try {
     const id = Number(req.params.id);
-    await db.update(notifications).set({ isRead: true }).where(eq(notifications.id, id));
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, id));
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ message: e.message });

@@ -94,15 +94,12 @@ export const getAllExpertsByShopIdService = async (shopId, serviceIds = []) => {
 
   const expertsList = await getExpertsByShopId(shopId);
   const expertsWithServices = await attachServiceIdsToExperts(expertsList);
-  console.log("expertsWithServices----------", expertsWithServices);
+
   const activeExperts = expertsWithServices.filter((expert) => expert.isActive);
-  console.log("activeExperts-------------", activeExperts);
+
   if (!normalizedServiceIds.length) {
     return activeExperts;
   }
-
-  console.log("normalizedServiceIds----------", normalizedServiceIds);
-  console.log("expertsList----------", expertsList);
 
   const matchedExperts = activeExperts.filter((expert) =>
     normalizedServiceIds.every((serviceId) =>

@@ -74,9 +74,7 @@ const ParlorDetailsScreen = () => {
 
       setIsLoadingReviews(true);
       try {
-        const res = await fetch(
-          `${BASE_URL}/customer/reviews/${placeId}?page=${isInitial ? 1 : page}`
-        );
+        const res = await fetch(`${BASE_URL}/customer/reviews/${placeId}`);
 
         if (!res.ok) {
           throw new Error("Failed to load reviews");
@@ -87,10 +85,15 @@ const ParlorDetailsScreen = () => {
           setImages(Array.isArray(data?.images) ? data.images : []);
           setReviews(Array.isArray(data?.reviews) ? data.reviews : []);
         } else {
-          setReviews((prev) => [...prev, ...(Array.isArray(data?.reviews) ? data.reviews : [])]);
+          setReviews((prev) => [
+            ...prev,
+            ...(Array.isArray(data?.reviews) ? data.reviews : []),
+          ]);
         }
 
-        setHasMoreReviews(Array.isArray(data?.reviews) && data.reviews.length === 10);
+        setHasMoreReviews(
+          Array.isArray(data?.reviews) && data.reviews.length === 10
+        );
       } catch {
         if (isInitial) {
           setImages([]);
@@ -114,7 +117,7 @@ const ParlorDetailsScreen = () => {
       setImages([]);
       setReviews([]);
     }
-  }, [parlour?.shop?.placeId, fetchReviewsAndImages]);
+  }, [parlour?.shop?.placeId]);
 
   const lastReviewRef = useCallback(
     (node) => {
@@ -189,7 +192,9 @@ const ParlorDetailsScreen = () => {
   const services = parlour.services || [];
   const offers = parlour.offers || [];
   const displayImages =
-    images.length > 0 ? images : [shop?.shopImage || shop?.user?.profileImage || DEFAULT_NO_IMAGE];
+    images.length > 0
+      ? images
+      : [shop?.shopImage || shop?.user?.profileImage || DEFAULT_NO_IMAGE];
 
   return (
     <div className="pd-page">
@@ -218,7 +223,8 @@ const ParlorDetailsScreen = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   setCurrentImgIdx(
-                    (index) => (index - 1 + displayImages.length) % displayImages.length
+                    (index) =>
+                      (index - 1 + displayImages.length) % displayImages.length
                   );
                 }}
               >
@@ -228,7 +234,9 @@ const ParlorDetailsScreen = () => {
                 className="pd-gallery-nav right"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setCurrentImgIdx((index) => (index + 1) % displayImages.length);
+                  setCurrentImgIdx(
+                    (index) => (index + 1) % displayImages.length
+                  );
                 }}
               >
                 <ChevronRight size={22} />
@@ -263,7 +271,9 @@ const ParlorDetailsScreen = () => {
           <div className="pd-info-left">
             <div className="pd-badges-row">
               {services.length > 0 && (
-                <span className="pd-badge services">{services.length}+ Services</span>
+                <span className="pd-badge services">
+                  {services.length}+ Services
+                </span>
               )}
               {offers.length > 0 && (
                 <span className="pd-badge offer">
@@ -286,7 +296,9 @@ const ParlorDetailsScreen = () => {
                 ))}
               </div>
               <span className="pd-rating-num">{avgRating}</span>
-              <span className="pd-review-count">({reviews.length} reviews)</span>
+              <span className="pd-review-count">
+                ({reviews.length} reviews)
+              </span>
             </div>
 
             <div className="pd-meta-pills">
@@ -413,7 +425,11 @@ const ParlorDetailsScreen = () => {
                       {getServicePrice(service.id, service.rate)}
                       <button
                         className="pd-book-service-btn"
-                        onClick={() => navigate(`/parlor/${service.shopId}/service/${service.id}`)}
+                        onClick={() =>
+                          navigate(
+                            `/parlor/${service.shopId}/service/${service.id}`
+                          )
+                        }
                       >
                         Book Now
                       </button>
@@ -459,7 +475,9 @@ const ParlorDetailsScreen = () => {
                                 key={si}
                                 size={13}
                                 fill={si < review.rating ? "#FFD700" : "none"}
-                                color={si < review.rating ? "#FFD700" : "#CBD5E1"}
+                                color={
+                                  si < review.rating ? "#FFD700" : "#CBD5E1"
+                                }
                               />
                             ))}
                           </div>
@@ -546,7 +564,11 @@ const ParlorDetailsScreen = () => {
           <button className="pd-lightbox-close">
             <X size={24} />
           </button>
-          <img src={selectedImg} alt="Enlarged" onClick={(e) => e.stopPropagation()} />
+          <img
+            src={selectedImg}
+            alt="Enlarged"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
       )}
 

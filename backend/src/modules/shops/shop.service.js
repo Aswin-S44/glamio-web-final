@@ -12,6 +12,7 @@ import {
   getShopStatsRepo,
   updateShopDB,
 } from "./shop.repository.js";
+import { users } from "../../db/schemas/users.js";
 
 export const updateShopProfile = async (id, data) => {
   const result = await findShopByUserId(id);
@@ -24,28 +25,17 @@ export const updateShopProfile = async (id, data) => {
   }
 
   let parlourName = data?.shop?.parlourName ?? shop?.parlourName;
-  let locationUrl = data?.shop?.parlourName ?? shop?.googleReviewUrl;
-
-  // if (!shop) {
-  //   parlourName = data?.shop?.parlourName;
-  //   locationUrl = data?.shop?.parlourName;
-  // }
+  let locationUrl = data?.shop?.googleReviewUrl ?? shop?.googleReviewUrl;
 
   const { coordinates, placeId, totalRating } = await getLatLngFromAddress(
     parlourName,
     locationUrl
   );
 
-  console.log("CORDINATES--------------", coordinates);
-  console.log("PLACE ID--------------", placeId);
-  console.log("total rating-------------", totalRating);
-
   const newShop = data?.shop;
-  console.log("SHOP------------", shop ? shop : "no shop");
+
   if (shop) {
-    // For updates, you might want to handle image updates differently
-    // Only upload new images if they're base64 strings
-    let updatedShopData = { ...newShop };
+    let updatedShopData = { ...newShop, placeId };
 
     if (newShop?.shopImage && newShop.shopImage.startsWith("data:")) {
       const uploadedUrl = await uploadImageToCloudinary(newShop.shopImage);
@@ -63,7 +53,6 @@ export const updateShopProfile = async (id, data) => {
           newShop.galleryImages
         );
         if (uploadedUrls.length > 0) {
-          // Merge existing non-base64 URLs with new uploaded ones
           const existingUrls = newShop.galleryImages.filter(
             (img) => img && !img.startsWith("data:")
           );
@@ -72,32 +61,32 @@ export const updateShopProfile = async (id, data) => {
       }
     }
 
-    console.log("updatedShopData-------------", updatedShopData);
-    console.log("id-----------", id);
+    if (Object.keys(updatedShopData).length > 0) {
+      await db
+        .update(shopOwners)
+        .set(updatedShopData)
+        .where(eq(shopOwners.id, shop?.id));
+    }
 
-    //  await updateShopDB(id, updatedShopData);
-
-    await db
-      .update(shopOwners)
-      .set(updatedShopData)
-      .where(eq(shopOwners.id, id));
+    if (data?.users?.phone) {
+      await db
+        .update(users)
+        .set({ phone: data?.users?.phone })
+        .where(eq(users.id, id));
+    }
   } else {
-    // Upload images to Cloudinary before saving to database
     let shopImageUrl = DEFAULT_NO_IMAGE;
     let galleryImageUrls = [];
 
-    // Upload shop image if it's base64
     if (newShop?.shopImage && newShop.shopImage.startsWith("data:")) {
       const uploadedUrl = await uploadImageToCloudinary(newShop.shopImage);
       if (uploadedUrl) {
         shopImageUrl = uploadedUrl;
       }
     } else if (newShop?.shopImage && !newShop.shopImage.startsWith("data:")) {
-      // If it's already a URL, use it directly
       shopImageUrl = newShop.shopImage;
     }
 
-    // Upload gallery images if they're base64
     if (newShop?.galleryImages && newShop.galleryImages.length > 0) {
       const hasBase64 = newShop.galleryImages.some(
         (img) => img && img.startsWith("data:")
@@ -108,12 +97,11 @@ export const updateShopProfile = async (id, data) => {
         );
         galleryImageUrls = uploadedUrls;
       } else {
-        // If they're already URLs, use them directly
         galleryImageUrls = newShop.galleryImages;
       }
     }
 
-    let shopData = {
+    const shopData = {
       userId: user?.id,
       about: newShop?.about ?? "",
       address: newShop?.address ?? "",
@@ -121,7 +109,7 @@ export const updateShopProfile = async (id, data) => {
       longitude: coordinates?.longitude,
       googleReviewUrl: newShop?.googleReviewUrl,
       isOnboarded: false,
-      openingHours: newShop?.openingHours ?? {}, // Or [] based on your schema
+      openingHours: newShop?.openingHours ?? {},
       parlourName: newShop?.parlourName,
       placeId,
       totalRating,
@@ -129,8 +117,6 @@ export const updateShopProfile = async (id, data) => {
       shopImage: shopImageUrl,
       galleryImages: galleryImageUrls,
     };
-
-    console.log("shopData-----------------", shopData);
 
     await db.insert(shopOwners).values(shopData);
   }

@@ -75,7 +75,6 @@ export const AuthProvider = ({ children }) => {
   }, [fetchProfile]);
 
   const setAuthenticatedUser = useCallback((authData) => {
-    console.log("authData-------------", authData);
     if (authData?.data?.token) {
       localStorage.setItem("token", authData.data.token);
     }

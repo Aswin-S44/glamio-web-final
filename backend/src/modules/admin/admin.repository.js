@@ -17,7 +17,7 @@ export const getAllShopsRepo = async () => {
       googleReviewUrl: shopOwners.googleReviewUrl,
       ownerName: users.username,
       ownerEmail: users.email,
-      phone: users.phone, 
+      phone: users.phone,
       profileImage: users.profileImage,
     })
     .from(shopOwners)

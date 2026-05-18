@@ -4,8 +4,8 @@ import { Eye, EyeOff, Shield, Lock, Mail, Loader2 } from "lucide-react";
 import "./AdminLogin.css";
 import logoImg from "../../../components/Media/Images/Logo.png";
 
-const ADMIN_EMAIL = "admin@glamio.com";
-const ADMIN_PASSWORD = "Admin@123";
+const ADMIN_EMAIL = "admin";
+const ADMIN_PASSWORD = "admin";
 
 export default function AdminLogin() {
   const navigate = useNavigate();

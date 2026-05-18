@@ -463,7 +463,7 @@ function Header() {
                   onClick={() => {
                     setIsSidebarOpen(false);
                     const shop = shopProfile;
-                    console.log("SHOP-----------", shop);
+
                     if (shop?.isOnboarded) {
                       navigate("/shop/dashboard");
                     } else if (shop?.isProfileCompleted) {

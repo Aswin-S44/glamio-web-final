@@ -13,7 +13,7 @@ import "./MyProfileScreen.css";
 import Footer from "../../components/Footer/Footer";
 import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 import { apiRequest } from "../../utils/api.util";
-
+ 
 const fileToBase64 = (file) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();

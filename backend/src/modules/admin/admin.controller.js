@@ -6,11 +6,9 @@ import {
 
 export const getAllShops = async (req, res) => {
   try {
-    console.log("11111111111111");
     const shops = await getAllShopsRepo();
     res.json({ shops });
   } catch (e) {
-    console.error("Error ----------------", e);
     res.status(500).json({ message: "Failed to fetch shops" });
   }
 };

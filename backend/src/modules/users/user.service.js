@@ -1,7 +1,10 @@
 import jwt from "jsonwebtoken";
 
 import { users } from "../../db/schemas/users.js";
-import { DEFAULT_CUSTOMER_ID, DEFAULT_SHOP_ID } from "../../constants/constants.js";
+import {
+  DEFAULT_CUSTOMER_ID,
+  DEFAULT_SHOP_ID,
+} from "../../constants/constants.js";
 import { db } from "../../db/index.js";
 import { eq } from "drizzle-orm";
 import { shopOwners } from "../../db/schemas/shop-owners.js";
@@ -24,7 +27,10 @@ const createDefaultShopProfile = async (userId) => {
     isProfileCompleted: false,
   };
 
-  const shopResult = await db.insert(shopOwners).values(shopPayload).returning();
+  const shopResult = await db
+    .insert(shopOwners)
+    .values(shopPayload)
+    .returning();
   return shopResult[0] || null;
 };
 
@@ -43,7 +49,6 @@ export const createUser = async (data) => {
 
 export const createUserService = async (payload) => {
   const { email, username, profileImage, userType } = payload;
-  console.log("Creating user with payload:", userType, email, username);
 
   if (!email || !username) {
     throw new Error("email and username are required");
@@ -55,10 +60,7 @@ export const createUserService = async (payload) => {
     .where(eq(users.email, email))
     .limit(1);
 
-  console.log("Existing user query result:", existingUser);
-
   if (existingUser.length > 0) {
-    console.log("User already exists with email:", email);
     let user = existingUser[0];
     let shopDetails = null;
 

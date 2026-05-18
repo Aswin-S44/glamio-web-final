@@ -65,11 +65,7 @@ export const getSlots = async (req, res) => {
 
 export const updateSlotById = async (req, res) => {
   try {
-    console.log("===================--------");
-
     const userId = req.user?.id;
-
-    console.log("user  id---------", userId);
 
     if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
