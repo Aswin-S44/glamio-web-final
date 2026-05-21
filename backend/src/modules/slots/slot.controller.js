@@ -6,31 +6,35 @@ import {
   updateSlotService,
 } from "./slot.service.js";
 
+const resolveShopId = async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return null;
+  }
+  const shopId = await getShopIdByUserId(userId);
+  if (!shopId) {
+    res.status(404).json({ message: "Shop not found" });
+    return null;
+  }
+  return shopId;
+};
+
 export const createSlot = async (req, res) => {
   try {
     const userId = req.user?.id;
-
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
 
     const shop = await findShopByUserId(userId);
-
-    if (!shop) {
-      res.status(401).json({ message: "Shop Not found" });
+    if (!shop?.shop?.id) {
+      res.status(404).json({ message: "Shop not found" });
       return;
     }
 
-    const shopId = shop.shop?.id;
-
-    if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
-      return;
-    }
-
-    await SlotService.createSlot(shopId, req.body);
-
+    await SlotService.createSlot(shop.shop.id, req.body);
     res.status(201).json({ message: "Slot created successfully" });
   } catch (error) {
     res.status(400).json({
@@ -41,20 +45,10 @@ export const createSlot = async (req, res) => {
 
 export const getSlots = async (req, res) => {
   try {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const shopId = await getShopIdByUserId(userId);
-
-    if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
-    }
+    const shopId = await resolveShopId(req, res);
+    if (!shopId) return;
 
     const slots = await SlotService.getSlots(shopId);
-
     res.status(200).json({ slots });
   } catch (error) {
     res.status(500).json({
@@ -65,47 +59,20 @@ export const getSlots = async (req, res) => {
 
 export const updateSlotById = async (req, res) => {
   try {
-    console.log("===================--------");
-
-    const userId = req.user?.id;
-
-    console.log("user  id---------", userId);
-
-    if (!userId) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const shopId = await getShopIdByUserId(userId);
-
-    if (!shopId) {
-      return res.status(401).json({ message: "Shop not found" });
-    }
+    const shopId = await resolveShopId(req, res);
+    if (!shopId) return;
 
     await updateSlotService(Number(req.params.id), shopId, req.body);
-
-    return res.json({
-      message: "Slots updated successfully",
-    });
+    res.json({ message: "Slots updated successfully" });
   } catch (e) {
-    return res.status(400).json({
-      message: e.message,
-    });
+    res.status(400).json({ message: e.message });
   }
 };
 
 export const deleteSlotById = async (req, res) => {
   try {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const shopId = await getShopIdByUserId(userId);
-
-    if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
-    }
+    const shopId = await resolveShopId(req, res);
+    if (!shopId) return;
 
     await deleteSlotService(Number(req.params.id), shopId);
     res.json({ message: "Slots deleted successfully" });

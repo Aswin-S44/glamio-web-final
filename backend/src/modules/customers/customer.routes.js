@@ -14,6 +14,10 @@ import {
   getSlotsByShopId,
   updateUserController,
 } from "./customer.controller.js";
+import {
+  markNotificationAsRead,
+  deleteNotification,
+} from "../notifications/notifications.controller.js";
 
 const router = Router();
 
@@ -31,5 +35,8 @@ router.get("/appointments", authMiddleware, getCustomerAppointments);
 router.patch("/profile", authMiddleware, updateUserController);
 
 router.get("/expert/:id", getExpertDetails);
+
+router.patch("/notifications/:id/read", authMiddleware, markNotificationAsRead);
+router.delete("/notifications/:id", authMiddleware, deleteNotification);
 
 export default router;

@@ -1,5 +1,6 @@
 import {
   createNotificationService,
+  deleteNotificationService,
   getNotificationsService,
   markNotificationAsReadService,
 } from "./notifications.service.js";
@@ -62,21 +63,33 @@ export const markNotificationAsRead = async (req, res) => {
     const userId = req.user?.id;
 
     if (!userId) {
-      return res.status(401).json({
-        message: "Unauthorized",
-      });
+      return res.status(401).json({ message: "Unauthorized" });
     }
 
     const notificationId = Number(req.params.id);
 
     await markNotificationAsReadService(notificationId, userId);
 
-    return res.json({
-      message: "Notification marked as read",
-    });
+    return res.json({ message: "Notification marked as read" });
   } catch (e) {
-    return res.status(400).json({
-      message: e.message,
-    });
+    return res.status(400).json({ message: e.message });
+  }
+};
+
+export const deleteNotification = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const notificationId = Number(req.params.id);
+
+    await deleteNotificationService(notificationId, userId);
+
+    return res.json({ message: "Notification deleted" });
+  } catch (e) {
+    return res.status(400).json({ message: e.message });
   }
 };

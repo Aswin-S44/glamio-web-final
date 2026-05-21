@@ -68,7 +68,7 @@ export default function NearByShops() {
 
         const data = await res.json();
         const list = data.shops || [];
-        setShops(Array.isArray(list) ? list : []);
+        setShops((Array.isArray(list) ? list : []).filter(item => item.shop));
       } catch (err) {
         setShops([]);
         setFetchError(err.message || "Failed to load nearby shops");

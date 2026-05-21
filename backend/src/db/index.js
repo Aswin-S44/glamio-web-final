@@ -6,19 +6,13 @@ dotenv.config();
 
 const { Pool } = pg;
 
-const isProduction = process.env.NODE_ENV === "production";
-
-const dbUrl = isProduction
-  ? process.env.DATABASE_URL_PROD
-  : process.env.DATABASE_URL_LOCAL;
+// Prefer PROD URL when available, fall back to LOCAL for development
+const dbUrl = process.env.DATABASE_URL_PROD || process.env.DATABASE_URL_LOCAL;
+const isRemote = dbUrl === process.env.DATABASE_URL_PROD;
 
 const pool = new Pool({
   connectionString: dbUrl,
-  ssl: isProduction
-    ? {
-      rejectUnauthorized: false,
-    }
-    : false,
+  ssl: isRemote ? { rejectUnauthorized: false } : false,
 });
 
 export const db = drizzle(pool);

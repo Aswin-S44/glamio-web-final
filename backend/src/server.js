@@ -12,7 +12,7 @@ import shopsRouter from "./modules/shops/shop.routes.js";
 import customerRouter from "./modules/customers/customer.routes.js";
 import notificationRoutes from "./modules/notifications/notifications.routes.js";
 
-dotenv.config();
+dotenv.config({ override: true });
 
 const app = express();
 

@@ -1,70 +1,36 @@
 import { createUserService } from "../users/user.service.js";
 import {
-  changePasswordService,
   googleSignInService,
-  loginService,
-  registerService,
   updateFcmTokenService,
   updateProfileService,
 } from "./auth.service.js";
-
-// export const googleSignIn = async (req, res) => {
-//   try {
-//     const { idToken } = req.body;
-//     const result = await googleSignInService(idToken);
-//     res.status(200).json({ success: true, data: result });
-//   } catch (error) {
-//     res.status(401).json({ success: false, message: error.message || "Invalid Google token" });
-//   }
-// };
 
 export const googleSignIn = async (req, res) => {
   try {
     const { idToken, userType } = req.body;
 
-    const result = await googleSignInService(idToken);
+    const firebaseResult = await googleSignInService(idToken);
 
-    if (result && result.user) {
-      let userData = {
-        email: result.user.email ?? "",
-        username: result.user.name ?? "",
-        profileImage: result.user.picture ?? DEFAULT_IMAGE_URL,
-        userType,
-      };
-      await createUserService(userData);
-    }
+    const dbResult = await createUserService({
+      email: firebaseResult.user.email ?? "",
+      username: firebaseResult.user.name ?? "",
+      profileImage: firebaseResult.user.picture ?? "",
+      userType,
+    });
 
     res.status(200).json({
       success: true,
-      data: result,
+      data: {
+        token: dbResult.token,
+        user: dbResult.user,
+      },
     });
   } catch (error) {
-    console.error("DETAILED BACKEND ERROR:", error);
+    console.error("Google sign-in error:", error);
     res.status(401).json({
       success: false,
       message: error.message || "Invalid Google token",
     });
-  }
-};
-
-export const register = async (req, res) => {
-  try {
-    const result = await registerService(req.body);
-    res.status(201).json({ success: true, data: result });
-  } catch (error) {
-    res.status(error.message?.includes("already") ? 409 : 400).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
-
-export const login = async (req, res) => {
-  try {
-    const result = await loginService(req.body);
-    res.status(200).json({ success: true, data: result });
-  } catch (error) {
-    res.status(401).json({ success: false, message: error.message });
   }
 };
 
@@ -80,16 +46,6 @@ export const updateProfile = async (req, res) => {
 export const updateFcmToken = async (req, res) => {
   try {
     await updateFcmTokenService(req.user.id, req.body.fcmToken);
-    res.status(200).json({ success: true });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
-  }
-};
-
-export const changePassword = async (req, res) => {
-  try {
-    const { oldPassword, newPassword } = req.body;
-    await changePasswordService(req.user.id, oldPassword, newPassword);
     res.status(200).json({ success: true });
   } catch (error) {
     res.status(400).json({ success: false, message: error.message });

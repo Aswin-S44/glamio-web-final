@@ -30,7 +30,7 @@ function SignIn() {
         idToken,
         userType: "customer",
       });
-      const { user } = authData;
+      const user = authData?.data?.user ?? authData?.user;
       setAuthenticatedUser(authData);
 
       // Step 3: Navigate based on shop profile state

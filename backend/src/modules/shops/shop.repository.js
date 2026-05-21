@@ -23,62 +23,59 @@ export const updateShopDB = async (userId, payload) => {
 
   const shopDetails = await findShopByUserId(userId);
 
-  return db.transaction(async (tx) => {
-    if (user && Object.keys(user).length > 0) {
-      await tx
-        .update(users)
+  // Run sequentially without a transaction to avoid pgbouncer prepared-statement issues
+  if (user && Object.keys(user).length > 0) {
+    await db
+      .update(users)
+      .set({
+        username: user.username,
+        phone: user.phone,
+        profileImage: user.profileImage,
+        fcmToken: user.fcmToken,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+  }
+
+  if (shop && Object.keys(shop).length > 0) {
+    let shopId = shopDetails?.shop?.id;
+
+    if (shopId) {
+      await db
+        .update(shopOwners)
         .set({
-          username: user.username,
-          phone: user.phone,
-          profileImage: user.profileImage,
-          fcmToken: user.fcmToken,
-          updatedAt: new Date(),
+          about: shop.about,
+          address: shop.address,
+          latitude: shop.latitude,
+          longitude: shop.longitude,
+          googleReviewUrl: shop.googleReviewUrl,
+          openingHours: shop.openingHours,
+          parlourName: shop.parlourName,
+          placeId: shop.placeId,
+          totalRating: shop.totalRating,
+          isProfileCompleted: shop.isProfileCompleted,
+          isOnboarded: shop.isOnboarded,
         })
-        .where(eq(users.id, userId));
+        .where(eq(shopOwners.id, shopId));
+    } else {
+      await db
+        .insert(shopOwners)
+        .values({
+          userId,
+          about: shop.about,
+          address: shop.address,
+          latitude: shop.latitude ?? 0,
+          longitude: shop.longitude ?? 0,
+          googleReviewUrl: shop.googleReviewUrl,
+          openingHours: shop.openingHours ?? {},
+          parlourName: shop.parlourName,
+          placeId: shop.placeId,
+          totalRating: shop.totalRating ?? 0,
+          isProfileCompleted: shop.isProfileCompleted ?? false,
+          isOnboarded: shop.isOnboarded ?? false,
+        });
     }
-
-    if (shop && Object.keys(shop).length > 0) {
-      let shopId = shopDetails?.shop?.id;
-
-      if (shopId) {
-        await tx
-          .update(shopOwners)
-          .set({
-            about: shop.about,
-            address: shop.address,
-            latitude: shop.latitude,
-            longitude: shop.longitude,
-            googleReviewUrl: shop.googleReviewUrl,
-            openingHours: shop.openingHours,
-            parlourName: shop.parlourName,
-            placeId: shop.placeId,
-            totalRating: shop.totalRating,
-            isProfileCompleted: shop.isProfileCompleted,
-            isOnboarded: shop.isOnboarded,
-          })
-          .where(eq(shopOwners.id, shopId));
-      } else {
-        const [result] = await tx
-          .insert(shopOwners)
-          .values({
-            userId,
-            about: shop.about,
-            address: shop.address,
-            latitude: shop.latitude ?? 0,
-            longitude: shop.longitude ?? 0,
-            googleReviewUrl: shop.googleReviewUrl,
-            openingHours: shop.openingHours ?? {},
-            parlourName: shop.parlourName,
-            placeId: shop.placeId,
-            totalRating: shop.totalRating ?? 0,
-            isProfileCompleted: shop.isProfileCompleted ?? false,
-            isOnboarded: shop.isOnboarded ?? false,
-          })
-          .returning();
-        shopId = result.insertId;
-      }
-    }
-  });
+  }
 };
 
 export const getShopStatsRepo = async (shopId, timeframe = "weekly") => {
@@ -118,7 +115,7 @@ export const getShopStatsRepo = async (shopId, timeframe = "weekly") => {
 
     const dayLabel =
       timeframe === "monthly"
-        ? d.getDate().toString() // Show date number for monthly
+        ? d.getDate().toString()
         : new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(d);
 
     const existingDay = rawChartData.find(

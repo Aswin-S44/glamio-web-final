@@ -75,12 +75,14 @@ export const AuthProvider = ({ children }) => {
   }, [fetchProfile]);
 
   const setAuthenticatedUser = useCallback((authData) => {
-    console.log("authData-------------", authData);
-    if (authData?.data?.token) {
-      localStorage.setItem("token", authData.token);
+    const token = authData?.data?.token ?? authData?.token;
+    const rawUser = authData?.data?.user ?? authData?.user ?? authData;
+
+    if (token) {
+      localStorage.setItem("token", token);
     }
 
-    setUser(normalizeAuthUser(authData?.user ?? authData));
+    setUser(normalizeAuthUser(rawUser));
     setError(null);
     setLoading(false);
   }, []);

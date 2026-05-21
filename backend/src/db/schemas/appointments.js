@@ -24,7 +24,6 @@ export const appointments = pgTable("appointments", {
     .references(() => users.id),
 
   expertId: bigint("expert_id", { mode: "number" })
-    .notNull()
     .references(() => experts.id),
 
   slotId: bigint("slot_id", { mode: "number" })

@@ -7,22 +7,26 @@ import {
   updateExpertService,
 } from "./expert.service.js";
 
+const getShopId = async (req, res) => {
+  const userId = req.user?.id;
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return null;
+  }
+  const shopId = await getShopIdByUserId(userId);
+  if (!shopId) {
+    res.status(404).json({ message: "Shop not found for this account" });
+    return null;
+  }
+  return shopId;
+};
+
 export const addExpert = async (req, res) => {
   try {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const shopId = await getShopIdByUserId(userId);
-
-    if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
-    }
+    const shopId = await getShopId(req, res);
+    if (!shopId) return;
 
     await addExpertService(shopId, req.body);
-
     res.status(201).json({ message: "Expert created successfully" });
   } catch (e) {
     res.status(400).json({ message: e.message });
@@ -30,34 +34,49 @@ export const addExpert = async (req, res) => {
 };
 
 export const getExperts = async (req, res) => {
-  const userId = req.user?.id;
+  try {
+    const shopId = await getShopId(req, res);
+    if (!shopId) return;
 
-  if (!userId) {
-    res.status(401).json({ message: "Unauthorized" });
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 8));
+    const search = (req.query.search || "").trim().toLowerCase();
+    const specialist = (req.query.specialist || "").trim();
+
+    const allExperts = await getExpertsService(shopId);
+
+    let filtered = allExperts;
+    if (search) {
+      filtered = filtered.filter(
+        (e) =>
+          e.name?.toLowerCase().includes(search) ||
+          e.specialist?.toLowerCase().includes(search) ||
+          e.about?.toLowerCase().includes(search)
+      );
+    }
+    if (specialist) {
+      filtered = filtered.filter(
+        (e) => e.specialist?.toLowerCase() === specialist.toLowerCase()
+      );
+    }
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
+    const safePage = Math.min(page, totalPages);
+    const paginated = filtered.slice((safePage - 1) * limit, safePage * limit);
+
+    res.json({
+      experts: paginated,
+      pagination: { currentPage: safePage, totalPages, limit },
+    });
+  } catch (e) {
+    res.status(500).json({ message: e.message });
   }
-
-  const shopId = await getShopIdByUserId(userId);
-
-  if (!shopId) {
-    res.status(401).json({ message: "Shop not found" });
-  }
-  const experts = await getExpertsService(shopId);
-  res.json({ experts });
 };
 
 export const getExpertById = async (req, res) => {
   try {
-    const userId = req.user?.id;
-
-    if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const shopId = await getShopIdByUserId(userId);
-
-    if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
-    }
+    const shopId = await getShopId(req, res);
+    if (!shopId) return;
 
     const expert = await getExpertByIdService(Number(req.params.id), shopId);
     res.json(expert);
@@ -68,17 +87,9 @@ export const getExpertById = async (req, res) => {
 
 export const updateExpertById = async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const shopId = await getShopId(req, res);
+    if (!shopId) return;
 
-    if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const shopId = await getShopIdByUserId(userId);
-
-    if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
-    }
     await updateExpertService(Number(req.params.id), shopId, req.body);
     res.json({ message: "Expert updated successfully" });
   } catch (e) {
@@ -88,17 +99,9 @@ export const updateExpertById = async (req, res) => {
 
 export const deleteExpertById = async (req, res) => {
   try {
-    const userId = req.user?.id;
+    const shopId = await getShopId(req, res);
+    if (!shopId) return;
 
-    if (!userId) {
-      res.status(401).json({ message: "Unauthorized" });
-    }
-
-    const shopId = await getShopIdByUserId(userId);
-
-    if (!shopId) {
-      res.status(401).json({ message: "Shop not found" });
-    }
     await deleteExpertService(Number(req.params.id), shopId);
     res.json({ message: "Expert deleted successfully" });
   } catch (e) {

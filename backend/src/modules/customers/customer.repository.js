@@ -97,27 +97,24 @@ export const getAllExpertsByShopIdDB = async (shopId) => {
   return result ?? [];
 };
 
-export const createBookingDB = (data) => {
+export const createBookingDB = async (data) => {
   const { serviceIds, ...appointmentData } = data;
 
-  return db.transaction(async (tx) => {
-    const [appointment] = await tx
-      .insert(appointments)
-      .values({
-        ...appointmentData,
-        serviceIds,
-      })
-      .returning();
+  const [appointment] = await db
+    .insert(appointments)
+    .values({ ...appointmentData, serviceIds })
+    .returning();
 
-    await tx.insert(appointmentServices).values(
+  if (serviceIds?.length) {
+    await db.insert(appointmentServices).values(
       serviceIds.map((serviceId) => ({
         appointmentId: appointment.id,
         serviceId,
       }))
     );
+  }
 
-    return appointment;
-  });
+  return appointment;
 };
 
 export const findBookingDB = (data) => {

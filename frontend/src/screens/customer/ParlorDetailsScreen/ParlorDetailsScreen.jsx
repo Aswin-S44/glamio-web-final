@@ -351,7 +351,14 @@ const ParlorDetailsScreen = () => {
               </div>
               <button
                 className="pd-book-btn"
-                onClick={() => navigate(`/parlor/${id}/services`)}
+                onClick={() => {
+                  if (!localStorage.getItem("token")) {
+                    sessionStorage.setItem("redirectAfterLogin", `/parlor/${id}/services`);
+                    navigate("/signin");
+                    return;
+                  }
+                  navigate(`/parlor/${id}/services`);
+                }}
               >
                 View All Services <ArrowRight size={18} />
               </button>
@@ -413,7 +420,14 @@ const ParlorDetailsScreen = () => {
                       {getServicePrice(service.id, service.rate)}
                       <button
                         className="pd-book-service-btn"
-                        onClick={() => navigate(`/parlor/${service.shopId}/service/${service.id}`)}
+                        onClick={() => {
+                          if (!localStorage.getItem("token")) {
+                            sessionStorage.setItem("redirectAfterLogin", `/parlor/${service.shopId}/service/${service.id}`);
+                            navigate("/signin");
+                            return;
+                          }
+                          navigate(`/parlor/${service.shopId}/service/${service.id}`);
+                        }}
                       >
                         Book Now
                       </button>

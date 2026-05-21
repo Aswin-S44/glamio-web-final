@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { googleLogin } from "../../../store/slice/auth";
 import { useAuth } from "../../../context/AuthContext";
 import imgLogo from "../../../components/Media/Images/Logo.png";
+import Swal from "sweetalert2";
 
 
 function SignUp() {
@@ -16,12 +17,12 @@ function SignUp() {
   const { setAuthenticatedUser } = useAuth();
 
   const handleGoogleSignIn = async () => {
-    console.log('000000000000000')
     const res = await dispatch(googleLogin());
     if (googleLogin.fulfilled.match(res)) {
       setAuthenticatedUser(res.payload);
 
-      const shop = res.payload?.user?.shopProfile || res.payload?.user?.shop;
+      const resUser = res.payload?.data?.user ?? res.payload?.user;
+      const shop = resUser?.shopProfile || resUser?.shop;
       if (shop?.isProfileCompleted && shop?.isOnboarded) {
         navigate("/shop/dashboard");
       } else if (shop?.isProfileCompleted && !shop?.isOnboarded) {
@@ -29,6 +30,13 @@ function SignUp() {
       } else {
         navigate("/shop/edit-profile");
       }
+    } else if (googleLogin.rejected.match(res)) {
+      Swal.fire({
+        icon: "error",
+        title: "Sign-in Failed",
+        text: res.payload || "Could not sign in with Google. Please try again.",
+        confirmButtonColor: "#c2185b",
+      });
     }
   };
 

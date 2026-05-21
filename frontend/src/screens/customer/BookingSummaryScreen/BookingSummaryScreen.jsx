@@ -49,30 +49,22 @@ function BookingSummaryScreen() {
 
   useEffect(() => {
     const fetchOrderSummary = async () => {
-      if (!shopId || !slotId || !expertId || serviceIds.length === 0) {
-        console.error("Missing required parameters:", {
-          shopId,
-          slotId,
-          expertId,
-          serviceIds,
-        });
+      if (!shopId || !slotId || serviceIds.length === 0) {
         Swal.fire({
           icon: "error",
           title: "Missing Information",
           text: "Unable to load booking summary. Please try again.",
           confirmButtonColor: "#c2185b",
-        }).then(() => {
-          navigate(-1);
-        });
+        }).then(() => navigate(-1));
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        // Build URL with service IDs as comma-separated string
         const serviceIdParam = serviceIds.join(",");
-        const url = `${BASE_URL}/customer/order/summary/${shopId}/${slotId}/${expertId}?serviceId=${serviceIdParam}`;
+        // expertId=0 means no expert selected — backend handles it as null
+        const url = `${BASE_URL}/customer/order/summary/${shopId}/${slotId}/${expertId || 0}?serviceId=${serviceIdParam}`;
 
         const res = await fetch(url, { method: "GET" });
 
@@ -140,7 +132,7 @@ function BookingSummaryScreen() {
         body: JSON.stringify({
           shopId,
           slotId,
-          expertId,
+          expertId: expertId > 0 ? expertId : null,
           serviceIds,
         }),
       });

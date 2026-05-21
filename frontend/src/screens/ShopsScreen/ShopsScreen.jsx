@@ -34,7 +34,7 @@ export default function ShopsScreen() {
       try {
         const res  = await fetch(`${BASE_URL}/customer/shops`);
         const data = await res.json();
-        setShops(data.shops || []);
+        setShops((data.shops || []).filter(item => item.shop));
       } catch {
         setShops([]);
       } finally {

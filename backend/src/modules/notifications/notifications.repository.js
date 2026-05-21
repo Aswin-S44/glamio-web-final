@@ -70,3 +70,9 @@ export const markNotificationAsReadDB = async (id) => {
 export const findNotificationById = async (id) => {
   return await db.select().from(notifications).where(eq(notifications.id, id));
 };
+
+export const deleteNotificationDB = async (id, userId) => {
+  return await db
+    .delete(notifications)
+    .where(eq(notifications.id, id));
+};

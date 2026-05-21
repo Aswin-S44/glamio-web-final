@@ -83,7 +83,8 @@ export const createBooking = async (req, res) => {
     console.log("*****************88", req.body);
     const shopId = Number(req.body.shopId);
     const slotId = Number(req.body.slotId);
-    const expertId = Number(req.body.expertId);
+    const rawExpertId = req.body.expertId;
+    const expertId = rawExpertId && Number(rawExpertId) > 0 ? Number(rawExpertId) : null;
     const customerId = Number(req.user?.id);
     const selectedServices = BookingService.normalizeServiceIds(
       req.body.serviceIds
@@ -182,10 +183,11 @@ export const getOrderSummary = async (req, res) => {
       return;
     }
 
+    const parsedExpertId = Number(expertId);
     const bookingContext = await getBookingContextService({
       shopId: Number(shopId),
       slotId: Number(slotId),
-      expertId: Number(expertId),
+      expertId: parsedExpertId > 0 ? parsedExpertId : null,
       serviceIds,
     });
 

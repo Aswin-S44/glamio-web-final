@@ -200,49 +200,34 @@ export const getBookingContextService = async ({
     throw new Error("At least one service must be selected");
   }
 
-  const [shop, slot, expert, selectedServices] = await Promise.all([
+  const hasExpert = expertId && Number(expertId) > 0;
+
+  const [shop, slot, selectedServices] = await Promise.all([
     getShopOwnerByIdDB(shopId),
     getSlotByIdAndShopIdDB(slotId, shopId),
-    getExpertByIdAndShopIdDB(expertId, shopId),
     getServicesByIdsAndShopId(normalizedServiceIds, shopId),
   ]);
 
-  if (!shop) {
-    throw new Error("Shop not found");
-  }
-
-  if (!slot) {
-    throw new Error("Slot not found");
-  }
-
-  if (!expert) {
-    throw new Error("Expert not found");
-  }
-
-  if (!expert.isActive) {
-    throw new Error("Selected expert is not active");
-  }
+  if (!shop) throw new Error("Shop not found");
+  if (!slot) throw new Error("Slot not found");
 
   if (selectedServices.length !== normalizedServiceIds.length) {
     throw new Error("One or more selected services are invalid for this shop");
   }
 
-  const [expertWithServices] = await attachServiceIdsToExperts([expert]);
-
-  const canPerformAllServices = normalizedServiceIds.every((serviceId) =>
-    expertWithServices.serviceIds.includes(serviceId)
-  );
-
-  if (!canPerformAllServices) {
-    throw new Error(
-      "Selected expert is not assigned to all requested services"
-    );
+  let expert = null;
+  if (hasExpert) {
+    expert = await getExpertByIdAndShopIdDB(Number(expertId), shopId);
+    if (!expert) throw new Error("Expert not found");
+    if (!expert.isActive) throw new Error("Selected expert is not active");
+    const [expertWithServices] = await attachServiceIdsToExperts([expert]);
+    expert = expertWithServices;
   }
 
   return {
     shop,
     slot,
-    expert: expertWithServices,
+    expert,
     services: selectedServices,
     serviceIds: normalizedServiceIds,
     totalRate: selectedServices.reduce(

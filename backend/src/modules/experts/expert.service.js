@@ -13,53 +13,46 @@ import { db } from "../../db/index.js";
 import { getServicesByIdsAndShopId } from "../services/service.repository.js";
 
 const normalizeServiceIds = (serviceIds = []) => {
-  if (!Array.isArray(serviceIds)) {
-    return [];
-  }
-
+  if (!Array.isArray(serviceIds)) return [];
   return [
-    ...new Set(
-      serviceIds
-        .map(Number)
-        .filter((id) => Number.isInteger(id) && id > 0)
-    ),
+    ...new Set(serviceIds.map(Number).filter((id) => Number.isInteger(id) && id > 0)),
   ];
 };
 
 const attachServiceIdsToExperts = async (expertsList) => {
-  if (!expertsList.length) {
-    return [];
-  }
+  if (!expertsList.length) return [];
 
   const mappings = await getExpertServiceMappingsByExpertIds(
-    expertsList.map((expert) => expert.id)
+    expertsList.map((e) => e.id)
   );
 
-  const serviceIdsByExpertId = mappings.reduce((acc, mapping) => {
-    if (!acc[mapping.expertId]) {
-      acc[mapping.expertId] = [];
-    }
-
-    acc[mapping.expertId].push(mapping.serviceId);
+  const byExpert = mappings.reduce((acc, m) => {
+    if (!acc[m.expertId]) acc[m.expertId] = [];
+    acc[m.expertId].push(m.serviceId);
     return acc;
   }, {});
 
   return expertsList.map((expert) => ({
     ...expert,
-    serviceIds: serviceIdsByExpertId[expert.id] ?? [],
+    serviceIds: byExpert[expert.id] ?? [],
   }));
 };
 
 const validateExpertServiceIds = async (shopId, serviceIds) => {
-  if (!serviceIds.length) {
-    return;
-  }
-
+  if (!serviceIds.length) return;
   const shopServices = await getServicesByIdsAndShopId(serviceIds, shopId);
-
   if (shopServices.length !== serviceIds.length) {
     throw new Error("One or more selected services do not belong to this shop");
   }
+};
+
+const maybeUploadImage = async (imageUrl) => {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith("data:") || imageUrl.startsWith("http")) {
+    const uploaded = await uploadImage(imageUrl);
+    return uploaded || imageUrl;
+  }
+  return imageUrl;
 };
 
 export const addExpertService = async (shopId, payload) => {
@@ -67,24 +60,11 @@ export const addExpertService = async (shopId, payload) => {
   const serviceIds = normalizeServiceIds(rawServiceIds);
   await validateExpertServiceIds(shopId, serviceIds);
 
-  const uploadedImage = await uploadImage(payload.image);
+  const imageUrl = await maybeUploadImage(expertPayload.image);
 
-  if (!uploadedImage) {
-    throw new Error("Image upload failed");
-  }
-
-  await db.transaction(async (tx) => {
-    const [expert] = await createExpertDB(
-      {
-        ...expertPayload,
-        image: uploadedImage,
-        shopId,
-      },
-      tx
-    );
-
-    await replaceExpertServiceMappings(tx, expert.id, serviceIds);
-  });
+  // Run sequentially without a transaction to avoid pgbouncer prepared-statement issues
+  const [expert] = await createExpertDB({ ...expertPayload, image: imageUrl, shopId });
+  await replaceExpertServiceMappings(db, expert.id, serviceIds);
 };
 
 export const getExpertsService = async (shopId) => {
@@ -95,7 +75,6 @@ export const getExpertsService = async (shopId) => {
 export const getExpertByIdService = async (id, shopId) => {
   const [expert] = await getExpertByIdDB(id, shopId);
   if (!expert) throw new Error("Expert not found");
-
   const [expertWithServices] = await attachServiceIdsToExperts([expert]);
   return expertWithServices;
 };
@@ -108,21 +87,18 @@ export const updateExpertService = async (id, shopId, data) => {
   const serviceIds = normalizeServiceIds(rawServiceIds);
   await validateExpertServiceIds(shopId, serviceIds);
 
-  await db.transaction(async (tx) => {
-    await updateExpertDB(id, expertData, tx);
+  const imageUrl = await maybeUploadImage(expertData.image) ?? expert.image;
 
-    if (Array.isArray(rawServiceIds)) {
-      await replaceExpertServiceMappings(tx, id, serviceIds);
-    }
-  });
+  await updateExpertDB(id, { ...expertData, image: imageUrl });
+  if (Array.isArray(rawServiceIds)) {
+    await replaceExpertServiceMappings(db, id, serviceIds);
+  }
 };
 
 export const deleteExpertService = async (id, shopId) => {
   const [expert] = await getExpertByIdDB(id, shopId);
   if (!expert) throw new Error("Expert not found");
 
-  await db.transaction(async (tx) => {
-    await deleteExpertServiceMappings(tx, id);
-    await deleteExpertDB(id, shopId, tx);
-  });
+  await deleteExpertServiceMappings(db, id);
+  await deleteExpertDB(id, shopId);
 };

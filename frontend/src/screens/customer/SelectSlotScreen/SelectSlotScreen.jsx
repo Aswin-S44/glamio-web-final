@@ -45,8 +45,17 @@ export default function SelectSlotScreen() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [expertsLoaded, setExpertsLoaded] = useState(false);
   const [error, setError] = useState("");
   const [showModal, setShowModal] = useState(false);
+
+  // Redirect unauthenticated users to sign-in immediately
+  useEffect(() => {
+    if (!localStorage.getItem("token")) {
+      sessionStorage.setItem("redirectAfterLogin", location.pathname + location.search);
+      navigate("/signin", { replace: true });
+    }
+  }, []);
 
   const selectedServiceIds = selectedServices.map((service) => service.id);
 
@@ -118,6 +127,7 @@ export default function SelectSlotScreen() {
       setError((prev) => prev || err.message || "Failed to load specialists.");
     } finally {
       setLoading(false);
+      setExpertsLoaded(true);
     }
   }, [id, selectedServiceIds.join(",")]);
 
@@ -152,6 +162,13 @@ export default function SelectSlotScreen() {
     fetchSlots();
   }, [fetchExperts, fetchSlots]);
 
+  // Auto-select the first expert as the default (primary) expert
+  useEffect(() => {
+    if (experts.length > 0 && !selectedExpert) {
+      setSelectedExpert(experts[0].id);
+    }
+  }, [experts]);
+
   const dateKey = format(selectedDate, "yyyy-MM-dd");
   const daySlots = slotsByDate[dateKey] || [];
   const expertData = experts.find((e) => e.id === selectedExpert);
@@ -160,9 +177,8 @@ export default function SelectSlotScreen() {
     (s, sv) => s + Number(sv.duration || 0),
     0
   );
-  const step = selectedExpert && selectedSlot ? 3 : selectedExpert ? 2 : 1;
-  const canProceed =
-    selectedExpert && selectedSlot && selectedServices.length > 0;
+  const step = selectedSlot ? 3 : selectedExpert ? 2 : 1;
+  const canProceed = selectedSlot && selectedServices.length > 0;
 
   const tileClassName = ({ date, view }) => {
     if (view !== "month") return null;
@@ -190,20 +206,19 @@ export default function SelectSlotScreen() {
   };
 
   const handleConfirm = () => {
-    if (!selectedExpert) {
-      setError("Please select a specialist to continue");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      return;
-    }
-
     if (!selectedSlot) {
       setError("Please select a time slot to continue");
       return;
     }
 
+    // Use first expert as default if user hasn't picked one
+    if (!selectedExpert && experts.length > 0) {
+      setSelectedExpert(experts[0].id);
+    }
+
     const params = new URLSearchParams();
     params.append("slotId", selectedSlot.id);
-    params.append("expertId", selectedExpert);
+    params.append("expertId", selectedExpert ?? 0);
     params.append("shopId", selectedSlot.shopId);
     params.append(
       "services",
@@ -224,11 +239,18 @@ export default function SelectSlotScreen() {
     return (
       <div className="ss-loader-page">
         <Header />
-        <div className="ss-loader-body">
-          <div className="ss-loader-ring">
-            <Loader2 size={32} className="ss-spin" />
+        <div className="glam-loading-overlay">
+          <div className="glam-spinner-ring"></div>
+          <p className="glam-loading-text">Finding available slots for you...</p>
+          <div className="ss-skeleton-grid">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="ss-skeleton-expert">
+                <div className="glam-skeleton ss-sk-avatar"></div>
+                <div className="glam-skeleton ss-sk-name"></div>
+                <div className="glam-skeleton ss-sk-spec"></div>
+              </div>
+            ))}
           </div>
-          <p>Finding available slots for you...</p>
         </div>
       </div>
     );
@@ -303,73 +325,72 @@ export default function SelectSlotScreen() {
             </div>
           )}
 
+          {expertsLoaded && experts.length === 0 ? (
+            <div className="ss-no-experts-info">
+              <User size={16} />
+              <span>No specialists listed — the salon will assign a staff member for your appointment.</span>
+            </div>
+          ) : (
           <section className="ss-section">
             <div className="ss-section-head">
               <div className="ss-section-icon">
                 <User size={18} />
               </div>
               <div>
-                <h2>Choose your specialist</h2>
-                <p>Our certified professionals are ready to serve you</p>
+                <h2>Choose your specialist <span className="ss-optional-badge">Optional</span></h2>
+                <p>Select a specialist, or we'll assign the best available one</p>
               </div>
             </div>
 
             <div className="ss-experts-grid">
-              {experts.length > 0 ? (
-                experts.map((expert) => {
-                  const active = selectedExpert === expert.id;
-                  return (
-                    <button
-                      key={expert.id}
-                      className={`ss-expert-card ${active ? "active" : ""}`}
-                      onClick={() => {
-                        setSelectedExpert(expert.id);
-                        setError("");
-                      }}
-                    >
-                      <div className="ss-expert-img-wrap">
-                        <img
-                          src={expert.image}
-                          alt={expert.name}
-                          onError={(e) => {
-                            e.target.src =
-                              "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200";
-                          }}
-                        />
-                        {active && (
-                          <div className="ss-expert-check">
-                            <CheckCircle2 size={20} />
-                          </div>
-                        )}
-                      </div>
-                      <div className="ss-expert-info">
-                        <h3>{expert.name}</h3>
-                        <span className="ss-expert-spec">{expert.specialist}</span>
-                        <div className="ss-expert-meta">
-                          <span>
-                            <Star size={11} fill="#FFD700" color="#FFD700" />{" "}
-                            {expert.rating || "N/A"}
-                          </span>
-                          <span className="ss-dot">.</span>
-                          <span>{expert.reviews || 0} reviews</span>
-                          <span className="ss-dot">.</span>
-                          <span>
-                            <Award size={11} /> Available
-                          </span>
+              {experts.map((expert) => {
+                const active = selectedExpert === expert.id;
+                return (
+                  <button
+                    key={expert.id}
+                    className={`ss-expert-card ${active ? "active" : ""}`}
+                    onClick={() => {
+                      setSelectedExpert(expert.id);
+                      setError("");
+                    }}
+                  >
+                    <div className="ss-expert-img-wrap">
+                      <img
+                        src={expert.image}
+                        alt={expert.name}
+                        onError={(e) => {
+                          e.target.src =
+                            "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200";
+                        }}
+                      />
+                      {active && (
+                        <div className="ss-expert-check">
+                          <CheckCircle2 size={20} />
                         </div>
+                      )}
+                    </div>
+                    <div className="ss-expert-info">
+                      <h3>{expert.name}</h3>
+                      <span className="ss-expert-spec">{expert.specialist}</span>
+                      <div className="ss-expert-meta">
+                        <span>
+                          <Star size={11} fill="#FFD700" color="#FFD700" />{" "}
+                          {expert.rating || "N/A"}
+                        </span>
+                        <span className="ss-dot">.</span>
+                        <span>{expert.reviews || 0} reviews</span>
+                        <span className="ss-dot">.</span>
+                        <span>
+                          <Award size={11} /> Available
+                        </span>
                       </div>
-                    </button>
-                  );
-                })
-              ) : (
-                <div className="ss-no-slots">
-                  <User size={36} />
-                  <p>No specialists available</p>
-                  <span>Try another service or check back later.</span>
-                </div>
-              )}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </section>
+          )}
 
           <section className="ss-section">
             <div className="ss-section-head">

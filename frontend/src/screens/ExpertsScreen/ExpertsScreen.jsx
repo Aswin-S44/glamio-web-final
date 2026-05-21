@@ -233,8 +233,20 @@ function ExpertsScreen() {
 
       <div className="sv-grid-container">
         {loading ? (
-          <div className="sv-loader">
-            <div className="sv-spinner"></div>
+          <div className="glam-loading-overlay">
+            <div className="glam-spinner-ring"></div>
+            <p className="glam-loading-text">Loading experts...</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16, width: '100%' }}>
+              {[1,2,3,4].map(i => (
+                <div key={i} style={{ background: '#fff', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+                  <div className="glam-skeleton" style={{ height: 180, borderRadius: 0 }}></div>
+                  <div style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div className="glam-skeleton" style={{ height: 14, width: '70%', borderRadius: 6 }}></div>
+                    <div className="glam-skeleton" style={{ height: 11, width: '45%', borderRadius: 6 }}></div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         ) : experts.length === 0 ? (
           <NotFound title={"Experts"} />
