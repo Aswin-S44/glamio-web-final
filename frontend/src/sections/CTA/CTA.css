@@ -1,0 +1,11 @@
+.cta-section {
+  padding: 90px 20px;
+  background: linear-gradient(135deg, #111827, #1f2933);
+  color: #fff;
+  text-align: center;
+}
+
+.cta-section h2 {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
