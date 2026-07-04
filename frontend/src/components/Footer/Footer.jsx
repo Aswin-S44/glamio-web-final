@@ -135,7 +135,7 @@ function Footer() {
             </ul>
           </div> */}
 
-          {/* ── Company + App ── */}
+          {/* ── Company ── */}
           <div className="gf__col">
             <h5 className="gf__col-title">Company</h5>
             <ul className="gf__links">
@@ -147,10 +147,12 @@ function Footer() {
                 </li>
               ))}
             </ul>
+          </div>
 
-            <div className="gf__apps">
-              <p className="gf__apps-label">Book on the Go</p>
-              <div className="gf__apps-footer-mbl-col">
+          {/* ── Book on the Go ── */}
+          <div className="gf__col gf__col--apps">
+            <h5 className="gf__col-title">Book on the Go</h5>
+            <div className="gf__apps-footer-mbl-col">
               <a target="_blank" href="https://play.google.com/store/apps/details?id=com.orucom.customer" className="gf__app-btn">
                 <svg viewBox="0 0 512 512" width="18" fill="currentColor">
                   <path d="M325.3 234.3L104.6 13l280.8 161.2-60.1 60.1zM47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0zm425.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-10.3 18-28.5-1.2-40.8zM325.3 277.7l60.1 60.1L104.6 499l220.7-221.3z" />
@@ -168,7 +170,7 @@ function Footer() {
                   <span>DOWNLOAD ON</span>
                   <strong>App Store</strong>
                 </div>
-              </a></div>
+              </a>
             </div>
           </div>
         </div>

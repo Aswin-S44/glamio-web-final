@@ -338,7 +338,7 @@ function Dashboard() {
             <div className="glam-stat-card primary-accent skeleton-card">
               <div className="glam-stat-content">
                 <span className="glam-label skeleton-text"></span>
-                <h2 className="glam-value skeleton-text skeleton-title"></h2>
+                <div className="glam-value skeleton-text skeleton-title"></div>
                 <div className="glam-trend-pill positive skeleton-text"></div>
               </div>
               <div className="glam-stat-icon-blob skeleton-icon"></div>
@@ -347,7 +347,7 @@ function Dashboard() {
             <div className="glam-stat-card dark-accent skeleton-card">
               <div className="glam-stat-content">
                 <span className="glam-label skeleton-text"></span>
-                <h2 className="glam-value skeleton-text skeleton-title"></h2>
+                <div className="glam-value skeleton-text skeleton-title"></div>
                 <div className="glam-trend-pill skeleton-text"></div>
               </div>
               <div className="glam-stat-icon-blob skeleton-icon"></div>
@@ -356,7 +356,7 @@ function Dashboard() {
             <div className="glam-stat-card beige-accent skeleton-card">
               <div className="glam-stat-content">
                 <span className="glam-label skeleton-text"></span>
-                <h2 className="glam-value skeleton-text skeleton-title"></h2>
+                <div className="glam-value skeleton-text skeleton-title"></div>
                 <div className="glam-trend-pill positive skeleton-text"></div>
               </div>
               <div className="glam-stat-icon-blob skeleton-icon"></div>
@@ -367,7 +367,7 @@ function Dashboard() {
             <div className="glam-card-flat chart-box-wrap">
               <div className="glam-card-header">
                 <div>
-                  <h3 className="skeleton-text skeleton-title"></h3>
+                  <div className="skeleton-text skeleton-title"></div>
                   <p className="skeleton-text"></p>
                 </div>
                 <div className="glam-header-actions">
@@ -380,7 +380,7 @@ function Dashboard() {
 
             <div className="glam-card-flat list-box-wrap">
               <div className="glam-card-header">
-                <h3 className="skeleton-text skeleton-title"></h3>
+                <div className="skeleton-text skeleton-title"></div>
                 <button className="glam-btn-mini skeleton-btn"></button>
               </div>
               <div className="glam-list-container">
@@ -389,7 +389,7 @@ function Dashboard() {
                     <div className="glam-user-info">
                       <div className="glam-avatar-ring skeleton-avatar"></div>
                       <div>
-                        <h4 className="glam-name skeleton-text"></h4>
+                        <div className="glam-name skeleton-text"></div>
                         <p className="glam-subtext skeleton-text"></p>
                       </div>
                     </div>

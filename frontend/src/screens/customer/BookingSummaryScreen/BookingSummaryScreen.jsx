@@ -199,14 +199,24 @@ function BookingSummaryScreen() {
     }
   };
 
-  const calculateSubtotal = () => {
-    return (
-      summaryData?.services?.reduce(
-        (acc, service) => acc + (service.rate || service.price || 0),
-        0
-      ) || 0
-    );
-  };
+  // const calculateSubtotal = () => {
+  //   return (
+  //     summaryData?.services?.reduce(
+  //       (acc, service) => acc + (service.rate || service.price || 0),
+  //       0
+  //     ) || 0
+  //   );
+  // };
+
+const calculateSubtotal = () => {
+  const perPersonTotal =
+    summaryData?.services?.reduce(
+      (acc, service) => acc + (service.rate || service.price || 0),
+      0
+    ) || 0;
+
+  return perPersonTotal * (numberOfPeople || 1);
+};
 
   if (loading) {
     return (
@@ -360,7 +370,7 @@ function BookingSummaryScreen() {
               {/* Price Breakdown */}
               <div className="widget-section price-section">
                 <h4>Price Details</h4>
-                <div className="price-breakdown">
+                {/* <div className="price-breakdown">
                   <div className="price-row">
                     <span>
                       Subtotal ({summaryData?.services?.length} items)
@@ -375,7 +385,34 @@ function BookingSummaryScreen() {
                     <span>Total Amount</span>
                     <span className="total-amount">₹{subtotal.toFixed(2)}</span>
                   </div>
-                </div>
+                </div> */}
+
+
+<div className="price-breakdown">
+  <div className="price-row">
+    <span>
+      Subtotal ({summaryData?.services?.length} items × {numberOfPeople} {numberOfPeople === 1 ? "person" : "people"})
+    </span>
+    <span>₹{(subtotal / (numberOfPeople || 1)).toFixed(2)}</span>
+  </div>
+  {numberOfPeople > 1 && (
+    <div className="price-row">
+      <span>× {numberOfPeople} people</span>
+      <span></span>
+    </div>
+  )}
+  <div className="price-row">
+    <span>Service Tax</span>
+    <span>Included</span>
+  </div>
+  <div className="price-row total-row">
+    <span>Total Amount</span>
+    <span className="total-amount">₹{subtotal.toFixed(2)}</span>
+  </div>
+</div>
+
+
+
               </div>
 
               {/* Action Buttons */}

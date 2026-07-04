@@ -217,6 +217,7 @@ h4.mb-0.new-head-dash {
   top: 0;
   right: -450px;
   width: 450px;
+  max-width: 100vw;
   height: 100%;
   background: #fff;
   box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);

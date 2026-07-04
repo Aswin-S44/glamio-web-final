@@ -425,6 +425,8 @@
     grid-template-columns: 1fr;
     padding: 64px 0;
   }
+  .gcta__grid > * { min-width: 0; }
+  .gcta__open-strip { display: none; }
   .gcta__center {
     grid-column: 1; grid-row: auto;
     order: -1;
@@ -455,10 +457,7 @@
 
 @media (max-width: 768px) {
   .gcta__heading em {
-padding: 5px;
-  }
-  .gcta__heading br {
-    display: none;
+    padding: 5px;
   }
 }
 

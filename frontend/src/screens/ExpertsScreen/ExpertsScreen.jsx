@@ -69,10 +69,12 @@ const customSelectStyles = {
   }),
 };
 
+// Normalizes the specialist field (null, plain string, comma-separated
+// string, or array) into a clean array of labels for badge rendering.
 const toSpecialistArray = (specialist) => {
   if (!specialist) return [];
-  if (Array.isArray(specialist)) return specialist;
-  return specialist
+  if (Array.isArray(specialist)) return specialist.filter(Boolean);
+  return String(specialist)
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean);

@@ -61,6 +61,7 @@ const ParlorDetailsScreen = () => {
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
   const [page, setPage] = useState(1);
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
+
   const [error, setError] = useState("");
   const [wished, setWished] = useState(false);
   const [totalReviews, setTotalReviews] = useState(0);
@@ -74,7 +75,7 @@ const ParlorDetailsScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryTabs, setCategoryTabs] = useState([]);
   const [images, setImages] = useState([]);
-  const [activeOfferCount, setActiveOfferCount] = useState(0);
+ 
 
   const fetchParlourDetails = useCallback(async () => {
     try {
@@ -454,6 +455,7 @@ const ParlorDetailsScreen = () => {
   const shop = parlour.shop;
   const services = parlour.services || [];
   const offers = parlour.offers || [];
+  const activeOfferCount = offers.length;
   const displayImages = images.length > 0 ? images : [DEFAULT_NO_IMAGE];
   const filteredServices = getFilteredServices();
 

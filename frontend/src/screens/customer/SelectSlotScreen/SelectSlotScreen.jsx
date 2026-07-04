@@ -151,7 +151,7 @@ export default function SelectSlotScreen() {
 
       const query = params.toString();
       const res = await fetch(
-        `${BASE_URL}/customer/experts/${id}${query ? `?${query}` : ""}`
+        `${BASE_URL}/customer/experts/${id}${query ? `?${query}` : ""}`,
       );
 
       if (!res.ok) {
@@ -202,13 +202,12 @@ export default function SelectSlotScreen() {
   const dateKey = format(selectedDate, "yyyy-MM-dd");
   const daySlots = slotsByDate[dateKey] || [];
   const expertData = experts.find((e) => e.id === selectedExpert);
-  const totalAmount = selectedServices.reduce(
-    (s, sv) => s + Number(sv.rate || 0),
-    0
-  );
+  const totalAmount =
+    selectedServices.reduce((s, sv) => s + Number(sv.rate || 0), 0) *
+    numberOfPeople;
   const totalDuration = selectedServices.reduce(
     (s, sv) => s + Number(sv.duration || 0),
-    0
+    0,
   );
   const step = selectedExpert && selectedSlot ? 3 : selectedExpert ? 2 : 1;
   const canProceed =
@@ -267,7 +266,7 @@ export default function SelectSlotScreen() {
     params.append("shopId", selectedSlot.shopId);
     params.append(
       "services",
-      selectedServices.map((service) => service.id).join(",")
+      selectedServices.map((service) => service.id).join(","),
     );
     params.append("numberOfPeople", numberOfPeople);
 
@@ -325,7 +324,7 @@ export default function SelectSlotScreen() {
                   />
                 )}
               </React.Fragment>
-            )
+            ),
           )}
         </div>
       </div>
@@ -654,10 +653,21 @@ export default function SelectSlotScreen() {
 
             <div className="ss-summ-divider" />
 
-            <div className="ss-summ-total">
+            {/* <div className="ss-summ-total">
               <div>
                 <span className="ss-summ-tot-label">Total</span>
                 <span className="ss-summ-dur">{totalDuration} min session</span>
+              </div>
+              <span className="ss-summ-tot-amt">Rs {totalAmount}</span>
+            </div> */}
+
+            <div className="ss-summ-total">
+              <div>
+                <span className="ss-summ-tot-label">Total</span>
+                <span className="ss-summ-dur">
+                  {totalDuration} min session · {numberOfPeople}{" "}
+                  {numberOfPeople === 1 ? "person" : "people"}
+                </span>
               </div>
               <span className="ss-summ-tot-amt">Rs {totalAmount}</span>
             </div>
