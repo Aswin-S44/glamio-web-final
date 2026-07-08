@@ -25,6 +25,7 @@ import {
   HelpCircle,
   Calendar,
   Settings,
+  Info,
 } from "lucide-react";
 import "./Header.css";
 
@@ -323,6 +324,12 @@ function Header() {
                 <span>Home</span>
               </a>
               <a
+                href="/about-us"
+                className={location.pathname === "/about-us" ? "active" : ""}
+              >
+                <Info size={20} /> About-Us
+              </a>
+              <a
                 href="/shops"
                 className={location.pathname === "/shops" ? "active" : ""}
               >
@@ -347,7 +354,7 @@ function Header() {
 
             <div className="action-area" ref={dropdownRef}>
               {isAuthenticated ? (
-                <> 
+                <>
                   <div className="dd-wrapper">
                     <button
                       className={`icon-btn ${
@@ -579,6 +586,14 @@ function Header() {
             <a href="/" className={location.pathname === "/" ? "active" : ""}>
               <Home size={20} /> Home
             </a>
+
+            <a
+              href="/about-us"
+              className={location.pathname === "/about-us" ? "active" : ""}
+            >
+              <Info size={20} /> About-Us
+            </a>
+
             <a
               href="/shops"
               className={location.pathname === "/shops" ? "active" : ""}

@@ -483,6 +483,23 @@ function ExpertsScreen() {
                     />
                   </div>
 
+                  {/* <div className="sv-input-group-modern">
+                    <label className="sv-label-modern">
+                      <LayoutGrid size={14} /> Specialisation
+                    </label>
+                    <CreatableSelect
+                      isMulti
+                      styles={customSelectStyles}
+                      options={serviceOptions.map((s) => ({
+                        value: s.value,
+                        label: s.label,
+                      }))}
+                      value={specialist}
+                      placeholder="Select or add specialities..."
+                      onChange={(selected) => setSpecialist(selected || [])}
+                    />
+                  </div> */}
+
                   <div className="sv-input-group-modern">
                     <label className="sv-label-modern">
                       <Sparkles size={14} /> Specialisation
@@ -565,13 +582,11 @@ function ExpertsScreen() {
             <div className="sv-view-body">
               <div className="sv-view-header">
                 <div className="sv-view-tags">
-                  {toSpecialistArray(editingExpert.specialist).map(
-                    (spec, i) => (
-                      <span key={i} className="sv-tag">
-                        {spec}
-                      </span>
-                    )
-                  )}
+                  {toSpecialistArray(editingExpert.specialist).map((spec, i) => (
+                    <span key={i} className="sv-tag">
+                      {spec}
+                    </span>
+                  ))}
                 </div>
                 <h2>{editingExpert.name}</h2>
                 <div className="sv-view-meta">

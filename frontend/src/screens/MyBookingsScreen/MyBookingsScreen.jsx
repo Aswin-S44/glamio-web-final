@@ -164,6 +164,7 @@ const TABS = [
 ];
 
 export default function MyBookingsScreen() {
+  console.log("5555555555555");
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const [bookings, setBookings] = useState([]);

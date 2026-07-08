@@ -47,6 +47,7 @@ function OfferScreen() {
   const [regularPrice, setRegularPrice] = useState("");
   const [offerPrice, setOfferPrice] = useState("");
   const [image, setImage] = useState(null);
+  const [description, setDescription] = useState("");
 
   const token = localStorage.getItem("token");
   const searchTimeout = useRef(null);
@@ -122,6 +123,7 @@ function OfferScreen() {
       regularPrice: Number(regularPrice),
       offerPrice: Number(offerPrice),
       image,
+      description,
     };
 
     setSubmitting(true);
@@ -203,6 +205,7 @@ function OfferScreen() {
       setOfferPrice(offer.offerPrice);
       setImage(offer.service?.images[0] || matchedService?.images[0] || null);
       setImageError("");
+      setDescription(offer?.description ?? "");
     } else {
       setEditingOffer(null);
       setCategoryId("");
@@ -211,6 +214,7 @@ function OfferScreen() {
       setOfferPrice("");
       setImage(null);
       setImageError("");
+      setDescription("");
     }
     setModalOpen(true);
   };
@@ -415,6 +419,10 @@ function OfferScreen() {
                       </span>
                       <span className="of-new-price">₹{offer.offerPrice}</span>
                     </div>
+                    {console.log("OFFER-------------", offer)}
+                    <div className="pricing-row">
+                      <span className="">{offer.description}</span>
+                    </div>
                   </div>
                   <div className="of-foot">
                     <div className="of-meta">
@@ -546,6 +554,18 @@ function OfferScreen() {
                         placeholder="0.00"
                       />
                     </div>
+                  </div>
+                  <div className="of-input-group">
+                    <label>
+                      <Percent size={14} /> Offer Description
+                    </label>
+                    <input
+                      type="text"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      required
+                      placeholder="Add a small description on offer"
+                    />
                   </div>
 
                   {regularPrice && offerPrice && (

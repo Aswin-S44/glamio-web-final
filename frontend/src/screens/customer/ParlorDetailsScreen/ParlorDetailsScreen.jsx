@@ -30,10 +30,9 @@ import {
   X,
   Loader2,
   Grid,
+  Tag,
 } from "lucide-react";
 
-// Self-contained fallback so a broken image never shows the browser's
-// broken-image glyph (the previous DEFAULT_NO_IMAGE URL was unreliable).
 const PLACEHOLDER_IMG =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='90'%3E%3Crect width='120' height='90' fill='%232b2b33'/%3E%3Ccircle cx='44' cy='32' r='8' fill='%234b4b57'/%3E%3Cpath d='M24 66l20-24 16 18 12-14 24 32z' fill='%234b4b57'/%3E%3C/svg%3E";
 
@@ -61,7 +60,7 @@ const ParlorDetailsScreen = () => {
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
   const [page, setPage] = useState(1);
   const [currentImgIdx, setCurrentImgIdx] = useState(0);
-
+  const [images, setImages] = useState([]);
   const [error, setError] = useState("");
   const [wished, setWished] = useState(false);
   const [totalReviews, setTotalReviews] = useState(0);
@@ -74,8 +73,6 @@ const ParlorDetailsScreen = () => {
   const [isGalleryOpen, setIsGalleryOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [categoryTabs, setCategoryTabs] = useState([]);
-  const [images, setImages] = useState([]);
- 
 
   const fetchParlourDetails = useCallback(async () => {
     try {
@@ -252,6 +249,10 @@ const ParlorDetailsScreen = () => {
     ) : (
       <span className="pd-price">Rs {regularPrice}</span>
     );
+  };
+
+  const getOfferForService = (serviceId) => {
+    return parlour?.offers?.find((item) => item.serviceId === serviceId);
   };
 
   const handleSortChange = (newSortBy) => {
@@ -773,47 +774,59 @@ const ParlorDetailsScreen = () => {
 
             <div className="pd-services-grid">
               {filteredServices.length > 0 ? (
-                filteredServices.map((service) => (
-                  <div key={service.id} className="pd-service-card">
-                    <div className="pd-service-img-wrap">
-                      <ServiceCarousel
-                        images={service.images || [DEFAULT_NO_IMAGE]}
-                        serviceId={service.id}
-                      />
-                      {offers.find(
-                        (offer) => offer.serviceId === service.id
-                      ) && (
-                        <span className="pd-service-offer-badge">Offer</span>
-                      )}
-                    </div>
-                    <div className="pd-service-body">
-                      <h3>{service.name}</h3>
-                      <div className="pd-service-duration">
-                        <Clock size={13} />
-                        <span>{service.duration} mins</span>
+                filteredServices.map((service) => {
+                  const offer = getOfferForService(service.id);
+                  return (
+                    <div key={service.id} className="pd-service-card">
+                      <div className="pd-service-img-wrap">
+                        <ServiceCarousel
+                          images={service.images || [DEFAULT_NO_IMAGE]}
+                          serviceId={service.id}
+                        />
+                        {offer && (
+                          <span className="pd-service-offer-badge">
+                            <Tag size={12} />
+                            Offer
+                          </span>
+                        )}
                       </div>
-                      {service.description && (
-                        <p className="pd-service-desc">
-                          {service.description.substring(0, 90)}
-                          {service.description.length > 90 ? "..." : ""}
-                        </p>
-                      )}
-                      <div className="pd-service-foot">
-                        {getServicePrice(service.id, service.rate)}
-                        <button
-                          className="pd-book-service-btn"
-                          onClick={() =>
-                            handleBookNow(
-                              `/parlor/${service.shopId}/service/${service.id}`
-                            )
-                          }
-                        >
-                          Book Now
-                        </button>
+                      <div className="pd-service-body">
+                        <h3>{service.name}</h3>
+                        <div className="pd-service-duration">
+                          <Clock size={13} />
+                          <span>{service.duration} mins</span>
+                        </div>
+                        {service.description && (
+                          <p className="pd-service-desc">
+                            {service.description.substring(0, 90)}
+                            {service.description.length > 90 ? "..." : ""}
+                          </p>
+                        )}
+
+                        {offer && offer.description && (
+                          <div className="pd-offer-description">
+                            <Tag size={14} />
+                            <span>{offer.description}</span>
+                          </div>
+                        )}
+
+                        <div className="pd-service-foot">
+                          {getServicePrice(service.id, service.rate)}
+                          <button
+                            className="pd-book-service-btn"
+                            onClick={() =>
+                              handleBookNow(
+                                `/parlor/${service.shopId}/service/${service.id}`
+                              )
+                            }
+                          >
+                            Book Now
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  );
+                })
               ) : (
                 <div className="pd-empty">
                   <Sparkles size={40} />
@@ -971,14 +984,16 @@ const ParlorDetailsScreen = () => {
 
             <div className="pd-about-map">
               <h3>Location</h3>
-              {shop?.address ? (
+              {parlour?.shop?.googleReviewUrl ? (
                 <iframe
                   title="Shop Location"
-                  src={`https://maps.google.com/maps?q=${encodeURIComponent(
-                    shop.address
-                  )}&output=embed`}
+                  src={`https://www.google.com/maps/embed/v1/place?key=${
+                    process.env.REACT_APP_GOOGLE_MAPS_API_KEY
+                  }&q=${encodeURIComponent(parlour.shop.googleReviewUrl)}`}
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
+                  style={{ width: "100%", height: "400px", border: 0 }}
+                  allowFullScreen
                 />
               ) : (
                 <p>Address not available.</p>

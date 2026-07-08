@@ -30,6 +30,7 @@ import PrivacyScreen from "./screens/PolicyScreens/PrivacyScreen";
 import TermsScreen from "./screens/PolicyScreens/TermsScreen";
 import CookiesScreen from "./screens/PolicyScreens/CookiesScreen";
 import { clarity } from "react-microsoft-clarity";
+import AboutUsScreen from "./screens/AboutUsScreen/AboutUsScreen";
 
 function App() {
   useEffect(() => {
@@ -43,7 +44,10 @@ function App() {
             <Route path="/" element={<HomeScreen />} />
             <Route path="/signin" element={<SignIn />} />
             <Route path="/signup" element={<SignUp />} />
-            <Route path="/shop/:location/:slug" element={<ParlorDetailsScreen />} />
+            <Route
+              path="/shop/:location/:slug"
+              element={<ParlorDetailsScreen />}
+            />
             <Route
               path="/parlor/:id/service/:serviceId"
               element={<SelectSlotScreen />}
@@ -77,6 +81,7 @@ function App() {
             <Route path="/privacy" element={<PrivacyScreen />} />
             <Route path="/terms" element={<TermsScreen />} />
             <Route path="/cookies" element={<CookiesScreen />} />
+            <Route path="/about-us" element={<AboutUsScreen />} />
           </Routes>
         </BrowserRouter>
       </Provider>

@@ -525,11 +525,6 @@ export default function EditProfileScreen() {
                     : `${form.galleryImages.length}/${MAX_GALLERY}`}
                 </span>
               </div>
-            <div className="ep-card-title">
-              <Images size={16} /> Shop Gallery
-              <span className="ep-gallery-count">{form.galleryImages.length}/{MAX_GALLERY}</span>
-            </div>
-            <p className="ep-gallery-hint">Add photos of your shop, interior, and work to attract more customers. You can upload up to {MAX_GALLERY} photos (max 5 MB each).</p>
 
               {/* Google Business Images Toggle */}
               {/* <div className="ep-toggle-container">

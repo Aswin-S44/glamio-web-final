@@ -1,6 +1,6 @@
-// export const BASE_URL = "http://localhost:5000/api/v1";
+export const BASE_URL = "http://localhost:5000/api/v1";
 
-export const BASE_URL = "https://api.orucom.com/api/v1";
+// export const BASE_URL = "https://api.orucom.com/api/v1";
 
 export const DEFAULT_NO_IMAGE =
   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTOt5Z1aROTo80uiniDmCnnG56CJg4Zpu555Q&s";

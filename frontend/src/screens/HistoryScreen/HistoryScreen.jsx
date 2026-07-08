@@ -163,7 +163,7 @@ export default function HistoryScreen() {
       });
     }
   };
-
+  console.log("11111111");
   const handleRescheduleConfirm = async (booking, slot) => {
     try {
       const res = await apiRequest(
