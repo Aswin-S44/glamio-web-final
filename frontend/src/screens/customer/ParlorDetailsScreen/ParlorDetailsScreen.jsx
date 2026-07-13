@@ -107,6 +107,7 @@ const ParlorDetailsScreen = () => {
       if (data.services && data.services.length > 0) {
         const categories = [];
         const categoryMap = new Map();
+
         data.services.forEach((service) => {
           if (service.category && !categoryMap.has(service.category.id)) {
             categoryMap.set(service.category.id, {
@@ -115,6 +116,7 @@ const ParlorDetailsScreen = () => {
             });
           }
         });
+
         const uniqueCategories = Array.from(categoryMap.values());
         setCategoryTabs(uniqueCategories);
         if (uniqueCategories.length > 0) {
@@ -748,7 +750,7 @@ const ParlorDetailsScreen = () => {
       <div className="pd-tab-content">
         {activeTab === "services" && (
           <>
-            {categoryTabs.length > 1 && (
+            {categoryTabs.length > 0 && (
               <div className="pd-category-tabs">
                 <button
                   className={`pd-category-tab ${
