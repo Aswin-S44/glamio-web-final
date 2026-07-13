@@ -18,7 +18,11 @@ import Header from "../../components/Header/Header";
 import Footer from "../../components/Footer/Footer";
 import { BASE_URL, DEFAULT_NO_IMAGE } from "../../constants/urls";
 import { buildShopUrl } from "../../utils/shopUrl.util";
-import { getWishlist, toggleWishlist as toggleWishlistUtil, WISHLIST_EVENT } from "../../utils/wishlist.util";
+import {
+  getWishlist,
+  toggleWishlist as toggleWishlistUtil,
+  WISHLIST_EVENT,
+} from "../../utils/wishlist.util";
 import "./ShopsScreen.css";
 
 const SERVICE_FILTERS = [
@@ -377,9 +381,10 @@ function ShopCard({ item, wishlisted, onWishlist, onClick }) {
           </div>
           <button
             className="shop-book-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
+            // onClick={(e) => {
+            //   e.stopPropagation();
+            // }}
+            onClick={() => (window.location.href = buildShopUrl(item))}
           >
             Book Now <ArrowRight size={14} />
           </button>
